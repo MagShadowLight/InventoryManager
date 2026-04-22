@@ -1,0 +1,11 @@
+{
+  "solution": {
+    "path": "InventBox.sln",
+    "projects": [
+      "InventBox.WebApp\\InventBox.Backend\\InventBox.Backend.csproj",
+      "InventBox.WebApp\\InventBox.Frontend\\InventBox.Frontend.esproj",
+      "InventBox.Core\\InventBox.Core.csproj",
+      "InventBox.Test\\InventBox.Test.csproj"
+    ]
+  }
+}
