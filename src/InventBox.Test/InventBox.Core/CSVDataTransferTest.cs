@@ -1,4 +1,5 @@
 using InventBox.Core;
+using InventBox.Test.Utils;
 using Xunit.Abstractions;
 
 namespace InventBox.Test.InventBox.Core;
@@ -50,10 +51,7 @@ public class CSVDataTransferTest
         result = csvparser.textList;
         // Assert
         Assert.Equal(10, result.Count);
-        CleanUpCSV("TestExport.csv");
-    }
-    private void CleanUpCSV(string path)
-    {
-        File.Delete(path);
+        // Clean up
+        FileUtils.CleanUpFile("TestExport.csv");
     }
 }

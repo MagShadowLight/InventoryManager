@@ -3,7 +3,7 @@ using Microsoft.VisualBasic.FileIO;
 
 namespace InventBox.Core;
 
-public class CSVDataTransfer : IDataTransfer
+public class CSVDataTransfer : IDataTransfer<string[]>
 {
     public List<string> textList = new List<string>();
     public void Export(string[] text, string path)
@@ -11,10 +11,11 @@ public class CSVDataTransfer : IDataTransfer
         using (var writer = new StreamWriter(path))
         {
             writer.WriteLine(string.Join(",", text));
+
         }
     }
 
-    public void Import(string path)
+    public string[] Import(string path)
     {
         using (TextFieldParser parser = new TextFieldParser(path))
         {
@@ -29,5 +30,6 @@ public class CSVDataTransfer : IDataTransfer
                 }
             }
         }
+        return null;
     }
 }

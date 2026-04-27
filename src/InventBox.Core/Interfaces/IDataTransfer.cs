@@ -1,7 +1,7 @@
 namespace InventBox.Core.Interfaces;
 
-public interface IDataTransfer
+public interface IDataTransfer<T>
 {
-    public void Import(string path);
-    public void Export(string[] text, string path);
+    public T Import(string path);
+    public void Export(T values, string path);
 }

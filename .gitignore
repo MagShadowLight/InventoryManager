@@ -424,3 +424,6 @@ FodyWeavers.xsd
 *.drawio
 *.drawio.bkp
 *.drawio.dtmp
+
+# obsidian
+/Tasks
