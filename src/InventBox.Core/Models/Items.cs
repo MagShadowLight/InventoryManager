@@ -14,4 +14,5 @@ public class Items
     public DateTime CreatedAt { get; set; } = DateTime.Now;
     public DateTime UpdatedAt { get; set; } = DateTime.Now;
     public Conditions Conditions { get; set; }
+    public int CategoryId { get; set; }
 }
