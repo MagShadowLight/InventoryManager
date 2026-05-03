@@ -4,8 +4,11 @@ namespace InventBox.Test.Utils;
 
 public class FileUtils
 {
-    public static void CleanUpFile(string path)
+    public static void CleanUpFile(string[] paths)
     {
-        File.Delete(path);
+        foreach (var path in paths) {
+            if (File.Exists(path))
+                File.Delete(path);
+        }
     }
 }

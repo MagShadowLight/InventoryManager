@@ -8,9 +8,9 @@ namespace InventBox.Desktop
 	{
 		public MainForm()
 		{
-			Title = "My Eto Form";
-			MinimumSize = new Size(200, 200);
-
+			Title = "InventBox";
+			MinimumSize = new Size(1000, 1000);
+			
 			Content = new StackLayout
 			{
 				Padding = 10,

@@ -4,15 +4,15 @@ using InventBox.Core.Interfaces;
 
 namespace InventBox.Core;
 
-public class DataTransfer<T> : IDataTransfer<List<T>>
+public class DataManagement<T> : IDataManagement<List<T>>
 {
     private FileLogger _logger = new FileLogger();
     private string _loggerPath = string.Empty;
-    public DataTransfer(string path)
+    public DataManagement(string path)
     {
         _loggerPath = path;
     }
-    public void Export(List<T> values, string path)
+    public void Save(List<T> values, string path)
     {
         try {
             _logger.Logs("Writing the list of item in csv file.", _loggerPath);
@@ -36,7 +36,7 @@ public class DataTransfer<T> : IDataTransfer<List<T>>
         }
     }
 
-    public List<T> Import(string path)
+    public List<T> Load(string path)
     {
         try {
             _logger.Logs("Attempting to read the data from the csv file.", _loggerPath);

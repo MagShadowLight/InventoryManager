@@ -11,5 +11,4 @@
   <ItemGroup>
     <ProjectReference Include="..\..\InventBox.Core\InventBox.Core.csproj" />
   </ItemGroup>
-
 </Project>
