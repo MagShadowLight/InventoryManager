@@ -13,7 +13,7 @@ public class Items
     public string SerialNumber { get; set; } = string.Empty;
     public string ModelNumber { get; set; } = string.Empty;
     public string Manufacturer { get; set; } = string.Empty;
-    public bool Insured { get => _checked; set; }
+    public bool Insured { get; set; }
     public string Notes { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; } = DateTime.Now;
     public DateTime UpdatedAt { get; set; } = DateTime.Now;
