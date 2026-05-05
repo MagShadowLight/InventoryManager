@@ -28,7 +28,11 @@ namespace InventBox.Desktop
 			clickMe.Executed += (sender, e) => MessageBox.Show(this, "I was clicked!");
 
 			var listItemCommand = new Command {MenuText = "List Items", ToolBarText = "List items" };
-			listItemCommand.Executed += (sender, e) => listItemsForm.Show();
+			listItemCommand.Executed += (sender, e) => {
+				if (listItemsForm.IsDisposed)
+					listItemsForm = new ListItems();
+				listItemsForm.Show();
+			};
 
 			var quitCommand = new Command { MenuText = "Quit", Shortcut = Application.Instance.CommonModifier | Keys.Q };
 			quitCommand.Executed += (sender, e) => Application.Instance.Quit();

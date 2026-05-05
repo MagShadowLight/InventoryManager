@@ -1,26 +1,52 @@
 using Eto.Forms;
 using Eto.Drawing;
-using InventBox.Desktop.Models;
+using InventBox.Desktop.ModelView;
 using System.Collections.Generic;
 using InventBox.Core.Models;
 using InventBox.Core;
+using System.Linq;
+using System;
 
 namespace InventBox.Desktop.Components.ItemsForm
 {
 	public partial class ListItems : Form
 	{
+		
 		private DataManagement<Items> dataManagement = new DataManagement<Items>("InventBox.log");
 		public ListItems()
 		{
-			ModelsList.items = dataManagement.Load("Items.csv");
+			if (ModelsList.items.Count == 0)
+				ModelsList.items = dataManagement.Load("Items.csv");
 			Title = "InventBox";
 			Size = new Size(1000,1000);
-			var createDialog = new CreateItemsDialog();
 
-			var createItemsButton = new Command { MenuText = "Create item" };
-			createItemsButton.Executed += (sender, e) => createDialog.ShowModal();
 			
-			var tableContent = new TableLayout
+			var tableContent = LoadData();
+			var createDialog = new CreateItemsDialog(new ItemModelView(){Id = ModelsList.items.Count + 1});
+			var createItemsButton = CreateItemsButtons(createDialog);
+
+
+
+
+			var content = CreateDynamicLayout(tableContent, createItemsButton);
+			Content = content;
+			createDialog.Closed += (sender, e) =>
+			{
+				tableContent = LoadData();
+				content = CreateDynamicLayout(tableContent, createItemsButton);
+				createDialog = new CreateItemsDialog(new ItemModelView(){Id = ModelsList.items.Count + 1, Conditions = Conditions.New});
+				createItemsButton = CreateItemsButtons(createDialog);
+				Content = content;
+			};
+			Closed += (sender, e) =>
+			{
+				Dispose();
+			};
+		}
+
+		TableLayout CreateItemsTable()
+		{
+			return new TableLayout
 			{
 				Padding = 10,
 				Spacing = new (4,4),
@@ -39,9 +65,12 @@ namespace InventBox.Desktop.Components.ItemsForm
 					"Conditions")
 				}
 			};
+		}
+		void GetItems(TableLayout tableLayout)
+		{
 			foreach (var item in ModelsList.items)
 			{
-				tableContent.Rows.Add(
+				tableLayout.Rows.Add(
 					new TableRow(
 						item.Id.ToString(),
 						item.Name,
@@ -56,10 +85,13 @@ namespace InventBox.Desktop.Components.ItemsForm
 					)
 				);
 			}
-			var content = new DynamicLayout();
-			content.BeginVertical();
-			content.Add(tableContent, true, true);
-			content.AddSeparateRow(4, null, true, false,
+		}
+		DynamicLayout CreateDynamicLayout(TableLayout tableLayout, Command createItemsButton)
+		{
+			DynamicLayout layout = new DynamicLayout();
+			layout.BeginVertical();
+			layout.Add(tableLayout, true, true);
+			layout.AddSeparateRow(4, null, true, false,
 					new [] { 
 					new Button()
 					{
@@ -70,8 +102,26 @@ namespace InventBox.Desktop.Components.ItemsForm
 					null
 				}
 			);
-			content.EndVertical();
-			Content = content;
-		}		
+			layout.EndVertical();
+			return layout;
+		}
+
+		Command CreateItemsButtons(CreateItemsDialog createItemsDialog)
+		{
+			var button = new Command { MenuText = "Create item" };
+			button.Executed += (sender, e) => {
+				createItemsDialog.DataContext = new ItemModelView(){Id = ModelsList.items.Count + 1, Conditions = Conditions.New};
+				createItemsDialog.ShowModal(this);
+				Content = CreateDynamicLayout(LoadData(), button);
+			};
+			return button;
+		}
+
+		TableLayout LoadData()
+		{
+			var table = CreateItemsTable();
+			GetItems(table);
+			return table;
+		}
 	}
 }

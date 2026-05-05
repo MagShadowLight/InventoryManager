@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using InventBox.Core.Models;
 
-namespace InventBox.Desktop.Models;
+namespace InventBox.Desktop.ModelView;
 
 public class ModelsList
 {

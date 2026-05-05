@@ -1,8 +1,12 @@
 using System;
 using Eto.Forms;
 using Eto.Drawing;
-using InventBox.Desktop.Models;
+using InventBox.Desktop.ModelView;
 using InventBox.Core.Models;
+using InventBox.Desktop.EventHandlers;
+using System.Collections.Generic;
+using InventBox.Core.Utils;
+using System.Data;
 
 namespace InventBox.Desktop.Components.ItemsForm
 {
@@ -12,22 +16,22 @@ namespace InventBox.Desktop.Components.ItemsForm
 	}
 	public partial class CreateItemsDialog : Dialog
 	{
-		public CreateItemsDialog()
+		private ItemInputEventHandler _inputEventHandler = new ItemInputEventHandler();
+		public CreateItemsDialog(ItemModelView modelView)
 		{
-			string[] conditionsItems = new []
+			List<Conditions> conditions = EnumUtils<Conditions>.GetEnumList<Conditions>();
+			DataContext = modelView;
+			List<string> conditionsItems = new List<string>();
+			foreach (var condition in conditions)
 			{
-				Conditions.Excellent.ToString(),
-				Conditions.Great.ToString(),
-				Conditions.Good.ToString(),
-				Conditions.Ok.ToString(),
-				Conditions.Acceptable.ToString(),
-				Conditions.Broken.ToString(),
-				Conditions.Excellent.ToString()
-			};
+				conditionsItems.Add(condition.ToString());
+			}
+			Console.WriteLine(string.Join(",", conditionsItems));
 			
+
 			Title = "Create item";
 			Size = new Size(500,500);
-			Items items = new Items();
+
 			var idInput = new TextBox() { Width = 200 };
 			var nameInput = new TextBox() { Width = 200 };
 			var descriptionInput = new TextBox() { Width = 200 };
@@ -35,28 +39,39 @@ namespace InventBox.Desktop.Components.ItemsForm
 			var serialNoInput = new TextBox() { Width = 200 };
 			var modelNoInput = new TextBox() { Width = 200 };
 			var ManufacturerInput = new TextBox() { Width = 200 };
-			var InsuredInput = new CheckBox() {Checked = false};
+			var InsuredInput = new CheckBox()
+			{
+				
+			};
 			var noteInput = new TextBox() { Width = 200 };
 			var conditionsInput = new DropDown() { 
 				DataStore = conditionsItems,
 				Width = 200 
 			};
+			
 
-			idInput.BindDataContext(t => t.Text, (Items item) => item.Id.ToString());
-			nameInput.BindDataContext(t => t.Text, (Items items) => items.Name);
-			descriptionInput.BindDataContext(t => t.Text, (Items items) => items.Description);
-			quantityInput.BindDataContext(t => t.Text, (Items items) => items.Quantity.ToString());
-			serialNoInput.BindDataContext(t => t.Text, (Items items) => items.SerialNumber);
-			modelNoInput.BindDataContext(t => t.Text, (Items items) => items.ModelNumber);
-			ManufacturerInput.BindDataContext(t => t.Text, (Items items) => items.Manufacturer);
-			InsuredInput.CheckedBinding.BindDataContext(Binding.Property((Items items) => items.Insured).ToBool(true, false));
-			noteInput.BindDataContext(t => t.Text, (Items items) => items.Notes);
-			conditionsInput.BindDataContext(dd => dd.SelectedIndex, (Items items) => Convert.ToInt32(items.Conditions));
-			var SubmitButton = new Command();
-			SubmitButton.Executed += (sender, e) =>
-			{
-				
-			};
+			idInput.TextBinding.BindDataContext((ItemModelView item) => item.Id.ToString());
+			nameInput.BindDataContext(t => t.Text, (ItemModelView items) => items.Name);
+			descriptionInput.BindDataContext(t => t.Text, (ItemModelView items) => items.Description);
+			quantityInput.TextBinding.BindDataContext((ItemModelView items) => items.Quantity.ToString());
+			serialNoInput.BindDataContext(t => t.Text, (ItemModelView items) => items.SerialNumber);
+			modelNoInput.BindDataContext(t => t.Text, (ItemModelView items) => items.ModelNumber);
+			ManufacturerInput.BindDataContext(t => t.Text, (ItemModelView items) => items.Manufacturer);
+			InsuredInput.CheckedBinding.BindDataContext(Binding.Property((ItemModelView items) => items.Insured).ToBool(true, false));
+			noteInput.BindDataContext(t => t.Text, (ItemModelView items) => items.Notes);
+			conditionsInput.BindDataContext(dd => dd.SelectedIndex, (ItemModelView items) => Convert.ToInt32(items.Conditions));
+            // _inputEventHandler.ChangeIdValue(idInput, (ItemModelView)modelView);
+            // _inputEventHandler.ChangeNameValue(nameInput, (ItemModelView)modelView);
+            // _inputEventHandler.ChangeDescriptionValue(descriptionInput, (ItemModelView)modelView);
+            // _inputEventHandler.ChangeQuantityValue(quantityInput, (ItemModelView)modelView);
+            // _inputEventHandler.ChangeSNValue(serialNoInput, (ItemModelView)modelView);
+            // _inputEventHandler.ChangeMNValue(modelNoInput, (ItemModelView)modelView);
+            // _inputEventHandler.ChangeManufacturerValue(ManufacturerInput, (ItemModelView)modelView);
+            // _inputEventHandler.ChangeInsuredValue(InsuredInput, (ItemModelView)modelView);
+            // _inputEventHandler.ChangeNotesValue(noteInput, (ItemModelView)modelView);
+            // _inputEventHandler.ChangeConditionsValue(conditionsInput, (ItemModelView)modelView);
+			var SubmitButton = CreateSubmitButton(modelView);
+			
 
 
 			var form = new DynamicLayout
@@ -105,14 +120,61 @@ namespace InventBox.Desktop.Components.ItemsForm
 				"Condition",
 				conditionsInput
 			);
-			form.AddRow(
-				new Button() {Command = SubmitButton}
+			form.Add(
+				new Button() {Command = SubmitButton, Size = new Size(100,50), Text = "Submit"}
 			);
 			form.EndVertical();
-
-
-
+			// WriteLog(nameInput);
 			Content = form;
+
+		}
+
+        private Items CreateItem(ItemModelView modelView)
+        {
+			var model = (ItemModelView)DataContext;
+			var item = (Items)model;
+			return item;
+        }
+
+        public void WriteLog(TextBox textBox)
+		{
+			textBox.TextChanging += (sender, e) => Console.WriteLine($"Id: {textBox.Text}");
+			textBox.TextChanged += (sender, e) => Console.WriteLine($"Id: {textBox.Text}");
+		}
+		private void WriteItem(Items items)
+		{
+			Console.WriteLine(items.Id.ToString());
+			Console.WriteLine(items.Name);
+			Console.WriteLine(items.Description);
+			Console.WriteLine(items.Quantity.ToString());
+			Console.WriteLine(items.SerialNumber);
+			Console.WriteLine(items.ModelNumber);
+			Console.WriteLine(items.Manufacturer);
+			Console.WriteLine(items.Insured.ToString());
+			Console.WriteLine(items.Notes);
+			Console.WriteLine(items.CreatedAt);
+			Console.WriteLine(items.UpdatedAt);
+			Console.WriteLine(items.Conditions);
+		}
+		private Command CreateSubmitButton(ItemModelView model)
+		{
+			var button = new Command();
+			button.Executed += (sender, e) =>
+			{
+				
+				Items item = CreateItem(model);
+				// WriteItem(item);
+				ModelsList.items.Add(item);
+				for (int i = 0; i < ModelsList.items.Count; i++)
+				{
+					var x = ModelsList.items[i];
+					var hash = System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(x);
+					Console.WriteLine($"  [{i}] type={x.GetType().Name} hash={hash} name='{x.Name}'");
+				}
+				if (this != null)
+					this.Close();
+			};
+			return button;
 		}
 	}
 }
