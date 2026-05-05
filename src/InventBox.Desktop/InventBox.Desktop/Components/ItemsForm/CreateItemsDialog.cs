@@ -26,17 +26,24 @@ namespace InventBox.Desktop.Components.ItemsForm
 			_logger = logger;
 			List<Conditions> conditions = EnumUtils<Conditions>.GetEnumList<Conditions>();
 			DataContext = modelView;
-			List<string> conditionsItems = new List<string>();
-			foreach (var condition in conditions)
-			{
-				conditionsItems.Add(condition.ToString());
-			}
-			Console.WriteLine(string.Join(",", conditionsItems));
 			
 
 			Title = "Create item";
-			Size = new Size(500,500);
+			Size = new Size(500,350);
 
+			
+			
+
+
+			var form = CreateForm(modelView);
+			// WriteLog(nameInput);
+			Content = form;
+
+		}
+
+		DynamicLayout CreateForm(ItemModelView modelView)
+		{
+			// Create Inputs
 			var idInput = new TextBox() { Width = 200 };
 			var nameInput = new TextBox() { Width = 200 };
 			var descriptionInput = new TextBox() { Width = 200 };
@@ -44,17 +51,13 @@ namespace InventBox.Desktop.Components.ItemsForm
 			var serialNoInput = new TextBox() { Width = 200 };
 			var modelNoInput = new TextBox() { Width = 200 };
 			var ManufacturerInput = new TextBox() { Width = 200 };
-			var InsuredInput = new CheckBox()
-			{
-				
-			};
+			var InsuredInput = new CheckBox();
 			var noteInput = new TextBox() { Width = 200 };
-			var conditionsInput = new DropDown() { 
-				DataStore = conditionsItems,
+			var conditionsInput = new EnumDropDown<Conditions>() { 
 				Width = 200 
 			};
 			
-
+			// Bind those input to data
 			idInput.TextBinding.BindDataContext((ItemModelView item) => item.Id.ToString());
 			nameInput.BindDataContext(t => t.Text, (ItemModelView items) => items.Name);
 			descriptionInput.BindDataContext(t => t.Text, (ItemModelView items) => items.Description);
@@ -64,21 +67,10 @@ namespace InventBox.Desktop.Components.ItemsForm
 			ManufacturerInput.BindDataContext(t => t.Text, (ItemModelView items) => items.Manufacturer);
 			InsuredInput.CheckedBinding.BindDataContext(Binding.Property((ItemModelView items) => items.Insured).ToBool(true, false));
 			noteInput.BindDataContext(t => t.Text, (ItemModelView items) => items.Notes);
-			conditionsInput.BindDataContext(dd => dd.SelectedIndex, (ItemModelView items) => Convert.ToInt32(items.Conditions));
-            // _inputEventHandler.ChangeIdValue(idInput, (ItemModelView)modelView);
-            // _inputEventHandler.ChangeNameValue(nameInput, (ItemModelView)modelView);
-            // _inputEventHandler.ChangeDescriptionValue(descriptionInput, (ItemModelView)modelView);
-            // _inputEventHandler.ChangeQuantityValue(quantityInput, (ItemModelView)modelView);
-            // _inputEventHandler.ChangeSNValue(serialNoInput, (ItemModelView)modelView);
-            // _inputEventHandler.ChangeMNValue(modelNoInput, (ItemModelView)modelView);
-            // _inputEventHandler.ChangeManufacturerValue(ManufacturerInput, (ItemModelView)modelView);
-            // _inputEventHandler.ChangeInsuredValue(InsuredInput, (ItemModelView)modelView);
-            // _inputEventHandler.ChangeNotesValue(noteInput, (ItemModelView)modelView);
-            // _inputEventHandler.ChangeConditionsValue(conditionsInput, (ItemModelView)modelView);
+			conditionsInput.SelectedValueBinding.BindDataContext(Binding.Property((ItemModelView items) => items.Conditions));
 			var SubmitButton = CreateSubmitButton(modelView);
-			
 
-
+			// Create form
 			var form = new DynamicLayout
 			{
 				Padding = 10,
@@ -125,13 +117,15 @@ namespace InventBox.Desktop.Components.ItemsForm
 				"Condition",
 				conditionsInput
 			);
-			form.Add(
-				new Button() {Command = SubmitButton, Size = new Size(100,50), Text = "Submit"}
-			);
 			form.EndVertical();
-			// WriteLog(nameInput);
-			Content = form;
-
+			form.BeginHorizontal();
+			form.AddSeparateRow(
+				null,
+				new Button() {Command = SubmitButton, Width = 100, Height = 10, Text = "Submit"},
+				null
+			);
+			form.EndHorizontal();
+			return form;
 		}
 
         private Items CreateItem(ItemModelView modelView)
@@ -163,23 +157,17 @@ namespace InventBox.Desktop.Components.ItemsForm
 		}
 		private Command CreateSubmitButton(ItemModelView model)
 		{
-			var button = new Command();
-			button.Executed += (sender, e) =>
+			var createCommand = new Command();
+			createCommand.Executed += (sender, e) =>
 			{
 				
 				Items item = CreateItem(model);
 				// WriteItem(item);
 				ModelsList.items.Add(item);
-				for (int i = 0; i < ModelsList.items.Count; i++)
-				{
-					var x = ModelsList.items[i];
-					var hash = System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(x);
-					Console.WriteLine($"  [{i}] type={x.GetType().Name} hash={hash} name='{x.Name}'");
-				}
 				if (this != null)
 					this.Close();
 			};
-			return button;
+			return createCommand;
 		}
 	}
 }

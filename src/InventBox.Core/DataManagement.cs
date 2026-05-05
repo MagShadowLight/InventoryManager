@@ -38,9 +38,9 @@ public class DataManagement<T> : IDataManagement<List<T>>
 
     public List<T> Load(string path)
     {
+        List<T> values = new List<T>();
         try {
             _logger.Logs("Attempting to read the data from the csv file.", _loggerPath);
-            List<T> values = new List<T>();
             using (var reader = new StreamReader(path))
             using (var csvParser = new CsvReader(reader, CultureInfo.InvariantCulture))
             {
@@ -54,7 +54,7 @@ public class DataManagement<T> : IDataManagement<List<T>>
         } catch (Exception ex)
         {
             _logger.Error(ex.Message, _loggerPath);
-            return null;
+            return values;
         }
     }
 }

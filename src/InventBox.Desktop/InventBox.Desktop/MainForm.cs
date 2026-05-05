@@ -9,7 +9,7 @@ namespace InventBox.Desktop
 {
 	public partial class MainForm : Form
 	{
-		private static string _path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".tmp", "InventBox", $"{DateTime.Now.ToShortDateString()}-InventBox.log");
+		private static string _path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".tmp", "InventBox", $"{DateTime.Now.Month}-{DateTime.Now.Day}-{DateTime.Now.Year}_{DateTime.Now.Hour}:{DateTime.Now.Minute}-InventBox.log");
 		private static FileLogger _logger = new FileLogger();
 		
 		public MainForm()

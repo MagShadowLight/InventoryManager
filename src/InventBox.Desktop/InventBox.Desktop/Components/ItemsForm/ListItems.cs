@@ -13,24 +13,29 @@ namespace InventBox.Desktop.Components.ItemsForm
 	{
 		private static string _path;
 		private static FileLogger _logger;
+		private DataManagement<Items> _dataManagement;
 		public ListItems(string path, FileLogger logger)
 		{
 			_path = path;
 			_logger = logger;
+			_dataManagement = new DataManagement<Items>(_path);
 			Title = "InventBox";
 			Size = new Size(1000,1000);
 
 			OpenFileDialog loadDialog = null;
-			var loadCommand = LoadCommand(loadDialog);
 			var tableContent = LoadData();
 			var createDialog = new CreateItemsDialog(new ItemModelView(){Id = ModelsList.items.Count + 1}, _path, _logger);
+			var loadCommand = LoadCommand(loadDialog, tableContent);
 			var createItemsButton = CreateItemsButtons(createDialog, loadCommand);
-
-
 
 			var content = CreateDynamicLayout(tableContent, createItemsButton, loadCommand);
 
 			Content = content;
+			loadCommand.Executed += delegate
+			{
+				if (ModelsList.items.Count >= 0)
+					ReloadData(tableContent, content, createDialog, createItemsButton, loadCommand);
+			};
 			createDialog.Closed += (sender, e) =>
 			{
 				ReloadData(tableContent, content, createDialog, createItemsButton, loadCommand);
@@ -40,7 +45,6 @@ namespace InventBox.Desktop.Components.ItemsForm
 				Dispose();
 			};
 		}
-		private DataManagement<Items> dataManagement = new DataManagement<Items>(_path);
 
         private void ReloadData(TableLayout tableContent, DynamicLayout content, CreateItemsDialog createDialog, Command createItemsButton, Command loadCommand)
         {
@@ -141,6 +145,7 @@ namespace InventBox.Desktop.Components.ItemsForm
 		Command SaveCommand()
 		{
 			var saveCommand = new Command();
+			Uri path = new Uri(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile));		
 			saveCommand.Executed += delegate
 			{
 				var saveDialog = new SaveFileDialog
@@ -148,17 +153,21 @@ namespace InventBox.Desktop.Components.ItemsForm
 					Filters =
 					{
 						new FileFilter("CSV FIle", ".csv")
-					}
+					},
+					Directory = path
 				};
-				dataManagement.Save(ModelsList.items, saveDialog.FileName);
+				saveDialog.ShowDialog(this);
+				if (saveDialog.FileName != string.Empty)
+					_dataManagement.Save(ModelsList.items, saveDialog.FileName);
 				saveDialog.Dispose();
 			};
 			return saveCommand;
 		}
 
-		Command LoadCommand(OpenFileDialog loadDialog)
+		Command LoadCommand(OpenFileDialog loadDialog, TableLayout tableLayout)
 		{
 			var loadCommand = new Command();
+			Uri path = new Uri(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile));		
 			loadCommand.Executed += delegate
 			{
 				loadDialog = new OpenFileDialog
@@ -166,10 +175,12 @@ namespace InventBox.Desktop.Components.ItemsForm
 					Filters =
 					{
 						new FileFilter("CSV File", ".csv")		
-					}
+					},
+					Directory = path
 				};
 				loadDialog.ShowDialog(this);
-				ModelsList.items = dataManagement.Load(loadDialog.FileName);
+				if (loadDialog.FileName != string.Empty)
+					ModelsList.items = _dataManagement.Load(loadDialog.FileName);
 				loadDialog.Dispose();
 			};
 			return loadCommand;
