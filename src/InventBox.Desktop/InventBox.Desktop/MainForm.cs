@@ -2,14 +2,19 @@ using System;
 using Eto.Forms;
 using Eto.Drawing;
 using InventBox.Desktop.Components.ItemsForm;
+using InventBox.Core;
+using System.IO;
 
 namespace InventBox.Desktop
 {
 	public partial class MainForm : Form
 	{
+		private static string _path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".tmp", "InventBox", $"{DateTime.Now.ToShortDateString()}-InventBox.log");
+		private static FileLogger _logger = new FileLogger();
+		
 		public MainForm()
 		{
-			ListItems listItemsForm = new ListItems();
+			ListItems listItemsForm = new ListItems(_path, _logger);
 			Title = "InventBox";
 			MinimumSize = new Size(1000, 1000);
 			
@@ -30,7 +35,7 @@ namespace InventBox.Desktop
 			var listItemCommand = new Command {MenuText = "List Items", ToolBarText = "List items" };
 			listItemCommand.Executed += (sender, e) => {
 				if (listItemsForm.IsDisposed)
-					listItemsForm = new ListItems();
+					listItemsForm = new ListItems(_path, _logger);
 				listItemsForm.Show();
 			};
 
@@ -62,5 +67,6 @@ namespace InventBox.Desktop
 			// create toolbar			
 			ToolBar = new ToolBar { Items = { clickMe, listItemCommand } };
 		}
-	}
+
+    }
 }

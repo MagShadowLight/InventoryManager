@@ -1,5 +1,7 @@
 ﻿using System;
+using System.IO;
 using Eto.Forms;
+using InventBox.Core;
 
 namespace InventBox.Desktop.Mac
 {

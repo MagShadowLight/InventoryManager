@@ -11,40 +11,47 @@ namespace InventBox.Desktop.Components.ItemsForm
 {
 	public partial class ListItems : Form
 	{
-		
-		private DataManagement<Items> dataManagement = new DataManagement<Items>("InventBox.log");
-		public ListItems()
+		private static string _path;
+		private static FileLogger _logger;
+		public ListItems(string path, FileLogger logger)
 		{
-			if (ModelsList.items.Count == 0)
-				ModelsList.items = dataManagement.Load("Items.csv");
+			_path = path;
+			_logger = logger;
 			Title = "InventBox";
 			Size = new Size(1000,1000);
 
-			
+			OpenFileDialog loadDialog = null;
+			var loadCommand = LoadCommand(loadDialog);
 			var tableContent = LoadData();
-			var createDialog = new CreateItemsDialog(new ItemModelView(){Id = ModelsList.items.Count + 1});
-			var createItemsButton = CreateItemsButtons(createDialog);
+			var createDialog = new CreateItemsDialog(new ItemModelView(){Id = ModelsList.items.Count + 1}, _path, _logger);
+			var createItemsButton = CreateItemsButtons(createDialog, loadCommand);
 
 
 
+			var content = CreateDynamicLayout(tableContent, createItemsButton, loadCommand);
 
-			var content = CreateDynamicLayout(tableContent, createItemsButton);
 			Content = content;
 			createDialog.Closed += (sender, e) =>
 			{
-				tableContent = LoadData();
-				content = CreateDynamicLayout(tableContent, createItemsButton);
-				createDialog = new CreateItemsDialog(new ItemModelView(){Id = ModelsList.items.Count + 1, Conditions = Conditions.New});
-				createItemsButton = CreateItemsButtons(createDialog);
-				Content = content;
+				ReloadData(tableContent, content, createDialog, createItemsButton, loadCommand);
 			};
 			Closed += (sender, e) =>
 			{
 				Dispose();
 			};
 		}
+		private DataManagement<Items> dataManagement = new DataManagement<Items>(_path);
 
-		TableLayout CreateItemsTable()
+        private void ReloadData(TableLayout tableContent, DynamicLayout content, CreateItemsDialog createDialog, Command createItemsButton, Command loadCommand)
+        {
+			tableContent = LoadData();
+			content = CreateDynamicLayout(tableContent, createItemsButton, loadCommand);
+			createDialog = new CreateItemsDialog(new ItemModelView(){Id = ModelsList.items.Count + 1, Conditions = Conditions.New}, _path, _logger);
+			createItemsButton = CreateItemsButtons(createDialog, loadCommand);
+			Content = content;
+        }
+
+        TableLayout CreateItemsTable()
 		{
 			return new TableLayout
 			{
@@ -86,7 +93,7 @@ namespace InventBox.Desktop.Components.ItemsForm
 				);
 			}
 		}
-		DynamicLayout CreateDynamicLayout(TableLayout tableLayout, Command createItemsButton)
+		DynamicLayout CreateDynamicLayout(TableLayout tableLayout, Command createItemsButton, Command loadCommand)
 		{
 			DynamicLayout layout = new DynamicLayout();
 			layout.BeginVertical();
@@ -99,6 +106,8 @@ namespace InventBox.Desktop.Components.ItemsForm
 						Text = "Create new item",
 						Width = 50
 					},
+					SaveButton(),
+					LoadButton(loadCommand),
 					null
 				}
 			);
@@ -106,15 +115,64 @@ namespace InventBox.Desktop.Components.ItemsForm
 			return layout;
 		}
 
-		Command CreateItemsButtons(CreateItemsDialog createItemsDialog)
+		Command CreateItemsButtons(CreateItemsDialog createItemsDialog, Command loadCommand)
 		{
 			var button = new Command { MenuText = "Create item" };
 			button.Executed += (sender, e) => {
 				createItemsDialog.DataContext = new ItemModelView(){Id = ModelsList.items.Count + 1, Conditions = Conditions.New};
 				createItemsDialog.ShowModal(this);
-				Content = CreateDynamicLayout(LoadData(), button);
+				Content = CreateDynamicLayout(LoadData(), button, loadCommand);
 			};
 			return button;
+		}
+
+		Control LoadButton(Command loadCommand)
+		{
+			var button = new Button{ Text = "Load Data", Width = 50, Command = loadCommand };
+			return button;
+		}
+
+		Control SaveButton()
+		{
+			var button = new Button{ Text = "Save Data", Width = 50, Command = SaveCommand() };
+			return button;
+		}
+
+		Command SaveCommand()
+		{
+			var saveCommand = new Command();
+			saveCommand.Executed += delegate
+			{
+				var saveDialog = new SaveFileDialog
+				{
+					Filters =
+					{
+						new FileFilter("CSV FIle", ".csv")
+					}
+				};
+				dataManagement.Save(ModelsList.items, saveDialog.FileName);
+				saveDialog.Dispose();
+			};
+			return saveCommand;
+		}
+
+		Command LoadCommand(OpenFileDialog loadDialog)
+		{
+			var loadCommand = new Command();
+			loadCommand.Executed += delegate
+			{
+				loadDialog = new OpenFileDialog
+				{
+					Filters =
+					{
+						new FileFilter("CSV File", ".csv")		
+					}
+				};
+				loadDialog.ShowDialog(this);
+				ModelsList.items = dataManagement.Load(loadDialog.FileName);
+				loadDialog.Dispose();
+			};
+			return loadCommand;
 		}
 
 		TableLayout LoadData()

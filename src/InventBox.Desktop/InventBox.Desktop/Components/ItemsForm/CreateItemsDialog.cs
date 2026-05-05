@@ -7,6 +7,7 @@ using InventBox.Desktop.EventHandlers;
 using System.Collections.Generic;
 using InventBox.Core.Utils;
 using System.Data;
+using InventBox.Core;
 
 namespace InventBox.Desktop.Components.ItemsForm
 {
@@ -16,9 +17,13 @@ namespace InventBox.Desktop.Components.ItemsForm
 	}
 	public partial class CreateItemsDialog : Dialog
 	{
+		private static FileLogger _logger;
+		private static string _path;
 		private ItemInputEventHandler _inputEventHandler = new ItemInputEventHandler();
-		public CreateItemsDialog(ItemModelView modelView)
+		public CreateItemsDialog(ItemModelView modelView, string path, FileLogger logger)
 		{
+			_path = path;
+			_logger = logger;
 			List<Conditions> conditions = EnumUtils<Conditions>.GetEnumList<Conditions>();
 			DataContext = modelView;
 			List<string> conditionsItems = new List<string>();
@@ -35,7 +40,7 @@ namespace InventBox.Desktop.Components.ItemsForm
 			var idInput = new TextBox() { Width = 200 };
 			var nameInput = new TextBox() { Width = 200 };
 			var descriptionInput = new TextBox() { Width = 200 };
-			var quantityInput = new TextBox() { Width = 200 };
+			var quantityInput = new NumericStepper() { Width = 200 };
 			var serialNoInput = new TextBox() { Width = 200 };
 			var modelNoInput = new TextBox() { Width = 200 };
 			var ManufacturerInput = new TextBox() { Width = 200 };
@@ -53,7 +58,7 @@ namespace InventBox.Desktop.Components.ItemsForm
 			idInput.TextBinding.BindDataContext((ItemModelView item) => item.Id.ToString());
 			nameInput.BindDataContext(t => t.Text, (ItemModelView items) => items.Name);
 			descriptionInput.BindDataContext(t => t.Text, (ItemModelView items) => items.Description);
-			quantityInput.TextBinding.BindDataContext((ItemModelView items) => items.Quantity.ToString());
+			quantityInput.ValueBinding.BindDataContext((ItemModelView items) => items.Quantity);
 			serialNoInput.BindDataContext(t => t.Text, (ItemModelView items) => items.SerialNumber);
 			modelNoInput.BindDataContext(t => t.Text, (ItemModelView items) => items.ModelNumber);
 			ManufacturerInput.BindDataContext(t => t.Text, (ItemModelView items) => items.Manufacturer);
