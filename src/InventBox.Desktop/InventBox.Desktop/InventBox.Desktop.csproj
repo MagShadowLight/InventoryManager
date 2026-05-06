@@ -11,4 +11,8 @@
   <ItemGroup>
     <ProjectReference Include="..\..\InventBox.Core\InventBox.Core.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Interfaces/" />
+  </ItemGroup>
 </Project>

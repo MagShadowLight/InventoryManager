@@ -1,28 +1,27 @@
 using Eto.Forms;
 using Eto.Drawing;
 using InventBox.Desktop.ModelView;
-using System.Collections.Generic;
 using InventBox.Core.Models;
 using InventBox.Core;
 using System.Linq;
 using System;
+using InventBox.Desktop.Interfaces;
 
 namespace InventBox.Desktop.Components.ItemsForm
 {
-	public partial class ListItems : Form
+	public partial class ListItems : Panel, IEventHandler
 	{
 		private static string _path;
 		private static FileLogger _logger;
 		private DataManagement<Items> _dataManagement;
 		private GridView _grid;
-		public ListItems(string path, FileLogger logger)
+		public ListItems(string path, FileLogger logger, Size size)
 		{
 			_path = path;
 			_logger = logger;
 			_dataManagement = new DataManagement<Items>(_path);
 			_grid = CreateGrid();
-			Title = "InventBox";
-			Size = new Size(1000,1000);
+			Size = size;
 
 			_grid = CreateGrid();
 			RefreashData();
@@ -30,10 +29,6 @@ namespace InventBox.Desktop.Components.ItemsForm
 			var content = CreateDynamicLayout();
 
 			Content = content;
-			Closed += (sender, e) =>
-			{
-				Dispose();
-			};
 		}
 
 		void RefreashData()
@@ -100,10 +95,10 @@ namespace InventBox.Desktop.Components.ItemsForm
 			return layout;
 		}
 
-		private void OnCreate()
+		public void OnCreate()
 		{
 			ItemModelView modelView = new ItemModelView(){Id = ModelsList.items.Count + 1, Conditions = Conditions.New};
-			var createItemDialog = new CreateItemsDialog(modelView, Mode.Create, item => ModelsList.items.Add(item), _path, _logger);
+			var createItemDialog = new ItemsDialog(modelView, Mode.Create, item => ModelsList.items.Add(item), _path, _logger);
 			createItemDialog.Closed += (sender, e) => RefreashData();
 			createItemDialog.ShowModal();
 		}
@@ -115,7 +110,7 @@ namespace InventBox.Desktop.Components.ItemsForm
 			return new Button { Text = text, Width = width, Command = command};
 		}
 
-		private void OnSave()
+		public void OnSave()
 		{
 			Uri homeDir = new Uri(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile));		
 			var saveDialog = new SaveFileDialog
@@ -132,7 +127,7 @@ namespace InventBox.Desktop.Components.ItemsForm
 			saveDialog.Dispose();
 		}
 
-		private void OnLoad()
+		public void OnLoad()
 		{
 			Uri path = new Uri(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile));		
 			var loadDialog = new OpenFileDialog
@@ -144,26 +139,26 @@ namespace InventBox.Desktop.Components.ItemsForm
 				Directory = path
 			};
 			loadDialog.ShowDialog(this);
-			if (loadDialog.CheckFileExists) {
+			if (loadDialog.FileName != null) {
 				ModelsList.items = _dataManagement.Load(loadDialog.FileName);
 				RefreashData();
 			}
 			loadDialog.Dispose();
 		}
 
-		private void OnEdit()
+		public void OnEdit()
 		{
 			Items item = (Items)_grid.SelectedItem;
 			var index = ModelsList.items.IndexOf(item);
 			if (index < 0 )
 				return;
 			ItemModelView modelView = ModelViewCopy(item);
-			var editItemDialog = new CreateItemsDialog(modelView, Mode.Edit, item => ModelsList.items[index] = item, _path, _logger);
+			var editItemDialog = new ItemsDialog(modelView, Mode.Edit, item => ModelsList.items[index] = item, _path, _logger);
 			editItemDialog.Closed += (sender, e) => RefreashData();
 			editItemDialog.ShowModal();
 		}
 
-		private void OnDelete()
+		public void OnDelete()
 		{
 			Items item = (Items)_grid.SelectedItem;
 			var index = ModelsList.items.IndexOf(item);

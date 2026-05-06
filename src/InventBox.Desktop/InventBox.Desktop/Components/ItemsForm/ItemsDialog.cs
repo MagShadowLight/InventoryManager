@@ -16,38 +16,28 @@ namespace InventBox.Desktop.Components.ItemsForm
 		Create, 
 		Edit
 	}
-	public partial class CreateItemsDialog : Dialog
+	public partial class ItemsDialog : Dialog
 	{
 		private static FileLogger _logger;
 		private static string _path;
 		private readonly Mode _mode;
 		private readonly Action<Items> _onSubmit;
-		public CreateItemsDialog(ItemModelView modelView, Mode mode, Action<Items> onSubmitEvent, string path, FileLogger logger)
+		public ItemsDialog(ItemModelView modelView, Mode mode, Action<Items> onSubmitEvent, string path, FileLogger logger)
 		{
 			_path = path;
 			_logger = logger;
 			_mode = mode;
 			_onSubmit = onSubmitEvent;
 			DataContext = modelView;
-			
-
 			Title = "Create item";
 			Size = new Size(500,350);
-
-			
-			
-
-
 			var form = CreateForm(modelView);
-			// WriteLog(nameInput);
 			Content = form;
-
 		}
 
 		DynamicLayout CreateForm(ItemModelView modelView)
 		{
 			// Create Inputs
-			var idInput = new TextBox() { Width = 200 };
 			var nameInput = new TextBox() { Width = 200 };
 			var descriptionInput = new TextBox() { Width = 200 };
 			var quantityInput = new NumericStepper() { Width = 200 };
@@ -58,10 +48,8 @@ namespace InventBox.Desktop.Components.ItemsForm
 			var noteInput = new TextBox() { Width = 200 };
 			var conditionsInput = new EnumDropDown<Conditions>() { 
 				Width = 200 
-			};
-			
+			};			
 			// Bind those input to data
-			idInput.TextBinding.BindDataContext((ItemModelView item) => item.Id.ToString());
 			nameInput.BindDataContext(t => t.Text, (ItemModelView items) => items.Name);
 			descriptionInput.BindDataContext(t => t.Text, (ItemModelView items) => items.Description);
 			quantityInput.ValueBinding.BindDataContext((ItemModelView items) => items.Quantity);
@@ -80,10 +68,6 @@ namespace InventBox.Desktop.Components.ItemsForm
 
 			};
 			form.BeginVertical();
-			form.AddRow(
-				"Id",
-				idInput
-			);
 			form.AddRow(
 				"Name",
 				nameInput
@@ -130,27 +114,6 @@ namespace InventBox.Desktop.Components.ItemsForm
 			form.EndHorizontal();
 			return form;
 		}
-
-        public void WriteLog(TextBox textBox)
-		{
-			textBox.TextChanging += (sender, e) => Console.WriteLine($"Id: {textBox.Text}");
-			textBox.TextChanged += (sender, e) => Console.WriteLine($"Id: {textBox.Text}");
-		}
-		private void WriteItem(Items items)
-		{
-			Console.WriteLine(items.Id.ToString());
-			Console.WriteLine(items.Name);
-			Console.WriteLine(items.Description);
-			Console.WriteLine(items.Quantity.ToString());
-			Console.WriteLine(items.SerialNumber);
-			Console.WriteLine(items.ModelNumber);
-			Console.WriteLine(items.Manufacturer);
-			Console.WriteLine(items.Insured.ToString());
-			Console.WriteLine(items.Notes);
-			Console.WriteLine(items.CreatedAt);
-			Console.WriteLine(items.UpdatedAt);
-			Console.WriteLine(items.Conditions);
-		}
 		private Command CreateSubmitButton()
 		{
 			var createCommand = new Command();
@@ -159,7 +122,6 @@ namespace InventBox.Desktop.Components.ItemsForm
 				var model = (ItemModelView)DataContext;
 				model.UpdatedAt = DateTime.Now;
 				_onSubmit?.Invoke(model);
-				// WriteItem(item);
 				Close();
 			};
 			return createCommand;
