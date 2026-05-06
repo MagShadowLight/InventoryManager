@@ -9,7 +9,7 @@ using InventBox.Desktop.Interfaces;
 
 namespace InventBox.Desktop.Components.ItemsForm
 {
-	public partial class ListItems : Panel, IEventHandler
+	public partial class ListItems : Panel, IEventHandler, IControls<Items>
 	{
 		private static string _path;
 		private static FileLogger _logger;
@@ -58,7 +58,7 @@ namespace InventBox.Desktop.Components.ItemsForm
 			};
         }
 
-		private GridColumn GetColumn(string header, Func<Items, string> data) {
+		public GridColumn GetColumn(string header, Func<Items, string> data) {
 			return new GridColumn
 			{
 				HeaderText = header,
@@ -67,7 +67,7 @@ namespace InventBox.Desktop.Components.ItemsForm
 			};
 		}
 
-        private TextBoxCell GetData(Func<Items, string> data)
+        public TextBoxCell GetData(Func<Items, string> data)
         {
 			return new TextBoxCell
 			{
@@ -83,11 +83,11 @@ namespace InventBox.Desktop.Components.ItemsForm
 			layout.Add(_grid, true, true);
 			layout.AddSeparateRow(4, null, true, false,
 				new [] { 
-					AddButton("Create new item", 50, OnCreate),
-					AddButton("Save Data", 50, OnSave),
-					AddButton("Load Data", 50, OnLoad),
-					AddButton("Edit selected item", 50, OnEdit),
-					AddButton("Delete", 50, OnDelete),
+					AddButton("Create new item", 50, 50, OnCreate),
+					AddButton("Save Data", 50, 50, OnSave),
+					AddButton("Load Data", 50, 50, OnLoad),
+					AddButton("Edit selected item", 50, 50, OnEdit),
+					AddButton("Delete", 50, 50, OnDelete),
 					null
 				}
 			);
@@ -103,11 +103,11 @@ namespace InventBox.Desktop.Components.ItemsForm
 			createItemDialog.ShowModal();
 		}
 
-		private Button AddButton(string text, int width, Action eventHandler)
+		public Button AddButton(string text, int width, int height, Action eventHandler)
 		{
 			var command = new Command();
 			command.Executed += (sender, eventArgs) => eventHandler();
-			return new Button { Text = text, Width = width, Command = command};
+			return new Button { Text = text, Width = width, Height = height, Command = command};
 		}
 
 		public void OnSave()
