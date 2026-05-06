@@ -92,6 +92,7 @@ namespace InventBox.Desktop.Components.ItemsForm
 					AddButton("Save Data", 50, OnSave),
 					AddButton("Load Data", 50, OnLoad),
 					AddButton("Edit selected item", 50, OnEdit),
+					AddButton("Delete", 50, OnDelete),
 					null
 				}
 			);
@@ -160,6 +161,19 @@ namespace InventBox.Desktop.Components.ItemsForm
 			var editItemDialog = new CreateItemsDialog(modelView, Mode.Edit, item => ModelsList.items[index] = item, _path, _logger);
 			editItemDialog.Closed += (sender, e) => RefreashData();
 			editItemDialog.ShowModal();
+		}
+
+		private void OnDelete()
+		{
+			Items item = (Items)_grid.SelectedItem;
+			var index = ModelsList.items.IndexOf(item);
+			if (index < 0)
+				return;
+			var deleteDialog = MessageBox.Show("Are you sure to delete the selected items", MessageBoxButtons.YesNo, MessageBoxType.Question, MessageBoxDefaultButton.Yes);
+			if (deleteDialog != DialogResult.Yes)
+				return;
+			ModelsList.items.Remove(item);
+			RefreashData();
 		}
 
 		private ItemModelView ModelViewCopy(Items item) {
