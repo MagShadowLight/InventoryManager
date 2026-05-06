@@ -14,104 +14,83 @@ namespace InventBox.Desktop.Components.ItemsForm
 		private static string _path;
 		private static FileLogger _logger;
 		private DataManagement<Items> _dataManagement;
+		private GridView _grid;
 		public ListItems(string path, FileLogger logger)
 		{
 			_path = path;
 			_logger = logger;
 			_dataManagement = new DataManagement<Items>(_path);
+			_grid = CreateGrid();
 			Title = "InventBox";
 			Size = new Size(1000,1000);
 
-			OpenFileDialog loadDialog = null;
-			var tableContent = LoadData();
-			var createDialog = new CreateItemsDialog(new ItemModelView(){Id = ModelsList.items.Count + 1}, _path, _logger);
-			var loadCommand = LoadCommand(loadDialog, tableContent);
-			var createItemsButton = CreateItemsButtons(createDialog, loadCommand);
+			_grid = CreateGrid();
+			RefreashData();
 
-			var content = CreateDynamicLayout(tableContent, createItemsButton, loadCommand);
+			var content = CreateDynamicLayout();
 
 			Content = content;
-			loadCommand.Executed += delegate
-			{
-				if (ModelsList.items.Count >= 0)
-					ReloadData(tableContent, content, createDialog, createItemsButton, loadCommand);
-			};
-			createDialog.Closed += (sender, e) =>
-			{
-				ReloadData(tableContent, content, createDialog, createItemsButton, loadCommand);
-			};
 			Closed += (sender, e) =>
 			{
 				Dispose();
 			};
 		}
 
-        private void ReloadData(TableLayout tableContent, DynamicLayout content, CreateItemsDialog createDialog, Command createItemsButton, Command loadCommand)
+		void RefreashData()
+		{
+			_grid.DataStore = ModelsList.items.ToArray<Items>();
+		}
+
+        private GridView CreateGrid()
         {
-			tableContent = LoadData();
-			content = CreateDynamicLayout(tableContent, createItemsButton, loadCommand);
-			createDialog = new CreateItemsDialog(new ItemModelView(){Id = ModelsList.items.Count + 1, Conditions = Conditions.New}, _path, _logger);
-			createItemsButton = CreateItemsButtons(createDialog, loadCommand);
-			Content = content;
+			return new GridView()
+			{
+				GridLines = GridLines.Both,
+				AllowMultipleSelection = false,
+				Columns =
+				{
+					GetColumn("Id", i => i.Id.ToString()),
+					GetColumn("Name", i => i.Name),
+					GetColumn("Description", i => i.Description),
+					GetColumn("Quantity", i => i.Quantity.ToString()),
+					GetColumn("Serial Number", i => i.SerialNumber),
+					GetColumn("Model Number", i => i.ModelNumber),
+					GetColumn("Manufacturer", i => i.Manufacturer),
+					GetColumn("Insured", i => i.Insured.ToString()),
+					GetColumn("Notes", i => i.Notes),
+					GetColumn("Conditions", i => i.Conditions.ToString())
+				}	
+			};
         }
 
-        TableLayout CreateItemsTable()
-		{
-			return new TableLayout
+		private GridColumn GetColumn(string header, Func<Items, string> data) {
+			return new GridColumn
 			{
-				Padding = 10,
-				Spacing = new (4,4),
-				Size = new Size(10,10),
-				Rows =
-				{
-					new TableRow("Id",
-					"Name",
-					"Description",
-					"Quantity",
-					"Serial Number",
-					"Model Number",
-					"Manufacturer",
-					"Insured",
-					"Notes",
-					"Conditions")
-				}
+				HeaderText = header,
+				Editable = false,
+				DataCell = GetData(data)
 			};
 		}
-		void GetItems(TableLayout tableLayout)
-		{
-			foreach (var item in ModelsList.items)
+
+        private TextBoxCell GetData(Func<Items, string> data)
+        {
+			return new TextBoxCell
 			{
-				tableLayout.Rows.Add(
-					new TableRow(
-						item.Id.ToString(),
-						item.Name,
-						item.Description,
-						item.Quantity.ToString(),
-						item.SerialNumber,
-						item.ModelNumber,
-						item.Manufacturer,
-						item.Insured.ToString(),
-						item.Notes,
-						item.Conditions.ToString()
-					)
-				);
-			}
-		}
-		DynamicLayout CreateDynamicLayout(TableLayout tableLayout, Command createItemsButton, Command loadCommand)
+				Binding = Binding.Delegate<Items, string>(data, null)
+			};
+        }
+
+
+		DynamicLayout CreateDynamicLayout()
 		{
 			DynamicLayout layout = new DynamicLayout();
 			layout.BeginVertical();
-			layout.Add(tableLayout, true, true);
+			layout.Add(_grid, true, true);
 			layout.AddSeparateRow(4, null, true, false,
-					new [] { 
-					new Button()
-					{
-						Command = createItemsButton,
-						Text = "Create new item",
-						Width = 50
-					},
-					SaveButton(),
-					LoadButton(loadCommand),
+				new [] { 
+					AddButton("Create new item", 50, OnCreate),
+					AddButton("Save Data", 50, OnSave),
+					AddButton("Load Data", 50, OnLoad),
 					null
 				}
 			);
@@ -119,78 +98,73 @@ namespace InventBox.Desktop.Components.ItemsForm
 			return layout;
 		}
 
-		Command CreateItemsButtons(CreateItemsDialog createItemsDialog, Command loadCommand)
+		private void OnCreate()
 		{
-			var button = new Command { MenuText = "Create item" };
-			button.Executed += (sender, e) => {
-				createItemsDialog.DataContext = new ItemModelView(){Id = ModelsList.items.Count + 1, Conditions = Conditions.New};
-				createItemsDialog.ShowModal(this);
-				Content = CreateDynamicLayout(LoadData(), button, loadCommand);
-			};
-			return button;
+			ItemModelView modelView = new ItemModelView(){Id = ModelsList.items.Count + 1, Conditions = Conditions.New};
+			var createItemDialog = new CreateItemsDialog(modelView, Mode.Create, item => ModelsList.items.Add(item), _path, _logger);
+			createItemDialog.Closed += (sender, e) => RefreashData();
+			createItemDialog.ShowModal();
 		}
 
-		Control LoadButton(Command loadCommand)
+		private Button AddButton(string text, int width, Action eventHandler)
 		{
-			var button = new Button{ Text = "Load Data", Width = 50, Command = loadCommand };
-			return button;
+			var command = new Command();
+			command.Executed += (sender, eventArgs) => eventHandler();
+			return new Button { Text = text, Width = width, Command = command};
 		}
 
-		Control SaveButton()
+		private void OnSave()
 		{
-			var button = new Button{ Text = "Save Data", Width = 50, Command = SaveCommand() };
-			return button;
-		}
-
-		Command SaveCommand()
-		{
-			var saveCommand = new Command();
-			Uri path = new Uri(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile));		
-			saveCommand.Executed += delegate
+			Uri homeDir = new Uri(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile));		
+			var saveDialog = new SaveFileDialog
 			{
-				var saveDialog = new SaveFileDialog
+				Filters =
 				{
-					Filters =
-					{
-						new FileFilter("CSV FIle", ".csv")
-					},
-					Directory = path
-				};
-				saveDialog.ShowDialog(this);
-				if (saveDialog.FileName != string.Empty)
-					_dataManagement.Save(ModelsList.items, saveDialog.FileName);
-				saveDialog.Dispose();
+					new FileFilter("CSV FIle", ".csv")
+				},
+				Directory = homeDir
 			};
-			return saveCommand;
+			saveDialog.ShowDialog(this);
+			if (saveDialog.FileName != string.Empty)
+				_dataManagement.Save(ModelsList.items, saveDialog.FileName);
+			saveDialog.Dispose();
 		}
 
-		Command LoadCommand(OpenFileDialog loadDialog, TableLayout tableLayout)
+		private void OnLoad()
 		{
-			var loadCommand = new Command();
 			Uri path = new Uri(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile));		
-			loadCommand.Executed += delegate
+			var loadDialog = new OpenFileDialog
 			{
-				loadDialog = new OpenFileDialog
+				Filters =
 				{
-					Filters =
-					{
-						new FileFilter("CSV File", ".csv")		
-					},
-					Directory = path
-				};
-				loadDialog.ShowDialog(this);
-				if (loadDialog.FileName != string.Empty)
-					ModelsList.items = _dataManagement.Load(loadDialog.FileName);
-				loadDialog.Dispose();
+					new FileFilter("CSV File", ".csv")		
+				},
+				Directory = path
 			};
-			return loadCommand;
+			loadDialog.ShowDialog(this);
+			if (loadDialog.CheckFileExists) {
+				ModelsList.items = _dataManagement.Load(loadDialog.FileName);
+				RefreashData();
+			}
+			loadDialog.Dispose();
 		}
 
-		TableLayout LoadData()
-		{
-			var table = CreateItemsTable();
-			GetItems(table);
-			return table;
+		private ItemModelView ModelViewCopy(Items item) {
+			return new ItemModelView
+			{
+				Id = item.Id,
+				Name = item.Name,
+				Description = item.Description,
+				Quantity = item.Quantity,
+				SerialNumber = item.SerialNumber,
+				ModelNumber = item.ModelNumber,
+				Manufacturer = item.Manufacturer,
+				Insured = item.Insured,
+				Notes = item.Notes,
+				CreatedAt = item.CreatedAt,
+				UpdatedAt = item.UpdatedAt,
+				Conditions = item.Conditions
+			};
 		}
 	}
 }

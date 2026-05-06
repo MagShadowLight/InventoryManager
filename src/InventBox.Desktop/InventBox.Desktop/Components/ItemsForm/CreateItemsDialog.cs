@@ -11,20 +11,23 @@ using InventBox.Core;
 
 namespace InventBox.Desktop.Components.ItemsForm
 {
-	public class ItemViewModel
+	public enum Mode
 	{
-		private bool _checked { get; set; }
+		Create, 
+		Edit
 	}
 	public partial class CreateItemsDialog : Dialog
 	{
 		private static FileLogger _logger;
 		private static string _path;
-		private ItemInputEventHandler _inputEventHandler = new ItemInputEventHandler();
-		public CreateItemsDialog(ItemModelView modelView, string path, FileLogger logger)
+		private readonly Mode _mode;
+		private readonly Action<Items> _onSubmit;
+		public CreateItemsDialog(ItemModelView modelView, Mode mode, Action<Items> onSubmitEvent, string path, FileLogger logger)
 		{
 			_path = path;
 			_logger = logger;
-			List<Conditions> conditions = EnumUtils<Conditions>.GetEnumList<Conditions>();
+			_mode = mode;
+			_onSubmit = onSubmitEvent;
 			DataContext = modelView;
 			
 
@@ -68,7 +71,7 @@ namespace InventBox.Desktop.Components.ItemsForm
 			InsuredInput.CheckedBinding.BindDataContext(Binding.Property((ItemModelView items) => items.Insured).ToBool(true, false));
 			noteInput.BindDataContext(t => t.Text, (ItemModelView items) => items.Notes);
 			conditionsInput.SelectedValueBinding.BindDataContext(Binding.Property((ItemModelView items) => items.Conditions));
-			var SubmitButton = CreateSubmitButton(modelView);
+			var SubmitButton = CreateSubmitButton();
 
 			// Create form
 			var form = new DynamicLayout
@@ -128,13 +131,6 @@ namespace InventBox.Desktop.Components.ItemsForm
 			return form;
 		}
 
-        private Items CreateItem(ItemModelView modelView)
-        {
-			var model = (ItemModelView)DataContext;
-			var item = (Items)model;
-			return item;
-        }
-
         public void WriteLog(TextBox textBox)
 		{
 			textBox.TextChanging += (sender, e) => Console.WriteLine($"Id: {textBox.Text}");
@@ -155,17 +151,16 @@ namespace InventBox.Desktop.Components.ItemsForm
 			Console.WriteLine(items.UpdatedAt);
 			Console.WriteLine(items.Conditions);
 		}
-		private Command CreateSubmitButton(ItemModelView model)
+		private Command CreateSubmitButton()
 		{
 			var createCommand = new Command();
 			createCommand.Executed += (sender, e) =>
 			{
-				
-				Items item = CreateItem(model);
+				var model = (ItemModelView)DataContext;
+				model.UpdatedAt = DateTime.Now;
+				_onSubmit?.Invoke(model);
 				// WriteItem(item);
-				ModelsList.items.Add(item);
-				if (this != null)
-					this.Close();
+				Close();
 			};
 			return createCommand;
 		}
