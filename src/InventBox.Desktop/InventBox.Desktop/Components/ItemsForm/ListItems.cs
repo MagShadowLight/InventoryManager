@@ -91,6 +91,7 @@ namespace InventBox.Desktop.Components.ItemsForm
 					AddButton("Create new item", 50, OnCreate),
 					AddButton("Save Data", 50, OnSave),
 					AddButton("Load Data", 50, OnLoad),
+					AddButton("Edit selected item", 50, OnEdit),
 					null
 				}
 			);
@@ -147,6 +148,18 @@ namespace InventBox.Desktop.Components.ItemsForm
 				RefreashData();
 			}
 			loadDialog.Dispose();
+		}
+
+		private void OnEdit()
+		{
+			Items item = (Items)_grid.SelectedItem;
+			var index = ModelsList.items.IndexOf(item);
+			if (index < 0 )
+				return;
+			ItemModelView modelView = ModelViewCopy(item);
+			var editItemDialog = new CreateItemsDialog(modelView, Mode.Edit, item => ModelsList.items[index] = item, _path, _logger);
+			editItemDialog.Closed += (sender, e) => RefreashData();
+			editItemDialog.ShowModal();
 		}
 
 		private ItemModelView ModelViewCopy(Items item) {
