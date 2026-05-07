@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Eto.Forms;
 using InventBox.Core;
 
@@ -8,7 +9,7 @@ namespace InventBox.Desktop.Gtk
 	{
 		
 		[STAThread]
-		public static void Main(string[] args)
+		public static async Task Main(string[] args)
 		{
 			new Application(Eto.Platforms.Gtk).Run(new MainForm());
 		}
