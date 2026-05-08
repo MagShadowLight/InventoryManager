@@ -6,12 +6,20 @@ using InventBox.Core;
 using System.Linq;
 using System;
 using InventBox.Desktop.Interfaces;
+using System.Threading.Tasks;
+using EtoApp;
+using System.IO;
+using System.Collections.Generic;
 
 namespace InventBox.Desktop.Components.ItemsForm
 {
 	public partial class ListItems : Panel, IEventHandler, IControls<Items>
 	{
+		private List<Items> _items = new List<Items>();
+		private ImageCapture _capture = new ImageCapture();
 		private static string _path;
+		
+		private BarCodeScanner _scanner;
 		private static FileLogger _logger;
 		private DataManagement<Items> _dataManagement;
 		private GridView _grid;
@@ -19,6 +27,7 @@ namespace InventBox.Desktop.Components.ItemsForm
 		{
 			_path = path;
 			_logger = logger;
+			_scanner = new BarCodeScanner(_path);
 			_dataManagement = new DataManagement<Items>(_path);
 			_grid = CreateGrid();
 			Size = size;
@@ -33,7 +42,7 @@ namespace InventBox.Desktop.Components.ItemsForm
 
 		void RefreashData()
 		{
-			_grid.DataStore = ModelsList.items.ToArray<Items>();
+			_grid.DataStore = _items.ToArray<Items>();
 		}
 
         private GridView CreateGrid()
@@ -78,8 +87,10 @@ namespace InventBox.Desktop.Components.ItemsForm
 
 		DynamicLayout CreateDynamicLayout()
 		{
+
 			DynamicLayout layout = new DynamicLayout();
 			layout.BeginVertical();
+			layout.AddSeparateRow(null, null, AddButton("Clear Filter", 100, 50, () => ClearFilter()), AddButton("Scan barcode", 100, 50, async () => await OnScanBarCode()));
 			layout.Add(_grid, true, true);
 			layout.AddSeparateRow(4, null, true, false,
 				new [] { 
@@ -95,12 +106,35 @@ namespace InventBox.Desktop.Components.ItemsForm
 			return layout;
 		}
 
+		public void ClearFilter()
+		{
+			_items = ModelsList.items;
+			RefreashData();
+		} 
+
+		public async Task OnScanBarCode()
+		{
+			Items items = new Items();
+			await _capture.OpenCapture(new System.Threading.CancellationTokenSource());
+			var dialog = new BarCodeScannerDialog(_capture, _path);
+			dialog.ShowModal();
+			string name = _scanner.DecodeBarCode(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),".tmp", "InventBox", "Images", "Barcode.png"));
+			if (string.IsNullOrEmpty(name)) {
+				var faileddialog = MessageBox.Show("Failed to scan barcode", MessageBoxButtons.OK, MessageBoxType.Error);
+				return;
+			}
+			_items = ModelsList.items.Where(item => item.Name == name).ToList();
+			RefreashData();
+		}
+
 		public void OnCreate()
 		{
 			ItemModelView modelView = new ItemModelView(){Id = ModelsList.items.Count + 1, Conditions = Conditions.New};
 			var createItemDialog = new ItemsDialog(modelView, Mode.Create, item => ModelsList.items.Add(item), _path, _logger);
 			createItemDialog.Closed += (sender, e) => RefreashData();
 			createItemDialog.ShowModal();
+			_items = ModelsList.items;
+			RefreashData();
 		}
 
 		public Button AddButton(string text, int width, int height, Action eventHandler)
@@ -141,6 +175,7 @@ namespace InventBox.Desktop.Components.ItemsForm
 			loadDialog.ShowDialog(this);
 			if (loadDialog.FileName != null) {
 				ModelsList.items = _dataManagement.Load(loadDialog.FileName);
+				_items = ModelsList.items;
 				RefreashData();
 			}
 			loadDialog.Dispose();
@@ -154,7 +189,10 @@ namespace InventBox.Desktop.Components.ItemsForm
 				return;
 			ItemModelView modelView = ModelViewCopy(item);
 			var editItemDialog = new ItemsDialog(modelView, Mode.Edit, item => ModelsList.items[index] = item, _path, _logger);
-			editItemDialog.Closed += (sender, e) => RefreashData();
+			editItemDialog.Closed += (sender, e) => { 
+				_items = ModelsList.items;
+				RefreashData();			
+			};
 			editItemDialog.ShowModal();
 		}
 
@@ -168,6 +206,7 @@ namespace InventBox.Desktop.Components.ItemsForm
 			if (deleteDialog != DialogResult.Yes)
 				return;
 			ModelsList.items.Remove(item);
+			_items = ModelsList.items;
 			RefreashData();
 		}
 

@@ -12,7 +12,7 @@ namespace InventBox.Desktop
 		/// <summary>
 		/// Set the properties for the whole application
 		/// </summary>
-		private static string _path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".tmp", "InventBox", $"{DateTime.Now.Month}-{DateTime.Now.Day}-{DateTime.Now.Year}_{DateTime.Now.Hour}:{DateTime.Now.Minute}-InventBox.log");
+		private static string _path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".tmp", "InventBox", "Logs", $"{DateTime.Now.Month}-{DateTime.Now.Day}-{DateTime.Now.Year}_{DateTime.Now.Hour}:{DateTime.Now.Minute}-InventBox.log");
 		private static FileLogger _logger = new FileLogger();
 		ListItems listItemsForm = null;
 		private AboutDialog aboutDialog;

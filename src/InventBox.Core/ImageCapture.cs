@@ -1,3 +1,5 @@
+using Eto.Drawing;
+using Eto.Forms;
 using FlashCap;
 
 namespace InventBox.Core;
@@ -6,57 +8,61 @@ public class ImageCapture
 {
     private ConsoleLogger logger = new ConsoleLogger();
     CancellationToken token;
-    CaptureDevices devices;
+    CaptureDevices? devices;
+    byte[]? _frame;
     CaptureDeviceDescriptor? descriptor1;
     VideoCharacteristics? characteristic;
-    TaskCompletionSource<byte[]>? taskSource;
-    CaptureDevice device;
+    CaptureDevice? device;
+    
 
-    public async Task OpenCapture()
+    public async Task OpenCapture(CancellationTokenSource source)
     {
-        CancellationTokenSource source = new CancellationTokenSource();
         token = source.Token;
         
         devices = new CaptureDevices();
 
-        descriptor1 = devices.EnumerateDescriptors().ElementAt(1)!;
-        if (descriptor1 == null)
+
+        foreach (var descriptor in devices.EnumerateDescriptors())
         {
-            logger.Error("Could not detect camera device");
+            if (descriptor == null)
+            {
+                logger.Error("Could not detect camera device");
+            }
+            if (descriptor.Characteristics.Count() == 0)
+                 continue;
+            descriptor1 = descriptor;
+            characteristic = descriptor1.Characteristics
+            .FirstOrDefault(c => c.PixelFormat != PixelFormats.Unknown)!;
         }
 
-        characteristic = descriptor1.Characteristics
-        .FirstOrDefault(c => c.PixelFormat != PixelFormats.Unknown)!;
-
-        taskSource = new TaskCompletionSource<byte[]>();
+    }
+    public async Task StartCapture(Action<byte[]>? onFrame = null)
+    {
         device = await descriptor1.OpenAsync(
             characteristic,
             BufferScope =>
-            {
-                
+            {                
                 var image = BufferScope.Buffer.CopyImage();
-
-                taskSource.TrySetResult(image);
+                _frame = image;
+                onFrame?.Invoke(image);
             },
             token
         );
+        await device.StartAsync(token).ConfigureAwait(false);
     }
-    public async Task StartCapture()
+    public async Task StopCapture(string imagePath)
     {
-        await device.StartAsync(token);
-    }
-    public async Task StopCapture()
-    {
-        var imageData = await taskSource.Task;
+        if (_frame == null)
+            return;
 
         await device.StopAsync(token);
-
-        var path = "Test.png";
         using var fileStream = new FileStream(
-            path,
+            imagePath,
             FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite
         );
-        await fileStream.WriteAsync(imageData, 0, imageData.Length, token);
+        await fileStream.WriteAsync(_frame, 0, _frame.Length, token);
         await fileStream.FlushAsync(token);
     }
+
+
 }
