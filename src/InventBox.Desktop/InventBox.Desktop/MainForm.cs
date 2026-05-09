@@ -6,6 +6,7 @@ using InventBox.Core;
 using System.IO;
 using InventBox.Desktop.Components.CategoryForm;
 using System.Collections.Generic;
+using InventBox.Desktop.Components.LocationForm;
 
 namespace InventBox.Desktop
 {
@@ -18,6 +19,7 @@ namespace InventBox.Desktop
 		private static FileLogger _logger = new FileLogger();
 		ListItems listItemsForm = null;
 		ListCategories listCategories = null;
+		ListLocations listLocations = null;
 		List<Panel> panels;
 		private AboutDialog aboutDialog;
 
@@ -127,6 +129,7 @@ namespace InventBox.Desktop
 			layout.Add(NavigationButton());
 			layout.AddColumn(listItemsForm, null);
 			layout.AddColumn(listCategories, null);
+			layout.AddColumn(listLocations, null);
 			layout.AddSpace();
 			layout.EndHorizontal();
 			return layout;
@@ -140,7 +143,8 @@ namespace InventBox.Desktop
 				Items =
 				{
 					AddButton("Inventory", 100, 50, OnItemListPanel),
-					AddButton("Category", 100, 50, CreateCategoryListPanel)
+					AddButton("Category", 100, 50, CreateCategoryListPanel),
+					AddButton("Locations", 100, 50, createLocationDialogPanel)
 				}
 			};
 		}
@@ -156,7 +160,7 @@ namespace InventBox.Desktop
 		{
 			if (listItemsForm != null)
 				listItemsForm.Dispose();
-			panels = new List<Panel>() {listCategories};
+			panels = new List<Panel>() {listCategories, listLocations};
 			ClearOtherPanel(panels);
 			listItemsForm = new ListItems(_path, _logger, new Size(width,height));
 			listItemsForm.Visible = true;
@@ -167,10 +171,20 @@ namespace InventBox.Desktop
 		{
 			if (listCategories != null)
 				listCategories.Dispose();
-			panels = new List<Panel>() {listItemsForm};
+			panels = new List<Panel>() {listItemsForm, listLocations};
 			ClearOtherPanel(panels);
 			listCategories = new ListCategories(_path, _logger, new Size(width, height));
 			listCategories.Visible = true;
+			Content = CreateMainApp();
+		}
+		private void createLocationDialogPanel(int width, int height)
+		{
+			if (listLocations != null)
+				listLocations.Dispose();
+			panels = new List<Panel>() {listItemsForm, listCategories};
+			ClearOtherPanel(panels);
+			listLocations = new ListLocations(_path, _logger, new Size(width, height));
+			listLocations.Visible = true;
 			Content = CreateMainApp();
 		}
 		private void ClearOtherPanel(List<Panel> panels)

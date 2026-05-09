@@ -8,4 +8,5 @@ public class ModelsList
 {
     public static List<Items> items = new List<Items>();
     public static List<Category> categories = new List<Category>();
+    public static List<Locations> locations = new List<Locations>();
 }
