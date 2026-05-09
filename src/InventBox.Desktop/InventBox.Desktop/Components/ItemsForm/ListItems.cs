@@ -13,12 +13,11 @@ using System.Collections.Generic;
 
 namespace InventBox.Desktop.Components.ItemsForm
 {
-	public partial class ListItems : Panel, IEventHandler, IControls<Items>
+	public partial class ListItems : Panel, IEventHandler, IControls<Items, ItemModelView>
 	{
 		private List<Items> _items = new List<Items>();
 		private ImageCapture _capture = new ImageCapture();
 		private static string _path;
-		
 		private BarCodeScanner _scanner;
 		private static FileLogger _logger;
 		private DataManagement<Items> _dataManagement;
@@ -29,23 +28,20 @@ namespace InventBox.Desktop.Components.ItemsForm
 			_logger = logger;
 			_scanner = new BarCodeScanner(_path);
 			_dataManagement = new DataManagement<Items>(_path);
-			_grid = CreateGrid();
 			Size = size;
 
 			_grid = CreateGrid();
-			RefreashData();
-
-			var content = CreateDynamicLayout();
-
-			Content = content;
+			RefreshData();
+			Visible = false;
+			Content = CreateDynamicLayout();
 		}
 
-		void RefreashData()
+		public void RefreshData()
 		{
 			_grid.DataStore = _items.ToArray<Items>();
 		}
 
-        private GridView CreateGrid()
+        public GridView CreateGrid()
         {
 			return new GridView()
 			{
@@ -85,7 +81,7 @@ namespace InventBox.Desktop.Components.ItemsForm
         }
 
 
-		DynamicLayout CreateDynamicLayout()
+		public DynamicLayout CreateDynamicLayout()
 		{
 
 			DynamicLayout layout = new DynamicLayout();
@@ -116,7 +112,7 @@ namespace InventBox.Desktop.Components.ItemsForm
 					_items = ModelsList.items;
 				else
 					_items = ModelsList.items.Where(item => item.Name.Contains(textBox.Text)).ToList();
-				RefreashData();
+				RefreshData();
 			};
 			return textBox;
 		}
@@ -124,10 +120,10 @@ namespace InventBox.Desktop.Components.ItemsForm
 		public void ClearFilter()
 		{
 			_items = ModelsList.items;
-			RefreashData();
+			RefreshData();
 		} 
 
-		public async Task OnScanBarCode()
+		private async Task OnScanBarCode()
 		{
 			Items items = new Items();
 			await _capture.OpenCapture(new System.Threading.CancellationTokenSource());
@@ -139,17 +135,17 @@ namespace InventBox.Desktop.Components.ItemsForm
 				return;
 			}
 			_items = ModelsList.items.Where(item => item.Name == name).ToList();
-			RefreashData();
+			RefreshData();
 		}
 
 		public void OnCreate()
 		{
 			ItemModelView modelView = new ItemModelView(){Id = ModelsList.items.Count + 1, Conditions = Conditions.New};
 			var createItemDialog = new ItemsDialog(modelView, Mode.Create, item => ModelsList.items.Add(item), _path, _logger);
-			createItemDialog.Closed += (sender, e) => RefreashData();
+			createItemDialog.Closed += (sender, e) => RefreshData();
 			createItemDialog.ShowModal();
 			_items = ModelsList.items;
-			RefreashData();
+			RefreshData();
 		}
 
 		public Button AddButton(string text, int width, int height, Action eventHandler)
@@ -191,7 +187,7 @@ namespace InventBox.Desktop.Components.ItemsForm
 			if (loadDialog.FileName != null) {
 				ModelsList.items = _dataManagement.Load(loadDialog.FileName);
 				_items = ModelsList.items;
-				RefreashData();
+				RefreshData();
 			}
 			loadDialog.Dispose();
 		}
@@ -206,7 +202,7 @@ namespace InventBox.Desktop.Components.ItemsForm
 			var editItemDialog = new ItemsDialog(modelView, Mode.Edit, item => ModelsList.items[index] = item, _path, _logger);
 			editItemDialog.Closed += (sender, e) => { 
 				_items = ModelsList.items;
-				RefreashData();			
+				RefreshData();			
 			};
 			editItemDialog.ShowModal();
 		}
@@ -217,15 +213,15 @@ namespace InventBox.Desktop.Components.ItemsForm
 			var index = ModelsList.items.IndexOf(item);
 			if (index < 0)
 				return;
-			var deleteDialog = MessageBox.Show("Are you sure to delete the selected items", MessageBoxButtons.YesNo, MessageBoxType.Question, MessageBoxDefaultButton.Yes);
+			var deleteDialog = MessageBox.Show("Are you sure to delete the selected item?", MessageBoxButtons.YesNo, MessageBoxType.Question, MessageBoxDefaultButton.Yes);
 			if (deleteDialog != DialogResult.Yes)
 				return;
 			ModelsList.items.Remove(item);
 			_items = ModelsList.items;
-			RefreashData();
+			RefreshData();
 		}
 
-		private ItemModelView ModelViewCopy(Items item) {
+		public ItemModelView ModelViewCopy(Items item) {
 			return new ItemModelView
 			{
 				Id = item.Id,

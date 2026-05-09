@@ -3,11 +3,11 @@ using Eto.Forms;
 using Eto.Drawing;
 using InventBox.Desktop.ModelView;
 using InventBox.Core.Models;
-using InventBox.Desktop.EventHandlers;
 using System.Collections.Generic;
 using InventBox.Core.Utils;
 using System.Data;
 using InventBox.Core;
+using InventBox.Desktop.Interfaces;
 
 namespace InventBox.Desktop.Components.ItemsForm
 {
@@ -16,7 +16,7 @@ namespace InventBox.Desktop.Components.ItemsForm
 		Create, 
 		Edit
 	}
-	public partial class ItemsDialog : Dialog
+	public partial class ItemsDialog : Dialog, IDialogs<ItemModelView>
 	{
 		private static FileLogger _logger;
 		private static string _path;
@@ -35,7 +35,7 @@ namespace InventBox.Desktop.Components.ItemsForm
 			Content = form;
 		}
 
-		DynamicLayout CreateForm(ItemModelView modelView)
+		public DynamicLayout CreateForm(ItemModelView modelView)
 		{
 			// Create Inputs
 			var nameInput = new TextBox() { Width = 200 };
@@ -114,7 +114,7 @@ namespace InventBox.Desktop.Components.ItemsForm
 			form.EndHorizontal();
 			return form;
 		}
-		private Command CreateSubmitButton()
+		public Command CreateSubmitButton()
 		{
 			var createCommand = new Command();
 			createCommand.Executed += (sender, e) =>

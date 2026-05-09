@@ -1,7 +1,6 @@
 using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using Eto;
 using InventBox.Core.Models;
 
 namespace InventBox.Desktop.ModelView;

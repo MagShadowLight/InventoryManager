@@ -9,4 +9,6 @@ public interface IEventHandler
     public void OnLoad();
     public void OnEdit();
     public void OnDelete();
+    public void RefreshData();
+    public void ClearFilter();
 }

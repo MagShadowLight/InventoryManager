@@ -4,7 +4,6 @@ namespace InventBox.Core.Models;
 
 public class Receipt
 {
-    [Key]
     public int Id { get; set; }
     public string StoreName { get; set; } = string.Empty;
     public double Price { get; set; }

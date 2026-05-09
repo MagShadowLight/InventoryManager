@@ -4,7 +4,6 @@ namespace InventBox.Core.Models;
 
 public class Warrantly
 {
-    [Key]
     public int Id { get; set; }
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }

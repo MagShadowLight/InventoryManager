@@ -4,6 +4,8 @@ using Eto.Drawing;
 using InventBox.Desktop.Components.ItemsForm;
 using InventBox.Core;
 using System.IO;
+using InventBox.Desktop.Components.CategoryForm;
+using System.Collections.Generic;
 
 namespace InventBox.Desktop
 {
@@ -15,12 +17,15 @@ namespace InventBox.Desktop
 		private static string _path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".tmp", "InventBox", "Logs", $"{DateTime.Now.Month}-{DateTime.Now.Day}-{DateTime.Now.Year}_{DateTime.Now.Hour}:{DateTime.Now.Minute}-InventBox.log");
 		private static FileLogger _logger = new FileLogger();
 		ListItems listItemsForm = null;
+		ListCategories listCategories = null;
+		List<Panel> panels;
 		private AboutDialog aboutDialog;
 
 		/// <summary>
-		/// Create a commands
+		/// Create commands variables
 		/// </summary>
 		Command listItemCommand;
+		Command listCategoryCommand;
 		Command quitCommand;
 		Command aboutCommand;
 
@@ -56,6 +61,13 @@ namespace InventBox.Desktop
 				CreateMainApp();
 			};
 
+			listCategoryCommand = CreateCommand("List categories", "List categories", Application.Instance.CommonModifier | Keys.C);
+			listCategoryCommand.Executed += (sender, e) =>
+			{
+				CreateCategoryListPanel(1250, 1000);
+				CreateMainApp();
+			};
+			
 			quitCommand = CreateCommand("Quit", null, Application.Instance.CommonModifier | Keys.Q);
 			quitCommand.Executed += (sender, e) => Application.Instance.Quit();
 
@@ -70,7 +82,7 @@ namespace InventBox.Desktop
 				Items =
 				{
 					// File submenu
-					new SubMenuItem { Text = "&File", Items = { listItemCommand } },
+					new SubMenuItem { Text = "&File", Items = { listItemCommand, listCategoryCommand } },
 					// new SubMenuItem { Text = "&Edit", Items = { /* commands/items */ } },
 					// new SubMenuItem { Text = "&View", Items = { /* commands/items */ } },
 				},
@@ -114,6 +126,7 @@ namespace InventBox.Desktop
 			layout.BeginHorizontal();
 			layout.Add(NavigationButton());
 			layout.AddColumn(listItemsForm, null);
+			layout.AddColumn(listCategories, null);
 			layout.AddSpace();
 			layout.EndHorizontal();
 			return layout;
@@ -127,6 +140,7 @@ namespace InventBox.Desktop
 				Items =
 				{
 					AddButton("Inventory", 100, 50, OnItemListPanel),
+					AddButton("Category", 100, 50, CreateCategoryListPanel)
 				}
 			};
 		}
@@ -142,10 +156,29 @@ namespace InventBox.Desktop
 		{
 			if (listItemsForm != null)
 				listItemsForm.Dispose();
+			panels = new List<Panel>() {listCategories};
+			ClearOtherPanel(panels);
 			listItemsForm = new ListItems(_path, _logger, new Size(width,height));
+			listItemsForm.Visible = true;
 			Content = CreateMainApp();
 		}
 
+		private void CreateCategoryListPanel(int width, int height)
+		{
+			if (listCategories != null)
+				listCategories.Dispose();
+			panels = new List<Panel>() {listItemsForm};
+			ClearOtherPanel(panels);
+			listCategories = new ListCategories(_path, _logger, new Size(width, height));
+			listCategories.Visible = true;
+			Content = CreateMainApp();
+		}
+		private void ClearOtherPanel(List<Panel> panels)
+		{
+			foreach (var panel in panels)
+				if (panel != null)
+					panel.Visible = false;
+		}
 		private Command CreateCommand(string menuText, string toolbarText = null, Keys shortcut = Keys.None)
 		{
 			return new Command() {MenuText = menuText, ToolBarText = toolbarText, Shortcut = shortcut};
