@@ -29,7 +29,7 @@ namespace InventBox.Desktop.Components.ItemsForm
 			_mode = mode;
 			_onSubmit = onSubmitEvent;
 			DataContext = modelView;
-			Title = "Create item";
+			Title = _mode == Mode.Create ? "Create item" : "Edit item" ;
 			Size = new Size(500,350);
 			var form = CreateForm(modelView);
 			Content = form;

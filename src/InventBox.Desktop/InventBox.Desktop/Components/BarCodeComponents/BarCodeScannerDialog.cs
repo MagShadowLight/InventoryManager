@@ -11,9 +11,6 @@ namespace EtoApp
 	public partial class BarCodeScannerDialog : Dialog
 	{
 		private BarCodeScanner _scanner;
-		private Label _indicator;
-		private Panel _indicatorPanel;
-		private string _detected = string.Empty;
 		private string _loggerPath = string.Empty;
 		private ImageCapture _capture = new ImageCapture();
 		private ImageView _preview;
@@ -79,8 +76,8 @@ namespace EtoApp
 				var old = _preview.Image;
 				_preview.Image = new Bitmap(frame);
 				old?.Dispose();
-				// if (!string.IsNullOrEmpty(_scanner.ScanBarCode(frame)))
-				// 	await OnCapture();
+				if (!string.IsNullOrEmpty(barcode))
+					await OnCapture();
 			});
 		}
 	}

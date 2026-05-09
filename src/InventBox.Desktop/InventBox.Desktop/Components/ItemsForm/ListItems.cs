@@ -90,7 +90,7 @@ namespace InventBox.Desktop.Components.ItemsForm
 
 			DynamicLayout layout = new DynamicLayout();
 			layout.BeginVertical();
-			layout.AddSeparateRow(null, null, AddButton("Clear Filter", 100, 50, () => ClearFilter()), AddButton("Scan barcode", 100, 50, async () => await OnScanBarCode()));
+			layout.AddSeparateRow(null, CreateSearchBar(), AddButton("Clear Filter", 100, 50, () => ClearFilter()), AddButton("Scan barcode", 100, 50, async () => await OnScanBarCode()));
 			layout.Add(_grid, true, true);
 			layout.AddSeparateRow(4, null, true, false,
 				new [] { 
@@ -104,6 +104,21 @@ namespace InventBox.Desktop.Components.ItemsForm
 			);
 			layout.EndVertical();
 			return layout;
+		}
+
+		public TextBox CreateSearchBar()
+		{
+			TextBox textBox = new TextBox() {Text = "Search", Width = 500};
+			textBox.TextBinding.BindDataContext((Items items) => items.Name);
+			textBox.TextChanged += (sender, e) =>
+			{
+				if (string.IsNullOrEmpty(textBox.Text))
+					_items = ModelsList.items;
+				else
+					_items = ModelsList.items.Where(item => item.Name.Contains(textBox.Text)).ToList();
+				RefreashData();
+			};
+			return textBox;
 		}
 
 		public void ClearFilter()
