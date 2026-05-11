@@ -23,6 +23,7 @@ namespace InventBox.Desktop.Components.LocationForm
 
 		public ListLocations(string path, FileLogger logger, Size size)
 		{
+			_locations = ModelsList.locations;
 			_path = path;
 			_logger = logger;
 			_dataManagement = new DataManagement<Locations>(_path);

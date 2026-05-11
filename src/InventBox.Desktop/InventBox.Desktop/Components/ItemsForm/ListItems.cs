@@ -24,6 +24,7 @@ namespace InventBox.Desktop.Components.ItemsForm
 		private GridView _grid;
 		public ListItems(string path, FileLogger logger, Size size)
 		{
+			_items = ModelsList.items;
 			_path = path;
 			_logger = logger;
 			_scanner = new BarCodeScanner(_path);

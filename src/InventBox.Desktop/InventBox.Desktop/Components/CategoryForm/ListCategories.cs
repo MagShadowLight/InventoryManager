@@ -21,6 +21,7 @@ namespace InventBox.Desktop.Components.CategoryForm
 		private GridView _grid;
 		public ListCategories(string path, FileLogger logger, Size size)
 		{
+			_categories = ModelsList.categories;
 			_path = path;
 			_logger = logger;
 			_datamanagement = new DataManagement<Category>(_path);

@@ -51,7 +51,6 @@ namespace EtoApp
 			layout.BeginVertical();
 			layout.Add(_preview, yscale: true);
 			layout.AddSpace();
-			layout.AddSeparateRow(null,AddButton("Test", 100,100, async () => await OnCapture()),null);
 			layout.EndVertical();
 			return layout;
 		}
