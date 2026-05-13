@@ -17,6 +17,7 @@ public class ItemModelView : Items, INotifyPropertyChanged
     private bool insured;
     private string notes;
     private Conditions conditions;
+    private Category category;
 
     public override int Id { get { return id; } set
         {
@@ -98,6 +99,16 @@ public class ItemModelView : Items, INotifyPropertyChanged
                 OnPropertyChanged();
             } 
         }  }
+    public override Category Category { get { return category; } 
+        set
+        {
+            if (category != value)
+            {
+                category = value;
+                OnPropertyChanged();
+            }
+        }
+    }
     public override DateTime CreatedAt { get; set; } = DateTime.Now;
     public override DateTime UpdatedAt { get; set; } = DateTime.Now;
     public override Conditions Conditions { get { return conditions;}
