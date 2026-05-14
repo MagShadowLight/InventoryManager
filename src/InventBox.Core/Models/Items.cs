@@ -16,4 +16,5 @@ public class Items
     public virtual Conditions Conditions { get; set; }
     public virtual Category? Category {get; set; }
     public virtual Locations? Locations {get; set; }
+    public virtual Warrantly? Warrantly { get; set; }
 }
