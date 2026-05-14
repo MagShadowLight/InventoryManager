@@ -45,6 +45,8 @@ namespace InventBox.Desktop
 			/// </summary>
 			Title = "InventBox";
 			MinimumSize = new Size(1500, 1250);
+			// MinimumSize = new Size(1000, 1000);
+			Resizable = true;
 			Content = CreateMainApp();
 			CreateCommand();	
 
@@ -67,6 +69,7 @@ namespace InventBox.Desktop
 			listCategoryCommand.Executed += (sender, e) =>
 			{
 				CreateCategoryListPanel(1250, 1000);
+				// CreateCategoryListPanel(500, 500);
 				CreateMainApp();
 			};
 			

@@ -15,4 +15,5 @@ public class Items
     public virtual DateTime UpdatedAt { get; set; } = DateTime.Now;
     public virtual Conditions Conditions { get; set; }
     public virtual Category? Category {get; set; }
+    public virtual Locations? Locations {get; set; }
 }

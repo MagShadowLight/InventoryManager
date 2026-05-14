@@ -25,7 +25,7 @@ namespace InventBox.Desktop.Components.CategoryForm
 			_path = path;
 			_logger = logger;
 			_datamanagement = new DataManagement<Category>(_path);
-			Size = size;
+			MinimumSize = size;
 			_grid = CreateGrid();
 			RefreshData();
 			Visible = false;
@@ -47,7 +47,10 @@ namespace InventBox.Desktop.Components.CategoryForm
 
         public DynamicLayout CreateDynamicLayout()
         {
-			DynamicLayout layout = new DynamicLayout();
+			DynamicLayout layout = new DynamicLayout()
+			{
+				Padding = 10
+			};
 			layout.BeginVertical();
 			layout.AddSeparateRow(null, CreateSearchBar(), AddButton("Clear Filter", 100, 50, () => ClearFilter()));
 			layout.Add(_grid, true, true);

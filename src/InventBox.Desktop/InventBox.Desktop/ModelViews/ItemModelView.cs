@@ -18,6 +18,7 @@ public class ItemModelView : Items, INotifyPropertyChanged
     private string notes;
     private Conditions conditions;
     private Category category;
+    private Locations locations;
 
     public override int Id { get { return id; } set
         {
@@ -119,7 +120,19 @@ public class ItemModelView : Items, INotifyPropertyChanged
                 conditions = value;
                 OnPropertyChanged();
             }
-        }  }
+        }  
+    }
+    public override Locations Locations { get { return locations; }
+        set
+        {
+            if (locations != value)
+            {
+                locations = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+    
     void OnPropertyChanged([CallerMemberName] string memberName = null)
 	{
 		PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(memberName));

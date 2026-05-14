@@ -59,7 +59,10 @@ namespace InventBox.Desktop.Components.ItemsForm
 					GetColumn("Manufacturer", i => i.Manufacturer),
 					GetColumn("Insured", i => i.Insured.ToString()),
 					GetColumn("Notes", i => i.Notes),
-					GetColumn("Conditions", i => i.Conditions.ToString())
+					GetColumn("Conditions", i => i.Conditions.ToString()),
+					GetColumn("Category", i => i.Category.Name),
+					GetColumn("Floor", i => i.Locations.Floor),
+					GetColumn("Room", i => i.Locations.Room)
 				}	
 			};
         }
@@ -236,7 +239,9 @@ namespace InventBox.Desktop.Components.ItemsForm
 				Notes = item.Notes,
 				CreatedAt = item.CreatedAt,
 				UpdatedAt = item.UpdatedAt,
-				Conditions = item.Conditions
+				Conditions = item.Conditions,
+				Category = item.Category,
+				Locations = item.Locations
 			};
 		}
 	}

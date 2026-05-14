@@ -23,7 +23,7 @@ namespace EtoApp
 			_onSubmit = onSubmitEvent;
 			DataContext = modelView;
 			Title = _mode == Mode.Create ? "Create Location" : "Edit Location";
-			Size = new Size(750,750);
+			Size = new Size(300,250);
 			Content = CreateForm(modelView);
 		}
 

@@ -215,7 +215,7 @@ namespace InventBox.Desktop.Components.LocationForm
 
         public void RefreshData()
         {
-			_grid.DataContext = _locations.ToArray();
+			_grid.DataStore = _locations.ToArray();
         }
     }
 }

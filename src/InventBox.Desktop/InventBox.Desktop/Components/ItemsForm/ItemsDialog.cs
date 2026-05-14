@@ -20,13 +20,14 @@ namespace InventBox.Desktop.Components.ItemsForm
 	}
 	public partial class ItemsDialog : Dialog, IDialogs<ItemModelView>
 	{
-		private List<CategoryModelView> categories = new List<CategoryModelView>();
-		private GridView _grid = new GridView();
+		private List<Category> categories = new List<Category>();
+		private List<Locations> locations = new List<Locations>();
 		private static FileLogger _logger;
 		private static string _path;
 		private readonly Mode _mode;
+		private Category category;
+		private Locations location;
 		private readonly Action<Items> _onSubmit;
-		private CategoryModelView _modelView;
 		public ItemsDialog(ItemModelView modelView, Mode mode, Action<Items> onSubmitEvent, string path, FileLogger logger)
 		{
 			foreach (var category in ModelsList.categories)
@@ -34,7 +35,11 @@ namespace InventBox.Desktop.Components.ItemsForm
 				var temp = CopyCategoryModelView(category);
 				categories.Add(temp);
 			}
-			_grid = CreateGrid();
+			foreach (var location in ModelsList.locations)
+			{
+				var temp = CopyLocationModelView(location);
+				locations.Add(temp);
+			}
 			_path = path;
 			_logger = logger;
 			_mode = mode;
@@ -63,7 +68,8 @@ namespace InventBox.Desktop.Components.ItemsForm
 			var conditionsInput = new EnumDropDown<Conditions>() { 
 				Width = 200 
 			};		
-			var categoryInput = CreateCategoryGrid();
+			var categoryInput = CreateCategory();
+			var locationInput = CreateLocationListBox();
 
 			// Bind those input to data
 			nameInput.BindDataContext(t => t.Text, (ItemModelView items) => items.Name);
@@ -75,7 +81,10 @@ namespace InventBox.Desktop.Components.ItemsForm
 			InsuredInput.CheckedBinding.BindDataContext(Binding.Property((ItemModelView items) => items.Insured).ToBool(true, false));
 			noteInput.BindDataContext(t => t.Text, (ItemModelView items) => items.Notes);
 			conditionsInput.SelectedValueBinding.BindDataContext(Binding.Property((ItemModelView items) => items.Conditions));
-			var selectedValue = _grid.SelectedItem;
+			categoryInput.ItemTextBinding = Binding.Delegate<Category, string>(c => c.Name);
+			categoryInput.SelectedValueChanged += (sender, e) => category = (Category)categoryInput.SelectedValue;
+			locationInput.ItemTextBinding = Binding.Delegate<Locations, string>(c => c.Floor + " " + c.Room);
+			locationInput.SelectedValueChanged += (sender, e) => location = (Locations)locationInput.SelectedValue;
 			var SubmitButton = CreateSubmitButton();
 
 			// Create form
@@ -122,10 +131,14 @@ namespace InventBox.Desktop.Components.ItemsForm
 				conditionsInput
 			);
 			form.AddRow(
-				"Category",
-				categoryInput
+				"Category"
 			);
 			form.EndVertical();
+			form.Add(categoryInput, true, false);
+			form.BeginVertical();
+			form.AddRow("Location");
+			form.EndVertical();
+			form.Add(locationInput);
 			form.BeginHorizontal();
 			form.AddSeparateRow(
 				null,
@@ -145,62 +158,34 @@ namespace InventBox.Desktop.Components.ItemsForm
 				Description = category.Description	
 			};
 		}
-
-        private Panel CreateCategoryGrid()
-        {
-			return new Panel() {
-				Content = _grid
-			};
-        }
-		// private StackLayout CreateLayout()
-		// {
-		// 	var layout = new StackLayout
-		// 	{
-				
-		// 	};
-		// 	layout.DataContext = Binding.Property<Category, string>(c => c.Name);
-		// 	layout.Content = CreateRadio();
-		// 	return layout;
-		// }
-		// private RadioButtonList CreateRadio() {
-		// 	var list = new RadioButtonList
-		// 	{
-		// 		Height = 100,
-		// 		Width = 500,
-		// 		DataContext = Binding.Property<Category, string>(c => c.Name),
-
-		// 	};
-		// 	list.Content = new RadioButton
-		// 	{
-		// 		Text = list.DataContext.ToString()
-		// 	};
-		// 	return list;
-		// }
-
-		private GridView CreateGrid()
+		private LocationsModelView CopyLocationModelView(Locations location)
 		{
-			_grid = new GridView()
+			return new LocationsModelView
 			{
-				GridLines = GridLines.Both,
-				Size = new Size(150, 350),
-				AllowMultipleSelection = false,
-				Columns =
-				{
-					new GridColumn
-					{
-						HeaderText = "Category Name",
-						Editable = false,
-						DataCell = new TextBoxCell
-						{			
-							Binding = Binding.Delegate<CategoryModelView, string>(c => c.Name)
-							// VerticalAlignment = VerticalAlignment.Top,
-						},
-					}
-				},
-				DataStore = categories,
+				Id = location.Id,
+				Floor = location.Floor,
+				Room = location.Room,
+				Container = location.Container,
+				X = location.X,
+				Y = location.Y
 			};
-			_grid.RowHeight = 10;
-			return _grid;
+		}
+
+		private ListBox CreateCategory()
+		{
+			return new ListBox
+			{
+				Height = 100,
+				DataStore = categories
+			};
+		}
+		private ListBox CreateLocationListBox()
+		{
+			return new ListBox
+			{
+				Height = 100,
+				DataStore = locations
+			};
 		}
 
         public Command CreateSubmitButton()
@@ -209,11 +194,36 @@ namespace InventBox.Desktop.Components.ItemsForm
 			createCommand.Executed += (sender, e) =>
 			{
 				var model = (ItemModelView)DataContext;
+				model.Category = SubmitCategory(category);
+				model.Locations = SubmitLocation(location);
 				model.UpdatedAt = DateTime.Now;
 				_onSubmit?.Invoke(model);
 				Close();
 			};
 			return createCommand;
+		}
+
+        private Locations SubmitLocation(Locations location)
+        {
+            return new Locations
+			{
+				Id = location.Id,
+				Floor = location.Floor,
+				Room = location.Room,
+				Container = location.Container,
+				X = location.X,
+				Y = location.Y
+			};
+        }
+
+        private Category SubmitCategory(Category category)
+		{
+			return new Category
+			{
+				Id = category.Id,
+				Name = category.Name,
+				Description = category.Description
+			};
 		}
 	}
 }
