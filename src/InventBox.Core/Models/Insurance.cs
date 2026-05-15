@@ -4,10 +4,10 @@ namespace InventBox.Core.Models;
 
 public class Insurance
 {
-    public int Id { get; set; }
-    public DateTime StartDate { get; set; }
-    public DateTime EndDate { get; set; }
-    public string Provider { get; set; } = string.Empty;
-    public string ContactNumber { get; set; } = string.Empty;
-    public Status Insured { get; set; }
+    public virtual int Id { get; set; }
+    public virtual DateTime StartDate { get; set; }
+    public virtual DateTime EndDate { get; set; }
+    public virtual string Provider { get; set; } = string.Empty;
+    public virtual string ContactNumber { get; set; } = string.Empty;
+    public virtual Status Insured { get; set; }
 }

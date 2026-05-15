@@ -19,6 +19,8 @@ public class ItemModelView : Items, INotifyPropertyChanged
     private Conditions conditions;
     private Category category;
     private Locations locations;
+    private Warrantly? warrantly;
+    private Insurance? insurance;
 
     public override int Id { get { return id; } set
         {
@@ -82,15 +84,6 @@ public class ItemModelView : Items, INotifyPropertyChanged
                 OnPropertyChanged();
             } 
         }  }
-    public override bool Insured { get { return insured;}
-        set
-        {
-           if (insured != value)
-            {
-                insured = value;
-                OnPropertyChanged();
-            } 
-        }  }
     public override string Notes { get { return notes;}
         set
         {
@@ -100,16 +93,6 @@ public class ItemModelView : Items, INotifyPropertyChanged
                 OnPropertyChanged();
             } 
         }  }
-    public override Category Category { get { return category; } 
-        set
-        {
-            if (category != value)
-            {
-                category = value;
-                OnPropertyChanged();
-            }
-        }
-    }
     public override DateTime CreatedAt { get; set; } = DateTime.Now;
     public override DateTime UpdatedAt { get; set; } = DateTime.Now;
     public override Conditions Conditions { get { return conditions;}
@@ -122,12 +105,41 @@ public class ItemModelView : Items, INotifyPropertyChanged
             }
         }  
     }
+    public override Category Category { get { return category; } 
+        set
+        {
+            if (category != value)
+            {
+                category = value;
+                OnPropertyChanged();
+            }
+        }
+    }
     public override Locations Locations { get { return locations; }
         set
         {
             if (locations != value)
             {
                 locations = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+    public override Warrantly Warrantly {get { return warrantly; } 
+        set
+        {
+            if (warrantly != value)
+            {
+                warrantly = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+    public override Insurance Insurance { get { return insurance; } set
+        {
+            if (insurance != value)
+            {
+                insurance = value;
                 OnPropertyChanged();
             }
         }

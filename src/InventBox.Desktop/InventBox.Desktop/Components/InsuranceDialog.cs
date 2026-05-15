@@ -1,23 +1,23 @@
 using System;
 using Eto.Forms;
 using Eto.Drawing;
+using InventBox.Desktop.ModelViews;
 using InventBox.Desktop.Interfaces;
-using InventBox.Core.Models;
 using InventBox.Core;
 using InventBox.Desktop.Components.ItemsForm;
-using InventBox.Desktop.ModelViews;
+using InventBox.Core.Models;
 
 namespace InventBox.Desktop.Components
 {
-	public partial class WarrantlyDialog : Dialog, IDialogs<WarrantlyModelView>
+	public partial class InsuranceDialog : Dialog, IDialogs<InsuranceModelView>
 	{
 		private static FileLogger _logger;
 		private string _path;
 		private readonly Mode _mode;
-		private readonly Action<Warrantly> _onSubmit;
+		private readonly Action<Insurance> _onSubmit;
 		TextBox startDatePicker;
 		TextBox endDatePicker;
-		public WarrantlyDialog(WarrantlyModelView modelView, string path, FileLogger logger, Mode mode, Size size, Action<Warrantly> onSubmit)
+		public InsuranceDialog(InsuranceModelView modelView, string path, FileLogger logger, Mode mode, Size size, Action<Insurance> onSubmit)
 		{
 			_path = path;
 			_logger = logger;
@@ -26,17 +26,18 @@ namespace InventBox.Desktop.Components
 			DataContext = modelView;
 			Content = CreatePanel(modelView);
 			_onSubmit = onSubmit;
-			Title = _mode == Mode.Create ? "Add Warrantly" : "Edit Warrantly";
+			Title = _mode == Mode.Create ? "Add Insurance" : "Edit Insurance";
 		}
-		private Panel CreatePanel(WarrantlyModelView modelView)
-		{
+
+        private Control CreatePanel(InsuranceModelView modelView)
+        {
 			return new Panel
 			{
 				Content = CreateForm(modelView)
 			};
-		}
+        }
 
-        public DynamicLayout CreateForm(WarrantlyModelView modelView)
+        public DynamicLayout CreateForm(InsuranceModelView modelView)
         {
 			// Create input variable
 			startDatePicker = new TextBox() {Text = modelView.StartDate.ToString("yyyy-MM-dd")};
@@ -98,16 +99,16 @@ namespace InventBox.Desktop.Components
 			command.Executed += (sender, e) =>
 			{
 				
-				var model = (WarrantlyModelView)DataContext;
+				var model = (InsuranceModelView)DataContext;
 				if (DateTime.TryParse(startDatePicker.Text, out var start))
 					model.StartDate = start;
 				if (DateTime.TryParse(endDatePicker.Text, out var end))
 					model.EndDate = end;
 				DateTime expiredate = GetExpireDate(end);
 				if (DateTime.Now >= expiredate && DateTime.Now < end)
-					model.Status = Status.Expiring;
-				if (DateTime.Now > end)
-					model.Status = Status.Expired;
+					model.Insured = Status.Expiring;
+				if (DateTime.Now >= end)
+					model.Insured = Status.Expired;
 				_onSubmit?.Invoke(model);
 				Close();
 			};
@@ -115,7 +116,7 @@ namespace InventBox.Desktop.Components
         }
 
         private DateTime GetExpireDate(DateTime end)
-		{
+        {
 			var day = end.Day - 30;
 			int month = end.Month;
 			int year = end.Year;
@@ -130,6 +131,6 @@ namespace InventBox.Desktop.Components
 			}
 			var date = $"{year}/{month}/{day}";
 			return DateTime.Parse(date);
-		}
+        }
     }
 }

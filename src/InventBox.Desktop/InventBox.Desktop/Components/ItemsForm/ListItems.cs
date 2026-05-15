@@ -57,12 +57,17 @@ namespace InventBox.Desktop.Components.ItemsForm
 					GetColumn("Serial Number", i => i.SerialNumber),
 					GetColumn("Model Number", i => i.ModelNumber),
 					GetColumn("Manufacturer", i => i.Manufacturer),
-					GetColumn("Insured", i => i.Insured.ToString()),
 					GetColumn("Notes", i => i.Notes),
 					GetColumn("Conditions", i => i.Conditions.ToString()),
 					GetColumn("Category", i => i.Category.Name),
 					GetColumn("Floor", i => i.Locations.Floor),
-					GetColumn("Room", i => i.Locations.Room)
+					GetColumn("Room", i => i.Locations.Room),
+					GetColumn("Warrant", i => (i.Warrantly != null) ? i.Warrantly.Status.ToString() : "Not Warranted"),
+					GetColumn("Warrant Provider", i => (i.Warrantly != null) ? i.Warrantly.Provider : ""),
+					GetColumn("Warrant Contact #", i => (i.Warrantly != null) ? i.Warrantly.ContactNumber : "" ),
+					GetColumn("Insured", i => (i.Insurance != null) ? i.Insurance.Insured.ToString() : "Not Insured"),
+					GetColumn("Insurance Provider", i => (i.Insurance != null) ? i.Insurance.Provider : ""),
+					GetColumn("Insurance Contact #", i => (i.Insurance != null) ? i.Insurance.ContactNumber : "")
 				}	
 			};
         }
@@ -235,7 +240,6 @@ namespace InventBox.Desktop.Components.ItemsForm
 				SerialNumber = item.SerialNumber,
 				ModelNumber = item.ModelNumber,
 				Manufacturer = item.Manufacturer,
-				Insured = item.Insured,
 				Notes = item.Notes,
 				CreatedAt = item.CreatedAt,
 				UpdatedAt = item.UpdatedAt,
