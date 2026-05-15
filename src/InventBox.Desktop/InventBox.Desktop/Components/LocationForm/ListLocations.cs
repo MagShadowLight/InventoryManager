@@ -15,6 +15,7 @@ namespace InventBox.Desktop.Components.LocationForm
 {
 	public partial class ListLocations : Panel, IEventHandler, IControls<Locations, LocationsModelView>
 	{
+		private TextBox searchBar;
 		private List<Locations> _locations = new List<Locations>();
 		private static string _path;
 		private FileLogger _logger;
@@ -44,28 +45,30 @@ namespace InventBox.Desktop.Components.LocationForm
 
         public void ClearFilter()
         {
+			searchBar.Text = "";
 			_locations = ModelsList.locations;
 			RefreshData();
         }
 
         public DynamicLayout CreateDynamicLayout()
         {
+			searchBar = CreateSearchBar();
 			var layout = new DynamicLayout
 			{
 				Padding = 10				
 			};
 			layout.BeginVertical();
-			layout.AddSeparateRow(null, CreateSearchBar(), AddButton("Clear filter", 100, 50, () => ClearFilter()));
+			layout.AddSeparateRow(null, searchBar, AddButton("Clear Search", 100, 50, () => ClearFilter()));
 			layout.Add(_grid, true, true);
 			layout.AddSeparateRow(4, null, true, false,
 				new []
 				{
 					AddButton("Create new location", 50, 50, OnCreate),
-					AddButton("Save Location", 50, 50, OnSave),
-					AddButton("Load Location", 50, 50, OnLoad),
 					AddButton("Edit selected location", 50, 50, OnEdit),
 					AddButton("Delete", 50, 50, OnDelete),
-					null
+					null,
+					AddButton("Save Location", 50, 50, OnSave),
+					AddButton("Load Location", 50, 50, OnLoad)
 				}
 			);
 			layout.EndVertical();

@@ -14,6 +14,7 @@ namespace InventBox.Desktop.Components.CategoryForm
 {
 	public partial class ListCategories : Panel, IEventHandler, IControls<Category, CategoryModelView>
 	{
+		private TextBox searchBar;
 		private List<Category> _categories = new List<Category>();
 		private static string _path;
 		private static FileLogger _logger;
@@ -41,27 +42,29 @@ namespace InventBox.Desktop.Components.CategoryForm
 
         public void ClearFilter()
         {
+			searchBar.Text = "";
 			_categories = ModelsList.categories;
 			RefreshData();
         }
 
         public DynamicLayout CreateDynamicLayout()
         {
+			searchBar = CreateSearchBar();
 			DynamicLayout layout = new DynamicLayout()
 			{
 				Padding = 10
 			};
 			layout.BeginVertical();
-			layout.AddSeparateRow(null, CreateSearchBar(), AddButton("Clear Filter", 100, 50, () => ClearFilter()));
+			layout.AddSeparateRow(null, searchBar, AddButton("Clear Search", 100, 50, () => ClearFilter()));
 			layout.Add(_grid, true, true);
 			layout.AddSeparateRow(4, null, true, false, new []
 				{
 					AddButton("Create new category", 50, 50, OnCreate),
-					AddButton("Save Category", 50, 50, OnSave),
-					AddButton("Load Category", 50, 50, OnLoad),
 					AddButton("Edit selected category", 50, 50, OnEdit),
 					AddButton("Delete", 50, 50, OnDelete),
-					null
+					null,
+					AddButton("Save Category", 50, 50, OnSave),
+					AddButton("Load Category", 50, 50, OnLoad)
 				}
 			);
 			layout.EndVertical();

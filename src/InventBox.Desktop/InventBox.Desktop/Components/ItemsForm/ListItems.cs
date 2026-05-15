@@ -10,11 +10,14 @@ using System.Threading.Tasks;
 using EtoApp;
 using System.IO;
 using System.Collections.Generic;
+using InventBox.Desktop.Enum;
 
 namespace InventBox.Desktop.Components.ItemsForm
 {
 	public partial class ListItems : Panel, IEventHandler, IControls<Items, ItemModelView>
 	{
+		private Searchable search;
+		private TextBox searchBar;
 		private List<Items> _items = new List<Items>();
 		private ImageCapture _capture = new ImageCapture();
 		private static string _path;
@@ -62,6 +65,7 @@ namespace InventBox.Desktop.Components.ItemsForm
 					GetColumn("Category", i => i.Category.Name),
 					GetColumn("Floor", i => i.Locations.Floor),
 					GetColumn("Room", i => i.Locations.Room),
+					GetColumn("Container", i => i.Locations.Container),
 					GetColumn("Warrant", i => (i.Warrantly != null) ? i.Warrantly.Status.ToString() : "Not Warranted"),
 					GetColumn("Warrant Provider", i => (i.Warrantly != null) ? i.Warrantly.Provider : ""),
 					GetColumn("Warrant Contact #", i => (i.Warrantly != null) ? i.Warrantly.ContactNumber : "" ),
@@ -92,23 +96,34 @@ namespace InventBox.Desktop.Components.ItemsForm
 
 		public DynamicLayout CreateDynamicLayout()
 		{
-
+			searchBar = CreateSearchBar();
+			EnumDropDown<Searchable> searchDropDown = CreateSearchDropDown();
 			DynamicLayout layout = new DynamicLayout();
 			layout.BeginVertical();
-			layout.AddSeparateRow(null, CreateSearchBar(), AddButton("Clear Filter", 100, 50, () => ClearFilter()), AddButton("Scan barcode", 100, 50, async () => await OnScanBarCode()));
+			layout.AddSeparateRow(null, searchDropDown, searchBar, AddButton("Clear Search", 100, 50, () => ClearFilter()), AddButton("Scan barcode", 100, 50, async () => await OnScanBarCode()));
 			layout.Add(_grid, true, true);
 			layout.AddSeparateRow(4, null, true, false,
 				new [] { 
 					AddButton("Create new item", 50, 50, OnCreate),
-					AddButton("Save Data", 50, 50, OnSave),
-					AddButton("Load Data", 50, 50, OnLoad),
 					AddButton("Edit selected item", 50, 50, OnEdit),
 					AddButton("Delete", 50, 50, OnDelete),
-					null
+					null,
+					AddButton("Save Data", 50, 50, OnSave),
+					AddButton("Load Data", 50, 50, OnLoad)
 				}
 			);
 			layout.EndVertical();
 			return layout;
+		}
+		private EnumDropDown<Searchable> CreateSearchDropDown()
+		{
+			var dropdown = new EnumDropDown<Searchable>();
+			dropdown.SelectedValue = Searchable.Name;
+			dropdown.SelectedValueChanged += (sender, e) =>
+			{
+				search = dropdown.SelectedValue;
+			};
+			return dropdown;
 		}
 
 		public TextBox CreateSearchBar()
@@ -119,8 +134,16 @@ namespace InventBox.Desktop.Components.ItemsForm
 			{
 				if (string.IsNullOrEmpty(textBox.Text))
 					_items = ModelsList.items;
-				else
-					_items = ModelsList.items.Where(item => item.Name.Contains(textBox.Text)).ToList();
+				else {
+					if (search == Searchable.Name)
+						_items = ModelsList.items.Where(item => item.Name.Contains(textBox.Text)).ToList();
+					if (search == Searchable.Category)
+						_items = ModelsList.items.Where(item => item.Category.Name.Contains(textBox.Text)).ToList();
+					if (search == Searchable.Floor)
+						_items = ModelsList.items.Where(item => item.Locations.Floor.Contains(textBox.Text)).ToList();
+					if (search == Searchable.Room)
+						_items = ModelsList.items.Where(item => item.Locations.Room.Contains(textBox.Text)).ToList();
+				}
 				RefreshData();
 			};
 			return textBox;
@@ -129,6 +152,7 @@ namespace InventBox.Desktop.Components.ItemsForm
 		public void ClearFilter()
 		{
 			_items = ModelsList.items;
+			searchBar.Text = "";
 			RefreshData();
 		} 
 
@@ -196,6 +220,13 @@ namespace InventBox.Desktop.Components.ItemsForm
 			if (loadDialog.FileName != null) {
 				ModelsList.items = _dataManagement.Load(loadDialog.FileName);
 				_items = ModelsList.items;
+				foreach (var item in _items)
+				{
+					if (!ModelsList.categories.Contains(item.Category))
+						ModelsList.categories.Add(item.Category);
+					if (!ModelsList.locations.Contains(item.Locations))
+						ModelsList.locations.Add(item.Locations);
+				}
 				RefreshData();
 			}
 			loadDialog.Dispose();
