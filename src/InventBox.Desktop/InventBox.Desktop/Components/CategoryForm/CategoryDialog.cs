@@ -56,7 +56,7 @@ namespace InventBox.Desktop.Components.CategoryForm
 					new DynamicRow
 					{
 						"",
-						new Button {Text = "Submit", Size = new Size(100, 10), Command = SubmitButton},
+						new Button {Text = "Submit", Size = new Size(100, 25), Command = SubmitButton},
 						""
 					},
 					new DynamicRow

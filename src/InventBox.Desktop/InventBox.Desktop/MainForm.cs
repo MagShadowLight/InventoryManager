@@ -27,8 +27,24 @@ namespace InventBox.Desktop
 		/// Create commands variables
 		/// </summary>
 		Command listItemCommand;
+		Command CreateItemCommand;
+		Command UpdateItemCommand;
+		Command DeleteItemCommand;
+		Command SaveItemCommand;
+		Command LoadItemCommand;
 		Command listCategoryCommand;
-		Command quitCommand;
+        Command CreateCategoryCommand;
+        Command UpdateCategoryCommand;
+        Command DeleteCategoryCommand;
+		Command SaveCategoryCommand;
+		Command LoadCategoryCommand;
+        Command listLocationCommand;
+        Command CreateLocationCommand;
+        Command UpdateLocationCommand;
+        Command DeleteLocationCommand;
+		Command SaveLocationCommand;
+		Command LoadLocationCommand;
+        Command quitCommand;
 		Command aboutCommand;
 
 
@@ -72,8 +88,106 @@ namespace InventBox.Desktop
 				// CreateCategoryListPanel(500, 500);
 				CreateMainApp();
 			};
-			
-			quitCommand = CreateCommand("Quit", null, Application.Instance.CommonModifier | Keys.Q);
+            listLocationCommand = CreateCommand("List locations", "List locations", Application.Instance.CommonModifier | Keys.L);
+            listLocationCommand.Executed += (sender, e) =>
+			{
+				createLocationListPanel(1250, 1000);
+				// CreateCategoryListPanel(500, 500);
+				CreateMainApp();
+			};
+
+			CreateItemCommand = CreateCommand("Create new item", "Create new items");
+			CreateItemCommand.Executed += (sender, e) =>
+			{
+				if (listItemsForm != null && listItemsForm.Visible)
+					listItemsForm.OnCreate();
+			};
+			UpdateItemCommand = CreateCommand("Edit selected item", "Edit selected items");
+			UpdateItemCommand.Executed += (sender, e) =>
+			{
+				if (listItemsForm != null && listItemsForm.Visible)
+					listItemsForm.OnEdit();
+			};
+			DeleteItemCommand = CreateCommand("Delete selected item", "Delete Selected items");
+			DeleteItemCommand.Executed += (sender, e) =>
+			{
+				if (listItemsForm != null && listItemsForm.Visible)
+					listItemsForm.OnDelete();
+			};
+			SaveItemCommand = CreateCommand("Save Items", "Save Items");
+			SaveItemCommand.Executed += (sender, e) =>
+			{
+				if (listItemsForm != null && listItemsForm.Visible)
+					listItemsForm.OnSave();
+			};
+			LoadItemCommand = CreateCommand("Load Items", "Load Items");
+			LoadItemCommand.Executed += (sender, e) =>
+			{
+				if (listItemsForm != null && listItemsForm.Visible)
+					listItemsForm.OnLoad();
+			};
+            CreateCategoryCommand = CreateCommand("Create new category", "Create new category");
+            CreateCategoryCommand.Executed += (sender, e) =>
+            {
+                if (listCategories != null && listCategories.Visible)
+                    listCategories.OnCreate();
+            };
+            UpdateCategoryCommand = CreateCommand("Edit selected category", "Edit selected category");
+            UpdateCategoryCommand.Executed += (sender, e) =>
+            {
+                if (listCategories != null && listCategories.Visible)
+                    listCategories.OnEdit();
+            };
+            DeleteCategoryCommand = CreateCommand("Delete selected category", "Delete selected category");
+            DeleteCategoryCommand.Executed += (sender, e) =>
+            {
+                if (listCategories != null && listCategories.Visible)
+                    listCategories.OnDelete();
+            };
+            SaveCategoryCommand = CreateCommand("Save Category", "Save Category");
+            SaveCategoryCommand.Executed += (sender, e) =>
+            {
+                if (listCategories != null && listCategories.Visible)
+                    listCategories.OnSave();
+            };
+            LoadCategoryCommand = CreateCommand("Load Category", "Load Category");
+            LoadCategoryCommand.Executed += (sender, e) =>
+            {
+                if (listCategories != null && listCategories.Visible)
+                    listCategories.OnLoad();
+            };
+            CreateLocationCommand = CreateCommand("Create new location", "Create new location");
+            CreateLocationCommand.Executed += (sender, e) =>
+            {
+                if (listLocations != null && listLocations.Visible)
+                    listLocations.OnCreate();
+            };
+            UpdateLocationCommand = CreateCommand("Edit selected location", "Edit selected location");
+            UpdateLocationCommand.Executed += (sender, e) =>
+            {
+                if (listLocations != null && listLocations.Visible)
+                    listLocations.OnEdit();
+            };
+            DeleteLocationCommand = CreateCommand("Delete selected location", "Delete selected location");
+            DeleteLocationCommand.Executed += (sender, e) =>
+            {
+                if (listLocations != null && listLocations.Visible)
+                    listCategories.OnDelete();
+            };
+            SaveLocationCommand = CreateCommand("Save location", "Save location");
+            SaveLocationCommand.Executed += (sender, e) =>
+            {
+                if (listLocations != null && listLocations.Visible)
+                    listLocations.OnSave();
+            };
+            LoadLocationCommand = CreateCommand("Load location", "Load location");
+            LoadLocationCommand.Executed += (sender, e) =>
+            {
+                if (listLocations != null && listLocations.Visible)
+                    listLocations.OnLoad();
+            };
+
+            quitCommand = CreateCommand("Quit", null, Application.Instance.CommonModifier | Keys.Q);
 			quitCommand.Executed += (sender, e) => Application.Instance.Quit();
 
 			aboutCommand = CreateCommand("About...");
@@ -82,13 +196,24 @@ namespace InventBox.Desktop
 
 		private MenuBar CreateMenuBar()
 		{
+			var itemSubMenuItem = new SubMenuItem { Text = "&Edit", Items = { CreateItemCommand, UpdateItemCommand, DeleteItemCommand, SaveItemCommand, LoadItemCommand }, Visible = false };
+			var categorySubMenuItem = new SubMenuItem { Text = "&Edit", Items = { CreateCategoryCommand, UpdateCategoryCommand, DeleteCategoryCommand, SaveCategoryCommand, LoadCategoryCommand }, Visible = false };
+			var locationSubMenuItem = new SubMenuItem { Text = "&Edit", Items = { CreateLocationCommand, UpdateLocationCommand, DeleteLocationCommand, SaveLocationCommand, LoadLocationCommand }, Visible = false };
+			if (listItemsForm != null && listItemsForm.Visible == true)
+				itemSubMenuItem.Visible = true;
+			if (listCategories != null && listCategories.Visible == true)
+				categorySubMenuItem.Visible = true;
+			if (listLocations != null && listLocations.Visible == true)
+				locationSubMenuItem.Visible = true;
 			return new MenuBar
 			{
 				Items =
 				{
 					// File submenu
-					new SubMenuItem { Text = "&File", Items = { listItemCommand, listCategoryCommand } },
-					// new SubMenuItem { Text = "&Edit", Items = { /* commands/items */ } },
+					new SubMenuItem { Text = "&File", Items = { listItemCommand, listCategoryCommand, listLocationCommand } },
+					itemSubMenuItem,
+					categorySubMenuItem,
+					locationSubMenuItem
 					// new SubMenuItem { Text = "&View", Items = { /* commands/items */ } },
 				},
 				ApplicationItems =
@@ -147,7 +272,7 @@ namespace InventBox.Desktop
 				{
 					AddButton("Inventory", 100, 50, OnItemListPanel),
 					AddButton("Category", 100, 50, CreateCategoryListPanel),
-					AddButton("Locations", 100, 50, createLocationDialogPanel)
+					AddButton("Locations", 100, 50, createLocationListPanel)
 				}
 			};
 		}
@@ -167,6 +292,7 @@ namespace InventBox.Desktop
 			ClearOtherPanel(panels);
 			listItemsForm = new ListItems(_path, _logger, new Size(width,height));
 			listItemsForm.Visible = true;
+			Menu = CreateMenuBar();
 			Content = CreateMainApp();
 		}
 
@@ -178,9 +304,10 @@ namespace InventBox.Desktop
 			ClearOtherPanel(panels);
 			listCategories = new ListCategories(_path, _logger, new Size(width, height));
 			listCategories.Visible = true;
+			Menu = CreateMenuBar();
 			Content = CreateMainApp();
 		}
-		private void createLocationDialogPanel(int width, int height)
+		private void createLocationListPanel(int width, int height)
 		{
 			if (listLocations != null)
 				listLocations.Dispose();
@@ -188,6 +315,7 @@ namespace InventBox.Desktop
 			ClearOtherPanel(panels);
 			listLocations = new ListLocations(_path, _logger, new Size(width, height));
 			listLocations.Visible = true;
+			Menu = CreateMenuBar();
 			Content = CreateMainApp();
 		}
 		private void ClearOtherPanel(List<Panel> panels)

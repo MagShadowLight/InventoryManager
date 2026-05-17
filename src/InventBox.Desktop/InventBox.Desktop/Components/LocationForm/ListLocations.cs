@@ -40,7 +40,7 @@ namespace InventBox.Desktop.Components.LocationForm
         {
 			var command = new Command();
 			command.Executed += (sender, eventArgs) => eventHandler();
-			return new Button { Text = text, Width = width, Height = height, Command = command };
+			return new Button { Text = text, Width = width, Height = height, Command = command, Cursor = Cursors.Pointer };
         }
 
         public void ClearFilter()
@@ -63,12 +63,12 @@ namespace InventBox.Desktop.Components.LocationForm
 			layout.AddSeparateRow(4, null, true, false,
 				new []
 				{
-					AddButton("Create new location", 50, 50, OnCreate),
-					AddButton("Edit selected location", 50, 50, OnEdit),
-					AddButton("Delete", 50, 50, OnDelete),
+					AddButton("Create new location", 100, 50, OnCreate),
+					AddButton("Edit selected location", 100, 50, OnEdit),
+					AddButton("Delete selected locations", 100, 50, OnDelete),
 					null,
-					AddButton("Save Location", 50, 50, OnSave),
-					AddButton("Load Location", 50, 50, OnLoad)
+					AddButton("Save Location", 100, 50, OnSave),
+					AddButton("Load Location", 100, 50, OnLoad)
 				}
 			);
 			layout.EndVertical();
@@ -155,7 +155,7 @@ namespace InventBox.Desktop.Components.LocationForm
 			var index = ModelsList.locations.IndexOf(location);
 			if (index < 0)
 				return;
-			var deleteDialog = MessageBox.Show("Are you sure to delete the selected location?", MessageBoxButtons.YesNo, MessageBoxType.Question, MessageBoxDefaultButton.Yes);
+			var deleteDialog = MessageBox.Show("Are you sure to delete the selected location?", "Delete selected location", MessageBoxButtons.YesNo, MessageBoxType.Question, MessageBoxDefaultButton.Yes);
 			if (deleteDialog != DialogResult.Yes)
 				return;
 			ModelsList.locations.Remove(location);

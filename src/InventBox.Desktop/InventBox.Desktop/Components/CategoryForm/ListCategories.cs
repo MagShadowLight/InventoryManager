@@ -37,7 +37,7 @@ namespace InventBox.Desktop.Components.CategoryForm
         {
 			var command = new Command();
 			command.Executed += (sender, eventArgs) => eventHandler();
-			return new Button {Text = text, Width = width, Height = height, Command = command};
+			return new Button {Text = text, Width = width, Height = height, Command = command, Cursor = Cursors.Pointer};
         }
 
         public void ClearFilter()
@@ -59,12 +59,12 @@ namespace InventBox.Desktop.Components.CategoryForm
 			layout.Add(_grid, true, true);
 			layout.AddSeparateRow(4, null, true, false, new []
 				{
-					AddButton("Create new category", 50, 50, OnCreate),
-					AddButton("Edit selected category", 50, 50, OnEdit),
-					AddButton("Delete", 50, 50, OnDelete),
+					AddButton("Create new category", 100, 50, OnCreate),
+					AddButton("Edit selected category", 100, 50, OnEdit),
+					AddButton("Delete selected category", 100, 50, OnDelete),
 					null,
-					AddButton("Save Category", 50, 50, OnSave),
-					AddButton("Load Category", 50, 50, OnLoad)
+					AddButton("Save Category", 100, 50, OnSave),
+					AddButton("Load Category", 100, 50, OnLoad)
 				}
 			);
 			layout.EndVertical();
@@ -149,7 +149,7 @@ namespace InventBox.Desktop.Components.CategoryForm
 			var index = ModelsList.categories.IndexOf(category);
 			if (index < 0)
 				return;
-			var deleteDialog = MessageBox.Show("Are you sure to delete the selected category?", MessageBoxButtons.YesNo, MessageBoxType.Question, MessageBoxDefaultButton.Yes);
+			var deleteDialog = MessageBox.Show("Are you sure to delete the selected category?", "Delete selected category", MessageBoxButtons.YesNo, MessageBoxType.Information, MessageBoxDefaultButton.Yes);
 			if (deleteDialog != DialogResult.Yes)
 				return;
 			ModelsList.categories.Remove(category);

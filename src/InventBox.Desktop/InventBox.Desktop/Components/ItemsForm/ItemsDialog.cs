@@ -140,19 +140,19 @@ namespace InventBox.Desktop.Components.ItemsForm
 			form.BeginVertical();
 			form.AddRow(
 				"Warrant",
-				(warrantly == null) ? AddButton("Create Warrant", 100, 10, OnWarrantCreate) : AddButton("Remove Warrant", 100, 10, OnWarrantDelete)
+				(warrantly == null) ? AddButton("Create Warrant", 100, 40, OnWarrantCreate) : AddButton("Remove Warrant", 100, 40, OnWarrantDelete)
 			);
 			form.Add((warrantly != null) ? "Warrantly added" : "");
 			form.AddRow(
 				"Insurance",
-				(_insurance == null) ? AddButton("Create Insurance", 100, 10, OnInsuranceCreate) : AddButton("Remove Insurance", 100, 10, OnInsuranceDelete)
+				(_insurance == null) ? AddButton("Create Insurance", 100, 40, OnInsuranceCreate) : AddButton("Remove Insurance", 100, 40, OnInsuranceDelete)
 			);
 			form.Add((_insurance != null) ? "Insurance added" : "");
 			form.EndVertical();
 			form.BeginHorizontal();
 			form.AddSeparateRow(
 				null,
-				new Button() {Command = SubmitButton, Width = 100, Height = 10, Text = "Submit"},
+				new Button() {Command = SubmitButton, Width = 100, Height = 40, Text = "Submit"},
 				null
 			);
 			form.EndHorizontal();

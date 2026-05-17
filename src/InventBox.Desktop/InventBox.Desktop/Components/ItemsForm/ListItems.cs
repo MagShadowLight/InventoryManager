@@ -104,12 +104,12 @@ namespace InventBox.Desktop.Components.ItemsForm
 			layout.Add(_grid, true, true);
 			layout.AddSeparateRow(4, null, true, false,
 				new [] { 
-					AddButton("Create new item", 50, 50, OnCreate),
-					AddButton("Edit selected item", 50, 50, OnEdit),
-					AddButton("Delete", 50, 50, OnDelete),
+					AddButton("Create new item", 100, 50, OnCreate),
+					AddButton("Edit selected item", 100, 50, OnEdit),
+					AddButton("Delete selected item", 100, 50, OnDelete),
 					null,
-					AddButton("Save Data", 50, 50, OnSave),
-					AddButton("Load Data", 50, 50, OnLoad)
+					AddButton("Save Data", 100, 50, OnSave),
+					AddButton("Load Data", 100, 50, OnLoad)
 				}
 			);
 			layout.EndVertical();
@@ -117,7 +117,7 @@ namespace InventBox.Desktop.Components.ItemsForm
 		}
 		private EnumDropDown<Searchable> CreateSearchDropDown()
 		{
-			var dropdown = new EnumDropDown<Searchable>();
+			var dropdown = new EnumDropDown<Searchable>() { Cursor = Cursors.Pointer };
 			dropdown.SelectedValue = Searchable.Name;
 			dropdown.SelectedValueChanged += (sender, e) =>
 			{
@@ -185,7 +185,7 @@ namespace InventBox.Desktop.Components.ItemsForm
 		{
 			var command = new Command();
 			command.Executed += (sender, eventArgs) => eventHandler();
-			return new Button { Text = text, Width = width, Height = height, Command = command};
+			return new Button { Text = text, Width = width, Height = height, Command = command, Cursor = Cursors.Pointer};
 		}
 
 		public void OnSave()
@@ -253,7 +253,7 @@ namespace InventBox.Desktop.Components.ItemsForm
 			var index = ModelsList.items.IndexOf(item);
 			if (index < 0)
 				return;
-			var deleteDialog = MessageBox.Show("Are you sure to delete the selected item?", MessageBoxButtons.YesNo, MessageBoxType.Question, MessageBoxDefaultButton.Yes);
+			var deleteDialog = MessageBox.Show("Are you sure to delete the selected item?", "Delete selected item", MessageBoxButtons.YesNo, MessageBoxType.Question, MessageBoxDefaultButton.Yes);
 			if (deleteDialog != DialogResult.Yes)
 				return;
 			ModelsList.items.Remove(item);
