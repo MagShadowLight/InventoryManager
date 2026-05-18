@@ -141,7 +141,7 @@ namespace InventBox.Desktop.Components.LocationForm
 
         public void OnCreate()
         {
-			LocationsModelView modelView = new LocationsModelView() {Id = ModelsList.locations.Count};
+			LocationsModelView modelView = new LocationsModelView() {Id = ModelsList.locations.Count + 1};
 			var createLocationDialog = new LocationsDialog(modelView, Mode.Create, location => ModelsList.locations.Add(location), _path, _logger);
 			createLocationDialog.Closed += (sender, e) => RefreshData();
 			createLocationDialog.ShowModal();
