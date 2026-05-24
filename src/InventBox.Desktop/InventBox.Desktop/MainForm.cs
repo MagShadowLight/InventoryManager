@@ -47,10 +47,10 @@ namespace InventBox.Desktop
         Command quitCommand;
 		Command aboutCommand;
 
-
-		
 		public MainForm()
 		{
+			
+			CreateLogFile();
 			/// <summary>
 			/// Create an About Dialog for the application
 			/// </summary>
@@ -60,8 +60,8 @@ namespace InventBox.Desktop
 			/// Set the properties for the window.
 			/// </summary>
 			Title = "InventBox";
-			MinimumSize = new Size(1500, 1250);
-			// MinimumSize = new Size(1000, 1000);
+			// MinimumSize = new Size(500, 500);
+			MinimumSize = new Size(1500, 1000);
 			Resizable = true;
 			Content = CreateMainApp();
 			CreateCommand();	
@@ -72,27 +72,53 @@ namespace InventBox.Desktop
 			// create toolbar			
 			// ToolBar = CreateToolbar();
 		}
+	private void CreateLogFile()
+		{
+			string[] path = new string[10];
+			if (Platform.IsGtk)
+				path = _path.Split("/");
+			else if (Platform.IsWpf)
+				path = _path.Split("\\");
+			else if (Platform.IsMac)
+				path = _path.Split(".");
+			
+			string temp = string.Empty;
+			foreach (var test in path)
+			{
+				if (Platform.IsGtk)
+					temp += Path.Combine(test + "/");
+				else if (Platform.IsWpf)
+					temp += Path.Combine(test + "\\");
+				else if (Platform.IsMac)
+					temp += Path.Combine(test + ".");
+				if (test.Contains(".log"))
+					return;
+				if (!Directory.Exists(temp))
+					Directory.CreateDirectory(temp);
+			}
+		}
 
 		private void CreateCommand()
 		{
 			listItemCommand = CreateCommand("List items", "List items", Application.Instance.CommonModifier | Keys.I);
 			listItemCommand.Executed += (sender, e) => {
-				OnItemListPanel(1250, 1000);
+				// OnItemListPanel(1250, 1000);
+				OnItemListPanel(300, 300);
 				CreateMainApp();
 			};
 
 			listCategoryCommand = CreateCommand("List categories", "List categories", Application.Instance.CommonModifier | Keys.C);
 			listCategoryCommand.Executed += (sender, e) =>
 			{
-				CreateCategoryListPanel(1250, 1000);
-				// CreateCategoryListPanel(500, 500);
+				// CreateCategoryListPanel(1250, 1000);
+				CreateCategoryListPanel(300, 300);
 				CreateMainApp();
 			};
             listLocationCommand = CreateCommand("List locations", "List locations", Application.Instance.CommonModifier | Keys.L);
             listLocationCommand.Executed += (sender, e) =>
 			{
-				createLocationListPanel(1250, 1000);
-				// CreateCategoryListPanel(500, 500);
+				// createLocationListPanel(1250, 1000);
+				CreateCategoryListPanel(300, 300);
 				CreateMainApp();
 			};
 
@@ -248,6 +274,7 @@ namespace InventBox.Desktop
 		}
 		private DynamicLayout CreateMainApp()
 		{
+			
 			var layout = new DynamicLayout
 			{
 				Padding = 10,
@@ -255,9 +282,9 @@ namespace InventBox.Desktop
 			};
 			layout.BeginHorizontal();
 			layout.Add(NavigationButton());
-			layout.AddColumn(listItemsForm, null);
-			layout.AddColumn(listCategories, null);
-			layout.AddColumn(listLocations, null);
+			layout.Add(listItemsForm);
+			layout.Add(listCategories);
+			layout.Add(listLocations);
 			layout.AddSpace();
 			layout.EndHorizontal();
 			return layout;
@@ -265,14 +292,17 @@ namespace InventBox.Desktop
 
 		private StackLayout NavigationButton()
 		{
+			var InventoryButton = AddButton("Inventory", 50, 50, OnItemListPanel);
+			var CategoryButton = AddButton("Category", 50, 50, CreateCategoryListPanel);
+			var LocationButton = AddButton("Locations", 50, 50, createLocationListPanel);
 			return new StackLayout()
 			{
 				Padding = 5,
 				Items =
 				{
-					AddButton("Inventory", 100, 50, OnItemListPanel),
-					AddButton("Category", 100, 50, CreateCategoryListPanel),
-					AddButton("Locations", 100, 50, createLocationListPanel)
+					InventoryButton,
+					CategoryButton,
+					LocationButton
 				}
 			};
 		}

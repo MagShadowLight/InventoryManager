@@ -30,7 +30,7 @@ namespace InventBox.Desktop.Components.LocationForm
 			_dataManagement = new DataManagement<Locations>(_path);
 			Size = size;
 
-			_grid = CreateGrid();
+			_grid = CreateGrid(700);
 			RefreshData();
 			Visible = false;
 			Content = CreateDynamicLayout();
@@ -59,7 +59,7 @@ namespace InventBox.Desktop.Components.LocationForm
 			};
 			layout.BeginVertical();
 			layout.AddSeparateRow(null, searchBar, AddButton("Clear Search", 100, 50, () => ClearFilter()));
-			layout.Add(_grid, true, true);
+			layout.Add(_grid, true);
 			layout.AddSeparateRow(4, null, true, false,
 				new []
 				{
@@ -71,14 +71,16 @@ namespace InventBox.Desktop.Components.LocationForm
 					AddButton("Load Location", 100, 50, OnLoad)
 				}
 			);
+			layout.Add(null);
 			layout.EndVertical();
 			return layout;
         }
 
-        public GridView CreateGrid()
+        public GridView CreateGrid(int height)
         {
 			return new GridView()
 			{
+				Height = height,
 				GridLines = GridLines.Both,
 				AllowMultipleSelection = false,
 				Columns =

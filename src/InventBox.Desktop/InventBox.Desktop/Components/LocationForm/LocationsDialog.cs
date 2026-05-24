@@ -64,6 +64,10 @@ namespace EtoApp
 					},
 					new DynamicRow
 					{
+						new Label {TextAlignment = TextAlignment.Center, Text = "Coordinate: "}
+					},
+					new DynamicRow
+					{
 						new Label { Text = "X" },
 						xInput
 					},

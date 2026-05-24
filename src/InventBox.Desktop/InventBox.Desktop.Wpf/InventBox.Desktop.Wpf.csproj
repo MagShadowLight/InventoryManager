@@ -3,6 +3,7 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net10.0-windows</TargetFramework>
+    <SelfContained>true</SelfContained>
   </PropertyGroup>
   
   <ItemGroup>
@@ -12,5 +13,4 @@
   <ItemGroup>
     <PackageReference Include="Eto.Platform.Wpf" Version="2.11.0" />
   </ItemGroup>
-
 </Project>

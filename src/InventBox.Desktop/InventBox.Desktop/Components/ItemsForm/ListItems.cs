@@ -32,9 +32,10 @@ namespace InventBox.Desktop.Components.ItemsForm
 			_logger = logger;
 			_scanner = new BarCodeScanner(_path);
 			_dataManagement = new DataManagement<Items>(_path);
-			Size = size;
+			MinimumSize = size;
 
-			_grid = CreateGrid();
+
+			_grid = CreateGrid(700);
 			RefreshData();
 			Visible = false;
 			Content = CreateDynamicLayout();
@@ -45,10 +46,11 @@ namespace InventBox.Desktop.Components.ItemsForm
 			_grid.DataStore = _items.ToArray<Items>();
 		}
 
-        public GridView CreateGrid()
+        public GridView CreateGrid(int height)
         {
 			return new GridView()
 			{
+				Height = height,
 				GridLines = GridLines.Both,
 				AllowMultipleSelection = false,
 				Columns =
@@ -62,14 +64,14 @@ namespace InventBox.Desktop.Components.ItemsForm
 					GetColumn("Manufacturer", i => i.Manufacturer),
 					GetColumn("Notes", i => i.Notes),
 					GetColumn("Conditions", i => i.Conditions.ToString()),
-					GetColumn("Category", i => i.Category.Name),
-					GetColumn("Floor", i => i.Locations.Floor),
-					GetColumn("Room", i => i.Locations.Room),
-					GetColumn("Container", i => i.Locations.Container),
-					GetColumn("Warrant", i => (i.Warrantly != null) ? i.Warrantly.Status.ToString() : "Not Warranted"),
+					GetColumn("Category", i => (i.Category != null) ? i.Category.Name : ""),
+					GetColumn("Floor", i => (i.Locations != null) ? i.Locations.Floor : ""),
+					GetColumn("Room", i => (i.Locations != null) ? i.Locations.Room : ""),
+					GetColumn("Container", i => (i.Locations != null) ? i.Locations.Container : ""),
+					GetColumn("Warrant", i => (i.Warrantly != null && i.Warrantly.Status != 0) ? i.Warrantly.Status.ToString() : "Not Warranted"),
 					GetColumn("Warrant Provider", i => (i.Warrantly != null) ? i.Warrantly.Provider : ""),
 					GetColumn("Warrant Contact #", i => (i.Warrantly != null) ? i.Warrantly.ContactNumber : "" ),
-					GetColumn("Insured", i => (i.Insurance != null) ? i.Insurance.Insured.ToString() : "Not Insured"),
+					GetColumn("Insured", i => (i.Insurance != null && i.Insurance.Insured != 0) ? i.Insurance.Insured.ToString() : "Not Insured"),
 					GetColumn("Insurance Provider", i => (i.Insurance != null) ? i.Insurance.Provider : ""),
 					GetColumn("Insurance Contact #", i => (i.Insurance != null) ? i.Insurance.ContactNumber : "")
 				}	
@@ -101,7 +103,7 @@ namespace InventBox.Desktop.Components.ItemsForm
 			DynamicLayout layout = new DynamicLayout();
 			layout.BeginVertical();
 			layout.AddSeparateRow(null, searchDropDown, searchBar, AddButton("Clear Search", 100, 50, () => ClearFilter()), AddButton("Scan barcode", 100, 50, async () => await OnScanBarCode()));
-			layout.Add(_grid, true, true);
+			layout.Add(_grid, true);
 			layout.AddSeparateRow(4, null, true, false,
 				new [] { 
 					AddButton("Create new item", 100, 50, OnCreate),
@@ -112,6 +114,7 @@ namespace InventBox.Desktop.Components.ItemsForm
 					AddButton("Load Data", 100, 50, OnLoad)
 				}
 			);
+			layout.Add(null);
 			layout.EndVertical();
 			return layout;
 		}
@@ -136,13 +139,13 @@ namespace InventBox.Desktop.Components.ItemsForm
 					_items = ModelsList.items;
 				else {
 					if (search == Searchable.Name)
-						_items = ModelsList.items.Where(item => item.Name.Contains(textBox.Text)).ToList();
+						_items = ModelsList.items.Where((item) => item.Name.Contains(textBox.Text)).ToList();
 					if (search == Searchable.Category)
-						_items = ModelsList.items.Where(item => item.Category.Name.Contains(textBox.Text)).ToList();
+						_items = ModelsList.items.Where(item => (item.Category != null) ? item.Category.Name.Contains(textBox.Text) : item.Name.Contains(string.Empty)).ToList();
 					if (search == Searchable.Floor)
-						_items = ModelsList.items.Where(item => item.Locations.Floor.Contains(textBox.Text)).ToList();
+						_items = ModelsList.items.Where(item => (item.Locations != null) ? item.Locations.Floor.Contains(textBox.Text) : item.Name.Contains(string.Empty)).ToList();
 					if (search == Searchable.Room)
-						_items = ModelsList.items.Where(item => item.Locations.Room.Contains(textBox.Text)).ToList();
+						_items = ModelsList.items.Where(item => (item.Locations != null) ? item.Locations.Room.Contains(textBox.Text) : item.Name.Contains(string.Empty)).ToList();
 				}
 				RefreshData();
 			};
@@ -160,6 +163,8 @@ namespace InventBox.Desktop.Components.ItemsForm
 		{
 			Items items = new Items();
 			await _capture.OpenCapture(new System.Threading.CancellationTokenSource());
+			if (!_capture.IsCaptureOpen)
+				return;
 			var dialog = new BarCodeScannerDialog(_capture, _path);
 			dialog.ShowModal();
 			string name = _scanner.DecodeBarCode(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),".tmp", "InventBox", "Images", "Barcode.png"));
@@ -173,7 +178,7 @@ namespace InventBox.Desktop.Components.ItemsForm
 
 		public void OnCreate()
 		{
-			ItemModelView modelView = new ItemModelView(){Id = ModelsList.items.Count + 1, Conditions = Conditions.New};
+			ItemModelView modelView = new ItemModelView(){Id = ModelsList.items.Count + 1, Conditions = Conditions.NA};
 			var createItemDialog = new ItemsDialog(modelView, Mode.Create, item => ModelsList.items.Add(item), _path, _logger);
 			createItemDialog.Closed += (sender, e) => RefreshData();
 			createItemDialog.ShowModal();

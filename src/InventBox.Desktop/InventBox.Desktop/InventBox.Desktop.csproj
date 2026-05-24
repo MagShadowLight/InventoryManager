@@ -11,6 +11,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\InventBox.Core\InventBox.Core.csproj" />
   </ItemGroup>
+  
 
   <ItemGroup>
     <Folder Include="Components/BarCodeComponents/" />

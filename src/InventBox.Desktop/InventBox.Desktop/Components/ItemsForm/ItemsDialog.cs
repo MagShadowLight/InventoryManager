@@ -233,33 +233,46 @@ namespace InventBox.Desktop.Components.ItemsForm
 				model.UpdatedAt = DateTime.Now;
 				model.Warrantly = warrantly;
 				model.Insurance = _insurance;
-				_onSubmit?.Invoke(model);
-				Close();
+				if (model.Name != null && model.Quantity > 0)
+				{
+					_onSubmit?.Invoke(model);
+					Close();
+				} else
+				{
+					if (model.Name == null)
+						MessageBox.Show("Please add the name to the items", "Empty Name Detected", MessageBoxButtons.OK, MessageBoxType.Information);
+					else
+						MessageBox.Show("Quantity must be greater than zero.", "Quantity less than or equal to zero detected", MessageBoxButtons.OK, MessageBoxType.Information);
+				}
 			};
 			return createCommand;
 		}
 
         private Locations SubmitLocation(Locations location)
         {
-            return new Locations
-			{
-				Id = location.Id,
-				Floor = location.Floor,
-				Room = location.Room,
-				Container = location.Container,
-				X = location.X,
-				Y = location.Y
-			};
+			if (location != null)
+				return new Locations
+				{
+					Id = location.Id,
+					Floor = location.Floor,
+					Room = location.Room,
+					Container = location.Container,
+					X = location.X,
+					Y = location.Y
+				};
+			return null;
         }
 
         private Category SubmitCategory(Category category)
 		{
-			return new Category
-			{
-				Id = category.Id,
-				Name = category.Name,
-				Description = category.Description
-			};
+			if (category != null)
+				return new Category
+				{
+					Id = category.Id,
+					Name = category.Name,
+					Description = category.Description
+				};
+			return null;
 		}
 		private Button AddButton(string text, int width, int height, Action eventHandler)
 		{

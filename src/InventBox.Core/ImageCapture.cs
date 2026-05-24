@@ -11,9 +11,9 @@ public class ImageCapture
     CaptureDevices? devices;
     byte[]? _frame;
     CaptureDeviceDescriptor? descriptor1;
-    VideoCharacteristics? characteristic;
+    VideoCharacteristics? characteristic1;
     CaptureDevice? device;
-    
+    public bool IsCaptureOpen = false;
 
     public async Task OpenCapture(CancellationTokenSource source)
     {
@@ -21,25 +21,35 @@ public class ImageCapture
         
         devices = new CaptureDevices();
 
-
-        foreach (var descriptor in devices.EnumerateDescriptors())
-        {
-            if (descriptor == null)
+        try {
+            foreach (var descriptor in devices.EnumerateDescriptors())
             {
-                logger.Error("Could not detect camera device");
+                if (descriptor == null)
+                {
+                    logger.Error("Could not detect camera device");
+                    continue;
+                }
+                descriptor1 = descriptor;
+                var characteristic = descriptor1.Characteristics
+                .Where(c => c.PixelFormat != PixelFormats.Unknown)!.ToList();
+                if (descriptor!.Characteristics.Count() == 0)
+                    continue;
+                
+                characteristic1 = characteristic.First();
+                break;
             }
-            if (descriptor.Characteristics.Count() == 0)
-                 continue;
-            descriptor1 = descriptor;
-            characteristic = descriptor1.Characteristics
-            .FirstOrDefault(c => c.PixelFormat != PixelFormats.Unknown)!;
+            IsCaptureOpen = true;
+        } catch (Exception ex)
+        {
+            MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxType.Error);
+            IsCaptureOpen = false;
         }
-
     }
     public async Task StartCapture(Action<byte[]>? onFrame = null)
     {
-        device = await descriptor1.OpenAsync(
-            characteristic,
+        try {
+        device = await descriptor1!.OpenAsync(
+            characteristic1!,
             BufferScope =>
             {                
                 var image = BufferScope.Buffer.CopyImage();
@@ -49,9 +59,15 @@ public class ImageCapture
             token
         );
         await device.StartAsync(token).ConfigureAwait(false);
+        } catch (Exception ex)
+        {
+            MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxType.Error);
+            
+        }
     }
     public async Task StopCapture(string imagePath)
     {
+        try {
         if (_frame == null)
             return;
 
@@ -62,6 +78,10 @@ public class ImageCapture
         );
         await fileStream.WriteAsync(_frame, 0, _frame.Length, token);
         await fileStream.FlushAsync(token);
+        } catch (Exception ex)
+        {
+            MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxType.Error);
+        }
     }
 
 
