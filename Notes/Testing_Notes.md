@@ -7,7 +7,7 @@
 - User want to have the string bar code for location like floor, room, x and y.
 - User want to add the lost and allocated conditions.
 - User want to be able to right click to copy and paste it.
-- User thought that the warrant mean something else like a arrest warrant.
+- User thought that the warrant mean something else instead of the warrantly itself.
 
 ## Bugs:
 - User cannot see the button on the bottom of the screen, screen resolution issue.
