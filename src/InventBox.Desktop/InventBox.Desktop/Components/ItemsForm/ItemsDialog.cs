@@ -139,8 +139,8 @@ namespace InventBox.Desktop.Components.ItemsForm
 			form.Add(locationInput);
 			form.BeginVertical();
 			form.AddRow(
-				"Warrant",
-				(warrantly == null) ? AddButton("Create Warrant", 100, 40, OnWarrantCreate) : AddButton("Remove Warrant", 100, 40, OnWarrantDelete)
+				"Warrantly",
+				(warrantly == null) ? AddButton("Create Warrantly", 100, 40, OnWarrantCreate) : AddButton("Remove Warrant", 100, 40, OnWarrantDelete)
 			);
 			form.Add((warrantly != null) ? "Warrantly added" : "");
 			form.AddRow(

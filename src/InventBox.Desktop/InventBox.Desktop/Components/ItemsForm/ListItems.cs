@@ -68,10 +68,10 @@ namespace InventBox.Desktop.Components.ItemsForm
 					GetColumn("Floor", i => (i.Locations != null) ? i.Locations.Floor : ""),
 					GetColumn("Room", i => (i.Locations != null) ? i.Locations.Room : ""),
 					GetColumn("Container", i => (i.Locations != null) ? i.Locations.Container : ""),
-					GetColumn("Warrant", i => (i.Warrantly != null && i.Warrantly.Status != 0) ? i.Warrantly.Status.ToString() : "Not Warranted"),
+					GetColumn("Warrantly Status", i => (i.Warrantly != null && i.Warrantly.Status != 0) ? i.Warrantly.Status.ToString() : "Not Warranted"),
 					GetColumn("Warrant Provider", i => (i.Warrantly != null) ? i.Warrantly.Provider : ""),
 					GetColumn("Warrant Contact #", i => (i.Warrantly != null) ? i.Warrantly.ContactNumber : "" ),
-					GetColumn("Insured", i => (i.Insurance != null && i.Insurance.Insured != 0) ? i.Insurance.Insured.ToString() : "Not Insured"),
+					GetColumn("Insurance Status", i => (i.Insurance != null && i.Insurance.Insured != 0) ? i.Insurance.Insured.ToString() : "Not Insured"),
 					GetColumn("Insurance Provider", i => (i.Insurance != null) ? i.Insurance.Provider : ""),
 					GetColumn("Insurance Contact #", i => (i.Insurance != null) ? i.Insurance.ContactNumber : "")
 				}	
