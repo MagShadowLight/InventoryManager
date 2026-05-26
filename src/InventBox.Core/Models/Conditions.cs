@@ -9,5 +9,6 @@ public enum Conditions
     Good = 40,
     Ok = 50,
     Acceptable = 60,
-    Broken = 70
+    Lost = 70,
+    Broken = 80
 }
