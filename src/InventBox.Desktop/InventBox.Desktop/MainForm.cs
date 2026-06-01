@@ -282,10 +282,6 @@ namespace InventBox.Desktop
 			layout.BeginHorizontal();
 			layout.Add(NavigationButton());
 			layout.Add(panel);
-			// layout.Add(listItemsForm, true, true);
-			// layout.Add(listCategories, true, true);
-			// layout.Add(listLocations, true, true);
-			layout.AddSpace();
 			layout.EndHorizontal();
 			return layout;
 		}
