@@ -20,14 +20,13 @@ namespace InventBox.Desktop.Components.CategoryForm
 		private static FileLogger _logger;
 		private DataManagement<Category> _datamanagement;
 		private GridView _grid;
-		public ListCategories(string path, FileLogger logger, Size size)
+		public ListCategories(string path, FileLogger logger)
 		{
 			_categories = ModelsList.categories;
 			_path = path;
 			_logger = logger;
 			_datamanagement = new DataManagement<Category>(_path);
-			MinimumSize = size;
-			_grid = CreateGrid(700);
+			_grid = CreateGrid();
 			RefreshData();
 			Visible = false;
 			Content = CreateDynamicLayout();
@@ -54,10 +53,18 @@ namespace InventBox.Desktop.Components.CategoryForm
 			{
 				Padding = 10
 			};
+			layout.BeginVertical(null, null, true, true);
 			layout.BeginVertical();
-			layout.AddSeparateRow(null, searchBar, AddButton("Clear Search", 100, 50, () => ClearFilter()));
-			layout.Add(_grid, true);
-			layout.AddSeparateRow(4, null, true, false, new []
+			layout.BeginHorizontal();
+			layout.Add(searchBar, true);
+			layout.Add(AddButton("Clear Search", 100, 50, () => ClearFilter()));
+			layout.EndHorizontal();
+			layout.EndVertical();
+			// layout.AddSeparateRow(null, searchBar, AddButton("Clear Search", 100, 50, () => ClearFilter()));
+			layout.BeginVertical();
+			layout.Add(_grid, true, true);
+			layout.BeginHorizontal(false);
+			layout.AddSeparateRow(4, null, false, false, new []
 				{
 					AddButton("Create new category", 100, 50, OnCreate),
 					AddButton("Edit selected category", 100, 50, OnEdit),
@@ -67,16 +74,17 @@ namespace InventBox.Desktop.Components.CategoryForm
 					AddButton("Load Category", 100, 50, OnLoad)
 				}
 			);
+			layout.EndHorizontal();
 			layout.Add(null);
+			layout.EndVertical();
 			layout.EndVertical();
 			return layout;
         }
 
-        public GridView CreateGrid(int height)
+        public GridView CreateGrid()
         {
 			return new GridView()
 			{
-				Height = height,
 				GridLines = GridLines.Both,
 				AllowMultipleSelection = false,
 				Columns =
@@ -92,8 +100,7 @@ namespace InventBox.Desktop.Components.CategoryForm
         {
 			TextBox textBox = new TextBox()
 			{
-				Text = "Search",
-				Width = 500,
+				Text = "Search"
 			};
 			textBox.TextBinding.BindDataContext((Category category) => category.Name);
 			textBox.TextChanged += (sender, e) =>

@@ -22,15 +22,14 @@ namespace InventBox.Desktop.Components.LocationForm
 		private DataManagement<Locations> _dataManagement;
 		private GridView _grid;
 
-		public ListLocations(string path, FileLogger logger, Size size)
+		public ListLocations(string path, FileLogger logger)
 		{
 			_locations = ModelsList.locations;
 			_path = path;
 			_logger = logger;
 			_dataManagement = new DataManagement<Locations>(_path);
-			Size = size;
 
-			_grid = CreateGrid(700);
+			_grid = CreateGrid();
 			RefreshData();
 			Visible = false;
 			Content = CreateDynamicLayout();
@@ -57,9 +56,14 @@ namespace InventBox.Desktop.Components.LocationForm
 			{
 				Padding = 10				
 			};
+			layout.BeginVertical(null, null, true, true);
 			layout.BeginVertical();
-			layout.AddSeparateRow(null, searchBar, AddButton("Clear Search", 100, 50, () => ClearFilter()));
-			layout.Add(_grid, true);
+			layout.BeginHorizontal();
+			layout.Add(searchBar, true, false);
+			layout.Add(AddButton("Clear Search", 100, 50, () => ClearFilter()));
+			layout.EndVertical();
+			layout.BeginVertical();
+			layout.Add(_grid, true, true);
 			layout.AddSeparateRow(4, null, true, false,
 				new []
 				{
@@ -73,14 +77,14 @@ namespace InventBox.Desktop.Components.LocationForm
 			);
 			layout.Add(null);
 			layout.EndVertical();
+			layout.EndVertical();
 			return layout;
         }
 
-        public GridView CreateGrid(int height)
+        public GridView CreateGrid()
         {
 			return new GridView()
 			{
-				Height = height,
 				GridLines = GridLines.Both,
 				AllowMultipleSelection = false,
 				Columns =
@@ -97,7 +101,7 @@ namespace InventBox.Desktop.Components.LocationForm
 
         public TextBox CreateSearchBar()
         {
-			TextBox textBox = new TextBox() {Text = "Search", Width = 500};
+			TextBox textBox = new TextBox() {Text = "Search"};
 			textBox.TextBinding.BindDataContext((Locations locations) => locations.Room);
 			textBox.TextChanged += (sender, e) =>
 			{

@@ -22,6 +22,7 @@ namespace InventBox.Desktop
 		ListLocations listLocations = null;
 		List<Panel> panels;
 		private AboutDialog aboutDialog;
+		Control panel = null;
 
 		/// <summary>
 		/// Create commands variables
@@ -49,6 +50,7 @@ namespace InventBox.Desktop
 
 		public MainForm()
 		{
+			SizeChanged += (sender, e) => CreateMainApp();
 			
 			CreateLogFile();
 			/// <summary>
@@ -60,8 +62,7 @@ namespace InventBox.Desktop
 			/// Set the properties for the window.
 			/// </summary>
 			Title = "InventBox";
-			// MinimumSize = new Size(500, 500);
-			MinimumSize = new Size(1500, 1000);
+			MinimumSize = new Size(800, 700);
 			Resizable = true;
 			Content = CreateMainApp();
 			CreateCommand();	
@@ -102,23 +103,20 @@ namespace InventBox.Desktop
 		{
 			listItemCommand = CreateCommand("List items", "List items", Application.Instance.CommonModifier | Keys.I);
 			listItemCommand.Executed += (sender, e) => {
-				// OnItemListPanel(1250, 1000);
-				OnItemListPanel(300, 300);
+				OnItemListPanel();
 				CreateMainApp();
 			};
 
 			listCategoryCommand = CreateCommand("List categories", "List categories", Application.Instance.CommonModifier | Keys.C);
 			listCategoryCommand.Executed += (sender, e) =>
 			{
-				// CreateCategoryListPanel(1250, 1000);
-				CreateCategoryListPanel(300, 300);
+				CreateCategoryListPanel();
 				CreateMainApp();
 			};
             listLocationCommand = CreateCommand("List locations", "List locations", Application.Instance.CommonModifier | Keys.L);
             listLocationCommand.Executed += (sender, e) =>
 			{
-				// createLocationListPanel(1250, 1000);
-				CreateCategoryListPanel(300, 300);
+				CreateCategoryListPanel();
 				CreateMainApp();
 			};
 
@@ -278,19 +276,31 @@ namespace InventBox.Desktop
 			var layout = new DynamicLayout
 			{
 				Padding = 10,
-				
+				DefaultSpacing = new Size(5,5)
 			};
+			ChangeActivePanel();
 			layout.BeginHorizontal();
 			layout.Add(NavigationButton());
-			layout.Add(listItemsForm);
-			layout.Add(listCategories);
-			layout.Add(listLocations);
+			layout.Add(panel);
+			// layout.Add(listItemsForm, true, true);
+			// layout.Add(listCategories, true, true);
+			// layout.Add(listLocations, true, true);
 			layout.AddSpace();
 			layout.EndHorizontal();
 			return layout;
 		}
 
-		private StackLayout NavigationButton()
+        private void ChangeActivePanel()
+        {
+			if (listItemsForm != null && listItemsForm.Visible)
+				panel = listItemsForm;
+			else if (listCategories != null && listCategories.Visible)
+				panel = listCategories;
+			else if (listLocations != null && listLocations.Visible)
+				panel = listLocations;
+        }
+
+        private StackLayout NavigationButton()
 		{
 			var InventoryButton = AddButton("Inventory", 50, 50, OnItemListPanel);
 			var CategoryButton = AddButton("Category", 50, 50, CreateCategoryListPanel);
@@ -307,43 +317,43 @@ namespace InventBox.Desktop
 			};
 		}
 
-		private Button AddButton(string text, int width, int height, Action<int,int> eventHandler)
+		private Button AddButton(string text, int width, int height, Action eventHandler)
 		{
 			var command = new Command(){MenuText = text, ToolBarText = text};
-			command.Executed += (sender, eventArgs) => eventHandler(1250,1000);
+			command.Executed += (sender, eventArgs) => eventHandler();
 			return new Button { Text = text, Width = width, Height = height, Command = command};
 		}
 
-		private void OnItemListPanel(int width, int height)
+		private void OnItemListPanel()
 		{
 			if (listItemsForm != null)
 				listItemsForm.Dispose();
 			panels = new List<Panel>() {listCategories, listLocations};
 			ClearOtherPanel(panels);
-			listItemsForm = new ListItems(_path, _logger, new Size(width,height));
+			listItemsForm = new ListItems(_path, _logger);
 			listItemsForm.Visible = true;
 			Menu = CreateMenuBar();
 			Content = CreateMainApp();
 		}
 
-		private void CreateCategoryListPanel(int width, int height)
+		private void CreateCategoryListPanel()
 		{
 			if (listCategories != null)
 				listCategories.Dispose();
 			panels = new List<Panel>() {listItemsForm, listLocations};
 			ClearOtherPanel(panels);
-			listCategories = new ListCategories(_path, _logger, new Size(width, height));
+			listCategories = new ListCategories(_path, _logger);
 			listCategories.Visible = true;
 			Menu = CreateMenuBar();
 			Content = CreateMainApp();
 		}
-		private void createLocationListPanel(int width, int height)
+		private void createLocationListPanel()
 		{
 			if (listLocations != null)
 				listLocations.Dispose();
 			panels = new List<Panel>() {listItemsForm, listCategories};
 			ClearOtherPanel(panels);
-			listLocations = new ListLocations(_path, _logger, new Size(width, height));
+			listLocations = new ListLocations(_path, _logger);
 			listLocations.Visible = true;
 			Menu = CreateMenuBar();
 			Content = CreateMainApp();

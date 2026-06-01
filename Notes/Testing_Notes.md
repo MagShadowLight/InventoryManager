@@ -11,7 +11,7 @@
 
 ## Bugs:
 - User cannot see the button on the bottom of the screen, screen resolution issue.
-- There was a error after closing the application that web cam were opened at all times.
+- Web cam were opened at all times even after closing the dialog until bar code is scanned.
 - The application crashed when the user tried to scan barcode that were differant than mine.
 - The application crashed when user added the items with no categories or locations.
 

@@ -25,17 +25,15 @@ namespace InventBox.Desktop.Components.ItemsForm
 		private static FileLogger _logger;
 		private DataManagement<Items> _dataManagement;
 		private GridView _grid;
-		public ListItems(string path, FileLogger logger, Size size)
+		public ListItems(string path, FileLogger logger)
 		{
 			_items = ModelsList.items;
 			_path = path;
 			_logger = logger;
 			_scanner = new BarCodeScanner(_path);
 			_dataManagement = new DataManagement<Items>(_path);
-			MinimumSize = size;
 
-
-			_grid = CreateGrid(700);
+			_grid = CreateGrid();
 			RefreshData();
 			Visible = false;
 			Content = CreateDynamicLayout();
@@ -46,11 +44,10 @@ namespace InventBox.Desktop.Components.ItemsForm
 			_grid.DataStore = _items.ToArray<Items>();
 		}
 
-        public GridView CreateGrid(int height)
+        public GridView CreateGrid()
         {
 			return new GridView()
 			{
-				Height = height,
 				GridLines = GridLines.Both,
 				AllowMultipleSelection = false,
 				Columns =
@@ -101,9 +98,18 @@ namespace InventBox.Desktop.Components.ItemsForm
 			searchBar = CreateSearchBar();
 			EnumDropDown<Searchable> searchDropDown = CreateSearchDropDown();
 			DynamicLayout layout = new DynamicLayout();
+			layout.BeginVertical(null, null, true, true);
 			layout.BeginVertical();
-			layout.AddSeparateRow(null, searchDropDown, searchBar, AddButton("Clear Search", 100, 50, () => ClearFilter()), AddButton("Scan barcode", 100, 50, async () => await OnScanBarCode()));
-			layout.Add(_grid, true);
+			layout.BeginHorizontal();
+			layout.Add(searchDropDown, false);
+			layout.Add(searchBar, true);
+			layout.Add(AddButton("Clear Search", 100, 50, () => ClearFilter()), false);
+			layout.Add(AddButton("Scan barcode", 100, 50, async () => await OnScanBarCode()), false);
+			layout.EndHorizontal();
+			layout.EndVertical();
+			// layout.AddSeparateRow(null, searchDropDown, searchBar, AddButton("Clear Search", 100, 50, () => ClearFilter()), AddButton("Scan barcode", 100, 50, async () => await OnScanBarCode()));
+			layout.BeginVertical();
+			layout.Add(_grid, true, true);
 			layout.AddSeparateRow(4, null, true, false,
 				new [] { 
 					AddButton("Create new item", 100, 50, OnCreate),
@@ -116,11 +122,12 @@ namespace InventBox.Desktop.Components.ItemsForm
 			);
 			layout.Add(null);
 			layout.EndVertical();
+			layout.EndVertical();
 			return layout;
 		}
 		private EnumDropDown<Searchable> CreateSearchDropDown()
 		{
-			var dropdown = new EnumDropDown<Searchable>() { Cursor = Cursors.Pointer };
+			var dropdown = new EnumDropDown<Searchable>() {Cursor = Cursors.Pointer, Width = 100 };
 			dropdown.SelectedValue = Searchable.Name;
 			dropdown.SelectedValueChanged += (sender, e) =>
 			{
@@ -131,7 +138,7 @@ namespace InventBox.Desktop.Components.ItemsForm
 
 		public TextBox CreateSearchBar()
 		{
-			TextBox textBox = new TextBox() {Text = "Search", Width = 500};
+			TextBox textBox = new TextBox() {Text = "Search"};
 			textBox.TextBinding.BindDataContext((Items items) => items.Name);
 			textBox.TextChanged += (sender, e) =>
 			{

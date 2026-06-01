@@ -6,7 +6,7 @@ namespace InventBox.Desktop.Interfaces;
 public interface IControls<T,K>
 {
     public Button AddButton(string text, int width, int height, Action eventHandler);
-    public GridView CreateGrid(int height);
+    public GridView CreateGrid();
     public GridColumn GetColumn(string header, Func<T, string> data);
     public TextBoxCell GetData(Func<T, string> data);
     public DynamicLayout CreateDynamicLayout();
