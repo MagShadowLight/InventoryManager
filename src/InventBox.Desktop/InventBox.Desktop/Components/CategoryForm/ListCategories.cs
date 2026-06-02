@@ -63,6 +63,7 @@ namespace InventBox.Desktop.Components.CategoryForm
 			// layout.AddSeparateRow(null, searchBar, AddButton("Clear Search", 100, 50, () => ClearFilter()));
 			layout.BeginVertical();
 			layout.Add(_grid, true, true);
+			layout.Add(null, true, false);
 			layout.BeginHorizontal(false);
 			layout.AddSeparateRow(4, null, false, false, new []
 				{
@@ -75,7 +76,6 @@ namespace InventBox.Desktop.Components.CategoryForm
 				}
 			);
 			layout.EndHorizontal();
-			layout.Add(null);
 			layout.EndVertical();
 			layout.EndVertical();
 			return layout;

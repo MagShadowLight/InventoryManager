@@ -64,6 +64,7 @@ namespace InventBox.Desktop.Components.LocationForm
 			layout.EndVertical();
 			layout.BeginVertical();
 			layout.Add(_grid, true, true);
+			layout.Add(null, true, false);
 			layout.AddSeparateRow(4, null, true, false,
 				new []
 				{
@@ -75,7 +76,6 @@ namespace InventBox.Desktop.Components.LocationForm
 					AddButton("Load Location", 100, 50, OnLoad)
 				}
 			);
-			layout.Add(null);
 			layout.EndVertical();
 			layout.EndVertical();
 			return layout;
