@@ -7,6 +7,7 @@ using System.IO;
 using InventBox.Desktop.Components.CategoryForm;
 using System.Collections.Generic;
 using InventBox.Desktop.Components.LocationForm;
+using InventBox.Desktop.Utils;
 
 namespace InventBox.Desktop
 {
@@ -48,6 +49,9 @@ namespace InventBox.Desktop
         Command quitCommand;
 		Command aboutCommand;
 
+
+		Tutorial tutorial = new Tutorial(new Size(500,500));
+
 		public MainForm()
 		{
 			SizeChanged += (sender, e) => CreateMainApp();
@@ -72,7 +76,13 @@ namespace InventBox.Desktop
 
 			// create toolbar			
 			// ToolBar = CreateToolbar();
+			if (!File.Exists("Done.md"))
+				ShowTutorial();
 		}
+
+	async void ShowTutorial() {
+		await tutorial.ShowModalAsync();
+	}
 	private void CreateLogFile()
 		{
 			string[] path = new string[10];

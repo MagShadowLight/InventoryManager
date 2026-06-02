@@ -19,5 +19,6 @@
     <Folder Include="Components/LocationForm/" />
     <Folder Include="Enum/" />
     <Folder Include="Interfaces/" />
+    <Folder Include="Utils/" />
   </ItemGroup>
 </Project>
