@@ -11,4 +11,5 @@ public interface IEventHandler
     public void OnDelete();
     public void RefreshData();
     public void ClearFilter();
+    public void OnCopy();
 }

@@ -16,6 +16,7 @@ namespace InventBox.Desktop.Components.ItemsForm
 {
 	public partial class ListItems : Panel, IEventHandler, IControls<Items, ItemModelView>
 	{
+		private JsonParser<Items> jsonParser;
 		private Searchable search;
 		private TextBox searchBar;
 		private List<Items> _items = new List<Items>();
@@ -27,6 +28,7 @@ namespace InventBox.Desktop.Components.ItemsForm
 		private GridView _grid;
 		public ListItems(string path, FileLogger logger)
 		{
+			jsonParser = new JsonParser<Items>();
 			_items = ModelsList.items;
 			_path = path;
 			_logger = logger;
@@ -39,14 +41,60 @@ namespace InventBox.Desktop.Components.ItemsForm
 			Content = CreateDynamicLayout();
 		}
 
+		public ContextMenu CreateContextMenu()
+		{
+			var CopyItemCommand = CreateMenuItem("Copy Item", OnCopy);
+			var CreateItemCommand = CreateMenuItem("Create new item", OnCreate);
+			var UpdateItemCommand = CreateMenuItem("Edit item", OnEdit);			
+			var DeleteItemCommand = CreateMenuItem("Delete item", OnDelete);			
+			var SaveItemCommand = CreateMenuItem("Save items", OnSave);			
+			var LoadItemCommand = CreateMenuItem("Load items", OnLoad);
+			var EditMenu = new ButtonMenuItem
+			{
+				Text = "Edit",
+				Items =
+				{
+					CreateItemCommand,
+					UpdateItemCommand,
+					DeleteItemCommand,
+					SaveItemCommand,
+					LoadItemCommand
+				}
+			};
+			return new ContextMenu
+			{
+				Items =
+				{
+					EditMenu,
+					CopyItemCommand
+				},
+			};
+		}
+
+		public void OnCopy()
+		{
+			Items copiedItems = (Items)_grid.SelectedItem;
+			var jsonItem = jsonParser.ParseJson(copiedItems);
+			Clipboard.Instance.Clear();		
+			Clipboard.Instance.Text = jsonItem;
+		}
+
+		public ButtonMenuItem CreateMenuItem(string text, Action clickHandler, Keys keys = Keys.None)
+		{			
+			var menuItem = new ButtonMenuItem{Text = text, Shortcut = keys};
+			menuItem.Click += (sender, eventArgs) => clickHandler();
+			return menuItem;
+		}
+
 		public void RefreshData()
 		{
 			_grid.DataStore = _items.ToArray<Items>();
+			Content = CreateDynamicLayout();
 		}
 
         public GridView CreateGrid()
         {
-			return new GridView()
+			var grid = new GridView()
 			{
 				GridLines = GridLines.Both,
 				AllowMultipleSelection = false,
@@ -71,8 +119,10 @@ namespace InventBox.Desktop.Components.ItemsForm
 					GetColumn("Insurance Status", i => (i.Insurance != null && i.Insurance.Insured != 0) ? i.Insurance.Insured.ToString() : "Not Insured"),
 					GetColumn("Insurance Provider", i => (i.Insurance != null) ? i.Insurance.Provider : ""),
 					GetColumn("Insurance Contact #", i => (i.Insurance != null) ? i.Insurance.ContactNumber : "")
-				}	
+				},
+				ContextMenu = CreateContextMenu()
 			};
+			return grid;
         }
 
 		public GridColumn GetColumn(string header, Func<Items, string> data) {
@@ -109,7 +159,18 @@ namespace InventBox.Desktop.Components.ItemsForm
 			layout.EndVertical();
 			// layout.AddSeparateRow(null, searchDropDown, searchBar, AddButton("Clear Search", 100, 50, () => ClearFilter()), AddButton("Scan barcode", 100, 50, async () => await OnScanBarCode()));
 			layout.BeginVertical();
-			layout.Add(_grid, true, true);
+			layout.Add((ModelsList.items.Count > 0 
+				? _grid 
+				: new Label{
+					Text = "The list is empty, Create new item or load from file to add it to the list.", 
+					TextAlignment = TextAlignment.Center, 
+					VerticalAlignment = VerticalAlignment.Center, 
+					Font = new Font(
+						FontFamilies.Serif, 
+						12.0f, 
+						FontStyle.Bold, 
+						FontDecoration.None)
+					}), true, true);
 			layout.Add(null, true, false);
 			layout.AddSeparateRow(4, null, true, false,
 				new [] { 

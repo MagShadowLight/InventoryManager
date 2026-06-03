@@ -117,7 +117,7 @@ namespace InventBox.Desktop
 				CreateMainApp();
 			};
 
-			listCategoryCommand = CreateCommand("List categories", "List categories", Application.Instance.CommonModifier | Keys.C);
+			listCategoryCommand = CreateCommand("List categories", "List categories", Application.Instance.CommonModifier | Keys.Shift | Keys.C);
 			listCategoryCommand.Executed += (sender, e) =>
 			{
 				CreateCategoryListPanel();

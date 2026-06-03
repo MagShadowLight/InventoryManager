@@ -12,4 +12,6 @@ public interface IControls<T,K>
     public DynamicLayout CreateDynamicLayout();
     public TextBox CreateSearchBar();
     public K ModelViewCopy(T value);
+    public ContextMenu CreateContextMenu();
+    public ButtonMenuItem CreateMenuItem(string text, Action clickHandler, Keys keys = Keys.None);
 }

@@ -15,6 +15,7 @@ namespace InventBox.Desktop.Components.LocationForm
 {
 	public partial class ListLocations : Panel, IEventHandler, IControls<Locations, LocationsModelView>
 	{
+		private JsonParser<Locations> _jsonParser;
 		private TextBox searchBar;
 		private List<Locations> _locations = new List<Locations>();
 		private static string _path;
@@ -24,6 +25,7 @@ namespace InventBox.Desktop.Components.LocationForm
 
 		public ListLocations(string path, FileLogger logger)
 		{
+			_jsonParser = new JsonParser<Locations>();
 			_locations = ModelsList.locations;
 			_path = path;
 			_logger = logger;
@@ -63,7 +65,16 @@ namespace InventBox.Desktop.Components.LocationForm
 			layout.Add(AddButton("Clear Search", 100, 50, () => ClearFilter()));
 			layout.EndVertical();
 			layout.BeginVertical();
-			layout.Add(_grid, true, true);
+			layout.Add(((ModelsList.locations.Count > 0) ? _grid : new Label{
+					Text = "The list is empty, Create new location or load from file to add it to the list.", 
+					TextAlignment = TextAlignment.Center, 
+					VerticalAlignment = VerticalAlignment.Center, 
+					Font = new Font(
+						FontFamilies.Serif, 
+						12.0f, 
+						FontStyle.Bold, 
+						FontDecoration.None)
+					}), true, true);
 			layout.Add(null, true, false);
 			layout.AddSeparateRow(4, null, true, false,
 				new []
@@ -85,6 +96,7 @@ namespace InventBox.Desktop.Components.LocationForm
         {
 			return new GridView()
 			{
+				ContextMenu = CreateContextMenu(),
 				GridLines = GridLines.Both,
 				AllowMultipleSelection = false,
 				Columns =
@@ -225,6 +237,51 @@ namespace InventBox.Desktop.Components.LocationForm
         public void RefreshData()
         {
 			_grid.DataStore = _locations.ToArray();
+        }
+
+        public void OnCopy()
+        {
+			Locations SelectedLocation = (Locations)_grid.SelectedItem;
+			var jsonItem = _jsonParser.ParseJson(SelectedLocation);
+			Clipboard.Instance.Clear();		
+			Clipboard.Instance.Text = jsonItem;
+        }
+
+        public ContextMenu CreateContextMenu()
+        {
+			var CopyLocationCommand = CreateMenuItem("Copy location", OnCopy);
+			var CreateLocationCommand = CreateMenuItem("Create new location", OnCreate);
+			var UpdateLocationCommand = CreateMenuItem("Edit location", OnEdit);			
+			var DeleteLocationCommand = CreateMenuItem("Delete location", OnDelete);			
+			var SaveLocationCommand = CreateMenuItem("Save location", OnSave);			
+			var LoadLocationCommand = CreateMenuItem("Load location", OnLoad);
+			var EditMenu = new ButtonMenuItem
+			{
+				Text = "Edit",
+				Items =
+				{
+					CreateLocationCommand,
+					UpdateLocationCommand,
+					DeleteLocationCommand,
+					SaveLocationCommand,
+					LoadLocationCommand
+				}
+			};
+			return new ContextMenu
+			{
+				Items =
+				{
+					EditMenu,
+					CopyLocationCommand
+				},
+			};
+        }
+
+        public ButtonMenuItem CreateMenuItem(string text, Action clickHandler, Keys keys = Keys.None)
+        {
+			var menuItem = new ButtonMenuItem{Text = text, Shortcut = keys};
+			menuItem.Click += (sender, eventArgs) => clickHandler();
+			return menuItem;
         }
     }
 }

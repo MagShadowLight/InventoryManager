@@ -14,6 +14,7 @@ namespace InventBox.Desktop.Components.CategoryForm
 {
 	public partial class ListCategories : Panel, IEventHandler, IControls<Category, CategoryModelView>
 	{
+		private JsonParser<Category> jsonParser;
 		private TextBox searchBar;
 		private List<Category> _categories = new List<Category>();
 		private static string _path;
@@ -22,6 +23,7 @@ namespace InventBox.Desktop.Components.CategoryForm
 		private GridView _grid;
 		public ListCategories(string path, FileLogger logger)
 		{
+			jsonParser = new JsonParser<Category>();
 			_categories = ModelsList.categories;
 			_path = path;
 			_logger = logger;
@@ -30,6 +32,50 @@ namespace InventBox.Desktop.Components.CategoryForm
 			RefreshData();
 			Visible = false;
 			Content = CreateDynamicLayout();
+		}
+		public ContextMenu CreateContextMenu()
+		{
+			var CopyCategoryCommand = CreateMenuItem("Copy category", OnCopy);
+			var CreateCategoryCommand = CreateMenuItem("Create new category", OnCreate);
+			var UpdateCategoryCommand = CreateMenuItem("Edit category", OnEdit);			
+			var DeleteCategoryCommand = CreateMenuItem("Delete category", OnDelete);			
+			var SaveCategoryCommand = CreateMenuItem("Save category", OnSave);			
+			var LoadCategoryCommand = CreateMenuItem("Load category", OnLoad);
+			var EditMenu = new ButtonMenuItem
+			{
+				Text = "Edit",
+				Items =
+				{
+					CreateCategoryCommand,
+					UpdateCategoryCommand,
+					DeleteCategoryCommand,
+					SaveCategoryCommand,
+					LoadCategoryCommand
+				}
+			};
+			return new ContextMenu
+			{
+				Items =
+				{
+					EditMenu,
+					CopyCategoryCommand
+				},
+			};
+		}
+
+		public void OnCopy()
+		{
+			Category SelectedCategory = (Category)_grid.SelectedItem;
+			var jsonItem = jsonParser.ParseJson(SelectedCategory);
+			Clipboard.Instance.Clear();		
+			Clipboard.Instance.Text = jsonItem;
+		}
+
+		public ButtonMenuItem CreateMenuItem(string text, Action clickHandler, Keys keys = Keys.None)
+		{			
+			var menuItem = new ButtonMenuItem{Text = text, Shortcut = keys};
+			menuItem.Click += (sender, eventArgs) => clickHandler();
+			return menuItem;
 		}
 
         public Button AddButton(string text, int width, int height, Action eventHandler)
@@ -62,7 +108,18 @@ namespace InventBox.Desktop.Components.CategoryForm
 			layout.EndVertical();
 			// layout.AddSeparateRow(null, searchBar, AddButton("Clear Search", 100, 50, () => ClearFilter()));
 			layout.BeginVertical();
-			layout.Add(_grid, true, true);
+			layout.Add(((ModelsList.categories.Count > 0) 
+			? _grid 
+			: new Label{
+			Text = "The list is empty, Create new category or load from file to add it to the list.", 
+			TextAlignment = TextAlignment.Center, 
+			VerticalAlignment = VerticalAlignment.Center, 
+			Font = new Font(
+				FontFamilies.Serif, 
+				12.0f, 
+				FontStyle.Bold, 
+				FontDecoration.None)
+			}), true, true);
 			layout.Add(null, true, false);
 			layout.BeginHorizontal(false);
 			layout.AddSeparateRow(4, null, false, false, new []
@@ -85,6 +142,7 @@ namespace InventBox.Desktop.Components.CategoryForm
         {
 			return new GridView()
 			{
+				ContextMenu = CreateContextMenu(),
 				GridLines = GridLines.Both,
 				AllowMultipleSelection = false,
 				Columns =
