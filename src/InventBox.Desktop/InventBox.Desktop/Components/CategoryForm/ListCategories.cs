@@ -280,9 +280,16 @@ namespace InventBox.Desktop.Components.CategoryForm
 				Directory = path
 			};
 			loadDialog.ShowDialog(this);
-			if (loadDialog.FileName != null)
+			if (!loadDialog.FileName.Contains(".csv"))
+				loadDialog.FileName = string.Empty;
+			if (!string.IsNullOrEmpty(loadDialog.FileName))
 			{
 				ModelsList.categories = _datamanagement.Load(loadDialog.FileName);
+				if (ModelsList.categories.Count == 0)
+				{
+					MessageBox.Show("Invalid data. Please choose a different file", "Load failed.", MessageBoxButtons.OK, MessageBoxType.Information);
+					return;
+				}
 				_categories = ModelsList.categories;
 				Content = CreateDynamicLayout();
 				RefreshData();
@@ -302,8 +309,13 @@ namespace InventBox.Desktop.Components.CategoryForm
 				Directory = homeDir
 			};
 			saveDialog.ShowDialog(this);
-			if (saveDialog.FileName != string.Empty)
+			if (saveDialog.FileName != string.Empty  && ModelsList.categories.Count > 0)
 				_datamanagement.Save(ModelsList.categories, saveDialog.FileName);
+			else if (string.IsNullOrEmpty(saveDialog.FileName)){
+				saveDialog.Dispose();
+				return;
+			} else
+				MessageBox.Show("categories list is empty. Please add one or load from file.", "Save failed.", MessageBoxButtons.OK, MessageBoxType.Information);
 			saveDialog.Dispose();
         }
 

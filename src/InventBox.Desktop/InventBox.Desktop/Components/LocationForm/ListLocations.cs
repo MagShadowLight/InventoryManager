@@ -236,9 +236,16 @@ namespace InventBox.Desktop.Components.LocationForm
 				Directory = homeDir
 			};
 			loadDialog.ShowDialog(this);
-			if (loadDialog.FileName != null)
+			if (!loadDialog.FileName.Contains(".csv"))
+				loadDialog.FileName = string.Empty;
+			if (!string.IsNullOrEmpty(loadDialog.FileName))
 			{
 				_locations = ModelsList.locations = _dataManagement.Load(loadDialog.FileName);
+				if (ModelsList.locations.Count == 0)
+				{
+					MessageBox.Show("Invalid data. Please choose a different file", "Load failed.", MessageBoxButtons.OK, MessageBoxType.Information);
+					return;
+				}
 				Content = CreateDynamicLayout();
 				RefreshData();
 			}
@@ -257,8 +264,14 @@ namespace InventBox.Desktop.Components.LocationForm
 				Directory = homeDir
 			};
 			saveDialog.ShowDialog(this);
-			if (saveDialog.FileName != string.Empty)
+			if (saveDialog.FileName != string.Empty && ModelsList.locations.Count > 0)
 				_dataManagement.Save(ModelsList.locations, saveDialog.FileName);
+			else if (string.IsNullOrEmpty(saveDialog.FileName)){
+				saveDialog.Dispose();
+				return;
+			}
+			else
+				MessageBox.Show("locations list is empty. Please add one or load from file.", "Save failed.", MessageBoxButtons.OK, MessageBoxType.Information);
 			saveDialog.Dispose();
         }
 

@@ -279,7 +279,7 @@ namespace InventBox.Desktop.Components.ItemsForm
 
 		public void OnSave()
 		{
-			Uri homeDir = new Uri(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile));		
+			Uri homeDir = new Uri(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile));	
 			var saveDialog = new SaveFileDialog
 			{
 				Filters =
@@ -289,8 +289,14 @@ namespace InventBox.Desktop.Components.ItemsForm
 				Directory = homeDir
 			};
 			saveDialog.ShowDialog(this);
-			if (saveDialog.FileName != string.Empty)
+			if (saveDialog.FileName != string.Empty && ModelsList.items.Count > 0)
 				_dataManagement.Save(ModelsList.items, saveDialog.FileName);
+			else if (string.IsNullOrEmpty(saveDialog.FileName)) {
+				saveDialog.Dispose();
+				return;
+			}
+			else
+				MessageBox.Show("Items list is empty. Please add one or load from file.", "Save failed.", MessageBoxButtons.OK, MessageBoxType.Information);
 			saveDialog.Dispose();
 		}
 
@@ -306,8 +312,15 @@ namespace InventBox.Desktop.Components.ItemsForm
 				Directory = path
 			};
 			loadDialog.ShowDialog(this);
-			if (loadDialog.FileName != null) {
+			if (!loadDialog.FileName.Contains(".csv"))
+				loadDialog.FileName = string.Empty;
+			if (!string.IsNullOrEmpty(loadDialog.FileName)) {
 				ModelsList.items = _dataManagement.Load(loadDialog.FileName);
+				if (ModelsList.items.Count == 0)
+				{
+					MessageBox.Show("Invalid data. Please choose a different file", "Load failed.", MessageBoxButtons.OK, MessageBoxType.Information);
+					return;
+				}
 				_items = ModelsList.items;
 				foreach (var item in _items)
 				{
@@ -318,6 +331,9 @@ namespace InventBox.Desktop.Components.ItemsForm
 				}
 				Content = CreateDynamicLayout();
 				RefreshData();
+			} else
+			{
+				// MessageBox.Show("File name is empty.", "Load failed.", MessageBoxButtons.OK, MessageBoxType.Information);
 			}
 			loadDialog.Dispose();
 		}
