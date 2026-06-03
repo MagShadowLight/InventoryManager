@@ -89,7 +89,6 @@ namespace InventBox.Desktop.Components.ItemsForm
 		public void RefreshData()
 		{
 			_grid.DataStore = _items.ToArray<Items>();
-			Content = CreateDynamicLayout();
 		}
 
         public GridView CreateGrid()
@@ -145,8 +144,8 @@ namespace InventBox.Desktop.Components.ItemsForm
 
 		public DynamicLayout CreateDynamicLayout()
 		{
-			searchBar = CreateSearchBar();
 			EnumDropDown<Searchable> searchDropDown = CreateSearchDropDown();
+			searchBar = CreateSearchBar();
 			DynamicLayout layout = new DynamicLayout();
 			layout.BeginVertical(null, null, true, true);
 			layout.BeginVertical();
@@ -190,6 +189,7 @@ namespace InventBox.Desktop.Components.ItemsForm
 		{
 			var dropdown = new EnumDropDown<Searchable>() {Cursor = Cursors.Pointer, Width = 100 };
 			dropdown.SelectedValue = Searchable.Name;
+			search = Searchable.Name;
 			dropdown.SelectedValueChanged += (sender, e) =>
 			{
 				search = dropdown.SelectedValue;
@@ -199,8 +199,7 @@ namespace InventBox.Desktop.Components.ItemsForm
 
 		public TextBox CreateSearchBar()
 		{
-			TextBox textBox = new TextBox() {Text = "Search"};
-			textBox.TextBinding.BindDataContext((Items items) => items.Name);
+			TextBox textBox = new TextBox() {Text = ""};
 			textBox.TextChanged += (sender, e) =>
 			{
 				if (string.IsNullOrEmpty(textBox.Text))

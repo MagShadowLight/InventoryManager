@@ -111,22 +111,22 @@ namespace InventBox.Desktop
 
 		private void CreateCommand()
 		{
-			listItemCommand = CreateCommand("List items", "List items", Application.Instance.CommonModifier | Keys.I);
+			listItemCommand = CreateCommand("Inventory", "List items", Application.Instance.CommonModifier | Keys.I);
 			listItemCommand.Executed += (sender, e) => {
 				OnItemListPanel();
 				CreateMainApp();
 			};
 
-			listCategoryCommand = CreateCommand("List categories", "List categories", Application.Instance.CommonModifier | Keys.Shift | Keys.C);
+			listCategoryCommand = CreateCommand("Category", "List categories", Application.Instance.CommonModifier | Keys.Shift | Keys.C);
 			listCategoryCommand.Executed += (sender, e) =>
 			{
 				CreateCategoryListPanel();
 				CreateMainApp();
 			};
-            listLocationCommand = CreateCommand("List locations", "List locations", Application.Instance.CommonModifier | Keys.L);
+            listLocationCommand = CreateCommand("Locations", "List locations", Application.Instance.CommonModifier | Keys.L);
             listLocationCommand.Executed += (sender, e) =>
 			{
-				CreateCategoryListPanel();
+				createLocationListPanel();
 				CreateMainApp();
 			};
 
