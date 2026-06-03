@@ -207,6 +207,7 @@ namespace InventBox.Desktop.Components.CategoryForm
 			createCategoryDialog.Closed += (sender, e) => RefreshData();
 			createCategoryDialog.ShowModal();
 			_categories = ModelsList.categories;
+			Content = CreateDynamicLayout();
 			RefreshData();
         }
 
@@ -221,6 +222,7 @@ namespace InventBox.Desktop.Components.CategoryForm
 				return;
 			ModelsList.categories.Remove(category);
 			_categories = ModelsList.categories;
+			Content = CreateDynamicLayout();
 			RefreshData();
         }
 
@@ -256,6 +258,7 @@ namespace InventBox.Desktop.Components.CategoryForm
 			{
 				ModelsList.categories = _datamanagement.Load(loadDialog.FileName);
 				_categories = ModelsList.categories;
+				Content = CreateDynamicLayout();
 				RefreshData();
 			}
 			loadDialog.Dispose();
@@ -279,7 +282,7 @@ namespace InventBox.Desktop.Components.CategoryForm
         }
 
         public void RefreshData()
-        {
+        {			
 			_grid.DataStore = _categories.ToArray();
         }
     }

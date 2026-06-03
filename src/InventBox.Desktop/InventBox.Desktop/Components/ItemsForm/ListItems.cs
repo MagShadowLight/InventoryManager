@@ -250,6 +250,7 @@ namespace InventBox.Desktop.Components.ItemsForm
 			createItemDialog.Closed += (sender, e) => RefreshData();
 			createItemDialog.ShowModal();
 			_items = ModelsList.items;
+			Content = CreateDynamicLayout();
 			RefreshData();
 		}
 
@@ -299,6 +300,7 @@ namespace InventBox.Desktop.Components.ItemsForm
 					if (!ModelsList.locations.Contains(item.Locations))
 						ModelsList.locations.Add(item.Locations);
 				}
+				Content = CreateDynamicLayout();
 				RefreshData();
 			}
 			loadDialog.Dispose();
@@ -330,6 +332,7 @@ namespace InventBox.Desktop.Components.ItemsForm
 				return;
 			ModelsList.items.Remove(item);
 			_items = ModelsList.items;
+			Content = CreateDynamicLayout();
 			RefreshData();
 		}
 

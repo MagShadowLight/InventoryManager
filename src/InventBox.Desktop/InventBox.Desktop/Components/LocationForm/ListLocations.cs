@@ -164,6 +164,7 @@ namespace InventBox.Desktop.Components.LocationForm
 			createLocationDialog.Closed += (sender, e) => RefreshData();
 			createLocationDialog.ShowModal();
 			_locations = ModelsList.locations;
+			Content = CreateDynamicLayout();
 			RefreshData();
         }
 
@@ -178,6 +179,7 @@ namespace InventBox.Desktop.Components.LocationForm
 				return;
 			ModelsList.locations.Remove(location);
 			_locations = ModelsList.locations;
+			Content = CreateDynamicLayout();
 			RefreshData();
         }
 
@@ -212,6 +214,7 @@ namespace InventBox.Desktop.Components.LocationForm
 			if (loadDialog.FileName != null)
 			{
 				_locations = ModelsList.locations = _dataManagement.Load(loadDialog.FileName);
+				Content = CreateDynamicLayout();
 				RefreshData();
 			}
 			loadDialog.Dispose();
