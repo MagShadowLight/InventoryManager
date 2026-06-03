@@ -10,6 +10,6 @@ public interface IEventHandler
     public void OnEdit();
     public void OnDelete();
     public void RefreshData();
-    public void ClearFilter();
+    public void Search();
     public void OnCopy();
 }

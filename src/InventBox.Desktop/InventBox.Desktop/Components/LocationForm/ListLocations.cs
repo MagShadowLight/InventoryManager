@@ -15,6 +15,7 @@ namespace InventBox.Desktop.Components.LocationForm
 {
 	public partial class ListLocations : Panel, IEventHandler, IControls<Locations, LocationsModelView>
 	{
+		private string searchText = "";
 		private JsonParser<Locations> _jsonParser;
 		private TextBox searchBar;
 		private List<Locations> _locations = new List<Locations>();
@@ -44,10 +45,15 @@ namespace InventBox.Desktop.Components.LocationForm
 			return new Button { Text = text, Width = width, Height = height, Command = command, Cursor = Cursors.Pointer };
         }
 
-        public void ClearFilter()
+        public void Search()
         {
-			searchBar.Text = "";
-			_locations = ModelsList.locations;
+			if (string.IsNullOrEmpty(searchText)) {
+			if (_locations.Count == ModelsList.locations.Count)
+					MessageBox.Show("Search bar is empty. Please type in the search bar", "Search", MessageBoxButtons.OK, MessageBoxType.Information);
+				_locations = ModelsList.locations;
+			}
+			else
+				_locations = ModelsList.locations.Where(location => location.Room.Contains(searchText)).ToList();
 			RefreshData();
         }
 
@@ -62,7 +68,7 @@ namespace InventBox.Desktop.Components.LocationForm
 			layout.BeginVertical();
 			layout.BeginHorizontal();
 			layout.Add(searchBar, true, false);
-			layout.Add(AddButton("Clear Search", 100, 50, () => ClearFilter()));
+			layout.Add(AddButton("Search", 100, 50, () => Search()));
 			layout.EndVertical();
 			layout.BeginVertical();
 			layout.Add(((ModelsList.locations.Count > 0) ? _grid : new Label{
@@ -113,15 +119,18 @@ namespace InventBox.Desktop.Components.LocationForm
 
         public TextBox CreateSearchBar()
         {
-			TextBox textBox = new TextBox() {Text = "Search"};
+			TextBox textBox = new TextBox() {Text = "Search", PlaceholderText = "Search rooms"};
 			textBox.TextBinding.BindDataContext((Locations locations) => locations.Room);
 			textBox.TextChanged += (sender, e) =>
 			{
-				if (string.IsNullOrEmpty(textBox.Text))
-					_locations = ModelsList.locations;
-				else
-					_locations = ModelsList.locations.Where(location => location.Room.Contains(textBox.Text)).ToList();
-				RefreshData();
+				searchText = textBox.Text;
+			};
+			textBox.KeyDown += (sender, e) =>
+			{
+				if (e.Key == Keys.Enter)
+				{
+					Search();
+				}
 			};
 			return textBox;
         }
@@ -170,6 +179,14 @@ namespace InventBox.Desktop.Components.LocationForm
 
         public void OnDelete()
         {
+			if (_locations.Count <= 0) {
+				MessageBox.Show("The list is empty. Please create one or load from file.", "Location not selected", MessageBoxButtons.OK, MessageBoxType.Information);
+				return;
+			}
+			if (_grid.SelectedItem == null) {
+				MessageBox.Show("Location have not been selected. Please select one", "Location not selected", MessageBoxButtons.OK, MessageBoxType.Information);
+				return;
+			}
 			Locations location = (Locations)_grid.SelectedItem;
 			var index = ModelsList.locations.IndexOf(location);
 			if (index < 0)
@@ -185,6 +202,14 @@ namespace InventBox.Desktop.Components.LocationForm
 
         public void OnEdit()
         {
+			if (_locations.Count <= 0) {
+				MessageBox.Show("The list is empty. Please create one or load from file.", "Location not selected", MessageBoxButtons.OK, MessageBoxType.Information);
+				return;
+			}
+			if (_grid.SelectedItem == null) {
+				MessageBox.Show("Location have not been selected. Please select one", "Location not selected", MessageBoxButtons.OK, MessageBoxType.Information);
+				return;
+			}
 			Locations location = (Locations)_grid.SelectedItem;
 			var index = ModelsList.locations.IndexOf(location);
 			if (index < 0)

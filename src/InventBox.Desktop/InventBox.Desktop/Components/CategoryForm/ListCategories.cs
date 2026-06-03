@@ -21,6 +21,7 @@ namespace InventBox.Desktop.Components.CategoryForm
 		private static FileLogger _logger;
 		private DataManagement<Category> _datamanagement;
 		private GridView _grid;
+		private string searchText = "";
 		public ListCategories(string path, FileLogger logger)
 		{
 			jsonParser = new JsonParser<Category>();
@@ -85,10 +86,15 @@ namespace InventBox.Desktop.Components.CategoryForm
 			return new Button {Text = text, Width = width, Height = height, Command = command, Cursor = Cursors.Pointer};
         }
 
-        public void ClearFilter()
+        public void Search()
         {
-			searchBar.Text = "";
-			_categories = ModelsList.categories;
+			if (string.IsNullOrEmpty(searchText)) {
+				if (_categories.Count == ModelsList.categories.Count)
+					MessageBox.Show("Search bar is empty. Please type in the search bar", "Search", MessageBoxButtons.OK, MessageBoxType.Information);
+				_categories = ModelsList.categories;
+			}
+			else
+				_categories = ModelsList.categories.Where(category => category.Name.Contains(searchText)).ToList();
 			RefreshData();
         }
 
@@ -103,7 +109,7 @@ namespace InventBox.Desktop.Components.CategoryForm
 			layout.BeginVertical();
 			layout.BeginHorizontal();
 			layout.Add(searchBar, true);
-			layout.Add(AddButton("Clear Search", 100, 50, () => ClearFilter()));
+			layout.Add(AddButton("Search", 100, 50, () => Search()));
 			layout.EndHorizontal();
 			layout.EndVertical();
 			// layout.AddSeparateRow(null, searchBar, AddButton("Clear Search", 100, 50, () => ClearFilter()));
@@ -158,16 +164,20 @@ namespace InventBox.Desktop.Components.CategoryForm
         {
 			TextBox textBox = new TextBox()
 			{
-				Text = "Search"
+				Text = "Search",
+				PlaceholderText = "Search category name"
 			};
 			textBox.TextBinding.BindDataContext((Category category) => category.Name);
 			textBox.TextChanged += (sender, e) =>
 			{
-				if (string.IsNullOrEmpty(textBox.Text))
-					_categories = ModelsList.categories;
-				else
-					_categories = ModelsList.categories.Where(category => category.Name.Contains(textBox.Text)).ToList();
-				RefreshData();
+				searchText = textBox.Text;
+			};
+			textBox.KeyDown += (sender, e) =>
+			{
+				if (e.Key == Keys.Enter)
+				{
+					Search();
+				}
 			};
 			return textBox;
         }
@@ -213,6 +223,14 @@ namespace InventBox.Desktop.Components.CategoryForm
 
         public void OnDelete()
         {
+			if (_categories.Count <= 0) {
+				MessageBox.Show("The list is empty. Please create one or load from file.", "Category not selected", MessageBoxButtons.OK, MessageBoxType.Information);
+				return;
+			}
+			if (_grid.SelectedItem == null) {
+				MessageBox.Show("Category have not been selected. Please select one", "Category not selected", MessageBoxButtons.OK, MessageBoxType.Information);
+				return;
+			}
 			Category category = (Category)_grid.SelectedItem;
 			var index = ModelsList.categories.IndexOf(category);
 			if (index < 0)
@@ -228,6 +246,14 @@ namespace InventBox.Desktop.Components.CategoryForm
 
         public void OnEdit()
         {
+			if (_categories.Count <= 0) {
+				MessageBox.Show("The list is empty. Please create one or load from file.", "Item not selected", MessageBoxButtons.OK, MessageBoxType.Information);
+				return;
+			}
+			if (_grid.SelectedItem == null) {
+				MessageBox.Show("Category have not been selected. Please select one", "Item not selected", MessageBoxButtons.OK, MessageBoxType.Information);
+				return;
+			}
 			Category category = (Category)_grid.SelectedItem;
 			var index = ModelsList.categories.IndexOf(category);
 			if (index < 0)

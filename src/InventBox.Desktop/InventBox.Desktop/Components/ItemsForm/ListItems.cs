@@ -17,7 +17,7 @@ namespace InventBox.Desktop.Components.ItemsForm
 	public partial class ListItems : Panel, IEventHandler, IControls<Items, ItemModelView>
 	{
 		private JsonParser<Items> jsonParser;
-		private Searchable search;
+		private Searchable search = Searchable.Name;
 		private TextBox searchBar;
 		private List<Items> _items = new List<Items>();
 		private ImageCapture _capture = new ImageCapture();
@@ -26,6 +26,7 @@ namespace InventBox.Desktop.Components.ItemsForm
 		private static FileLogger _logger;
 		private DataManagement<Items> _dataManagement;
 		private GridView _grid;
+		private string searchtext = "";
 		public ListItems(string path, FileLogger logger)
 		{
 			jsonParser = new JsonParser<Items>();
@@ -147,12 +148,13 @@ namespace InventBox.Desktop.Components.ItemsForm
 			EnumDropDown<Searchable> searchDropDown = CreateSearchDropDown();
 			searchBar = CreateSearchBar();
 			DynamicLayout layout = new DynamicLayout();
+			CreateTopSection(layout, searchDropDown);
 			layout.BeginVertical(null, null, true, true);
 			layout.BeginVertical();
 			layout.BeginHorizontal();
 			layout.Add(searchDropDown, false);
 			layout.Add(searchBar, true);
-			layout.Add(AddButton("Clear Search", 100, 50, () => ClearFilter()), false);
+			layout.Add(AddButton("Search", 100, 50, () => Search()), false);
 			layout.Add(AddButton("Scan barcode", 100, 50, async () => await OnScanBarCode()), false);
 			layout.EndHorizontal();
 			layout.EndVertical();
@@ -185,44 +187,58 @@ namespace InventBox.Desktop.Components.ItemsForm
 			layout.EndVertical();
 			return layout;
 		}
+
+		private void CreateTopSection(DynamicLayout layout, EnumDropDown<Searchable> searchDropDown)
+		{
+
+		}
 		private EnumDropDown<Searchable> CreateSearchDropDown()
 		{
 			var dropdown = new EnumDropDown<Searchable>() {Cursor = Cursors.Pointer, Width = 100 };
-			dropdown.SelectedValue = Searchable.Name;
-			search = Searchable.Name;
+			dropdown.SelectedValue = search;
 			dropdown.SelectedValueChanged += (sender, e) =>
 			{
 				search = dropdown.SelectedValue;
+				Content = CreateDynamicLayout();
 			};
 			return dropdown;
 		}
 
 		public TextBox CreateSearchBar()
 		{
-			TextBox textBox = new TextBox() {Text = ""};
+			TextBox textBox = new TextBox() {Text = "", PlaceholderText = $"Search {search.ToString().ToLower()}"};
 			textBox.TextChanged += (sender, e) =>
 			{
-				if (string.IsNullOrEmpty(textBox.Text))
-					_items = ModelsList.items;
-				else {
-					if (search == Searchable.Name)
-						_items = ModelsList.items.Where((item) => item.Name.Contains(textBox.Text)).ToList();
-					if (search == Searchable.Category)
-						_items = ModelsList.items.Where(item => (item.Category != null) ? item.Category.Name.Contains(textBox.Text) : item.Name.Contains(string.Empty)).ToList();
-					if (search == Searchable.Floor)
-						_items = ModelsList.items.Where(item => (item.Locations != null) ? item.Locations.Floor.Contains(textBox.Text) : item.Name.Contains(string.Empty)).ToList();
-					if (search == Searchable.Room)
-						_items = ModelsList.items.Where(item => (item.Locations != null) ? item.Locations.Room.Contains(textBox.Text) : item.Name.Contains(string.Empty)).ToList();
+				searchtext = textBox.Text;
+			};
+			textBox.KeyDown += (sender, e) =>
+			{
+				if (e.Key == Keys.Enter)
+				{
+					Search();
 				}
-				RefreshData();
 			};
 			return textBox;
 		}
 
-		public void ClearFilter()
+		public void Search()
 		{
-			_items = ModelsList.items;
-			searchBar.Text = "";
+			if (string.IsNullOrEmpty(searchtext)) 
+			{
+				if (_items.Count == ModelsList.items.Count)
+					MessageBox.Show("Search bar is empty. Please type in the search bar", "Search", MessageBoxButtons.OK, MessageBoxType.Information);
+				_items = ModelsList.items;
+			}
+			else {
+				if (search == Searchable.Name)
+					_items = ModelsList.items.Where((item) => item.Name.Contains(searchtext)).ToList();
+				if (search == Searchable.Category)
+					_items = ModelsList.items.Where(item => (item.Category != null) ? item.Category.Name.Contains(searchtext) : item.Name.Contains(string.Empty)).ToList();
+				if (search == Searchable.Floor)
+					_items = ModelsList.items.Where(item => (item.Locations != null) ? item.Locations.Floor.Contains(searchtext) : item.Name.Contains(string.Empty)).ToList();
+				if (search == Searchable.Room)
+					_items = ModelsList.items.Where(item => (item.Locations != null) ? item.Locations.Room.Contains(searchtext) : item.Name.Contains(string.Empty)).ToList();
+			}
 			RefreshData();
 		} 
 
@@ -308,6 +324,14 @@ namespace InventBox.Desktop.Components.ItemsForm
 
 		public void OnEdit()
 		{
+			if (_items.Count <= 0) {
+				MessageBox.Show("The list is empty. Please create one or load from file.", "Item not selected", MessageBoxButtons.OK, MessageBoxType.Information);
+				return;
+			}
+			if (_grid.SelectedItem == null) {
+				MessageBox.Show("Item have not been selected. Please select one", "Item not selected", MessageBoxButtons.OK, MessageBoxType.Information);
+				return;
+			}
 			Items item = (Items)_grid.SelectedItem;
 			var index = ModelsList.items.IndexOf(item);
 			if (index < 0 )
@@ -323,6 +347,14 @@ namespace InventBox.Desktop.Components.ItemsForm
 
 		public void OnDelete()
 		{
+			if (_items.Count <= 0) {
+				MessageBox.Show("The list is empty. Please create one or load from file.", "Item not selected", MessageBoxButtons.OK, MessageBoxType.Information);
+				return;
+			}
+			if (_grid.SelectedItem == null) {
+				MessageBox.Show("Item have not been selected. Please select one", "Item not selected", MessageBoxButtons.OK, MessageBoxType.Information);
+				return;
+			}
 			Items item = (Items)_grid.SelectedItem;
 			var index = ModelsList.items.IndexOf(item);
 			if (index < 0)
