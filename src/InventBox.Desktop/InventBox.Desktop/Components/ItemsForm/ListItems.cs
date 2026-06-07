@@ -301,6 +301,8 @@ namespace InventBox.Desktop.Components.ItemsForm
 			};
 			saveDialog.ShowDialog(this);
 			if (saveDialog.FileName != string.Empty && ModelsList.items.Count > 0) {
+				if (!saveDialog.FileName.Contains(".csv"))
+					saveDialog.FileName = saveDialog.FileName + ".csv";
 				_dataManagement.Save(ModelsList.items, saveDialog.FileName);
 				var categoryPath = Path.Combine(Path.GetDirectoryName(saveDialog.FileName), $"{saveDialog.FileName}-Category.csv");
 				var locationPath = Path.Combine(Path.GetDirectoryName(saveDialog.FileName), $"{saveDialog.FileName}-Location.csv");
@@ -334,7 +336,7 @@ namespace InventBox.Desktop.Components.ItemsForm
 			if (!loadDialog.FileName.Contains(".csv"))
 				loadDialog.FileName = string.Empty;
 			if (!string.IsNullOrEmpty(loadDialog.FileName)) {
-				ModelsList.items = _dataManagement.Load(loadDialog.FileName);
+				ModelsList.items = _dataManagement.Load(loadDialog.FileName, true);
 				if (ModelsList.items.Count == 0)
 				{
 					MessageBox.Show("Invalid data. Please choose a different file", "Load failed.", MessageBoxButtons.OK, MessageBoxType.Information);
@@ -343,9 +345,9 @@ namespace InventBox.Desktop.Components.ItemsForm
 				_items = ModelsList.items;
 				foreach (var item in _items)
 				{
-					if (!ModelsList.categories.Contains(item.Category))
+					if (!ModelsList.categories.Contains(ModelsList.categories.Find(i => i.Id == item.Category.Id)) && item.Category.Id > 0 || item.Category != null)
 						ModelsList.categories.Add(item.Category);
-					if (!ModelsList.locations.Contains(item.Locations))
+					if (!ModelsList.locations.Contains(ModelsList.locations.Find(i => i.Id == item.Locations.Id)) && item.Locations.Id > 0 || item.Locations != null)
 						ModelsList.locations.Add(item.Locations);
 				}
 				Content = CreateDynamicLayout();
