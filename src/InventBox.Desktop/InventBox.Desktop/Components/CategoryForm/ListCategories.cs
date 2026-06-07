@@ -9,11 +9,14 @@ using Eto.Drawing;
 using InventBox.Desktop.ModelView;
 using System.Linq;
 using InventBox.Desktop.Components.ItemsForm;
+using System.IO;
 
 namespace InventBox.Desktop.Components.CategoryForm
 {
 	public partial class ListCategories : Panel, IEventHandler, IControls<Category, CategoryModelView>
 	{
+		private static string TmpDir = Path.Combine(Path.GetTempPath(), "InventBox", "Data", "Category");
+		private string TmpPath = Path.Combine(TmpDir, "Data-Category-tmp.csv");
 		private JsonParser<Category> jsonParser;
 		private TextBox searchBar;
 		private List<Category> _categories = new List<Category>();
@@ -33,6 +36,11 @@ namespace InventBox.Desktop.Components.CategoryForm
 			RefreshData();
 			Visible = false;
 			Content = CreateDynamicLayout();
+		}
+		private void CreateDirectory(string dir)
+		{
+			if (!Directory.Exists(dir))
+				Directory.CreateDirectory(dir);
 		}
 		public ContextMenu CreateContextMenu()
 		{
@@ -216,6 +224,8 @@ namespace InventBox.Desktop.Components.CategoryForm
 			var createCategoryDialog = new CategoryDialog(modelView, Mode.Create, category => ModelsList.categories.Add(category), _path, _logger);
 			createCategoryDialog.Closed += (sender, e) => RefreshData();
 			createCategoryDialog.ShowModal();
+			CreateDirectory(TmpDir);
+			_datamanagement.Save(ModelsList.categories, TmpPath);
 			_categories = ModelsList.categories;
 			Content = CreateDynamicLayout();
 			RefreshData();
@@ -239,6 +249,11 @@ namespace InventBox.Desktop.Components.CategoryForm
 			if (deleteDialog != DialogResult.Yes)
 				return;
 			ModelsList.categories.Remove(category);
+			CreateDirectory(TmpDir);
+			if (ModelsList.categories.Count > 0)
+				_datamanagement.Save(ModelsList.categories, TmpPath);
+			else
+				File.Delete(TmpPath);
 			_categories = ModelsList.categories;
 			Content = CreateDynamicLayout();
 			RefreshData();
@@ -262,6 +277,8 @@ namespace InventBox.Desktop.Components.CategoryForm
 			var editCategoryDialog = new CategoryDialog(modelView, Mode.Edit, category => ModelsList.categories[index] = category, _path, _logger);
 			editCategoryDialog.Closed += (sender, e) =>
 			{
+				CreateDirectory(TmpDir);
+				_datamanagement.Save(ModelsList.categories, TmpPath);
 				_categories = ModelsList.categories;
 				RefreshData();
 			};
@@ -309,8 +326,10 @@ namespace InventBox.Desktop.Components.CategoryForm
 				Directory = homeDir
 			};
 			saveDialog.ShowDialog(this);
-			if (saveDialog.FileName != string.Empty  && ModelsList.categories.Count > 0)
+			if (saveDialog.FileName != string.Empty  && ModelsList.categories.Count > 0) {
 				_datamanagement.Save(ModelsList.categories, saveDialog.FileName);
+				File.Delete(TmpPath);
+			}
 			else if (string.IsNullOrEmpty(saveDialog.FileName)){
 				saveDialog.Dispose();
 				return;

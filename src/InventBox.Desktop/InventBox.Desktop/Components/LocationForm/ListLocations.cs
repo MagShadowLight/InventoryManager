@@ -10,11 +10,14 @@ using InventBox.Desktop.ModelView;
 using System.Linq;
 using EtoApp;
 using InventBox.Desktop.Components.ItemsForm;
+using System.IO;
 
 namespace InventBox.Desktop.Components.LocationForm
 {
 	public partial class ListLocations : Panel, IEventHandler, IControls<Locations, LocationsModelView>
 	{
+		private static string TmpDir = Path.Combine(Path.GetTempPath(), "InventBox", "Data", "Locations");
+		private string TmpPath = Path.Combine(TmpDir, "Data-Location-tmp.csv");
 		private string searchText = "";
 		private JsonParser<Locations> _jsonParser;
 		private TextBox searchBar;
@@ -36,6 +39,11 @@ namespace InventBox.Desktop.Components.LocationForm
 			RefreshData();
 			Visible = false;
 			Content = CreateDynamicLayout();
+		}
+		private void CreateDirectory(string dir)
+		{
+			if (!Directory.Exists(dir))
+				Directory.CreateDirectory(dir);
 		}
 
         public Button AddButton(string text, int width, int height, Action eventHandler)
@@ -172,6 +180,8 @@ namespace InventBox.Desktop.Components.LocationForm
 			var createLocationDialog = new LocationsDialog(modelView, Mode.Create, location => ModelsList.locations.Add(location), _path, _logger);
 			createLocationDialog.Closed += (sender, e) => RefreshData();
 			createLocationDialog.ShowModal();
+			CreateDirectory(TmpDir);
+			_dataManagement.Save(ModelsList.locations, TmpPath);
 			_locations = ModelsList.locations;
 			Content = CreateDynamicLayout();
 			RefreshData();
@@ -195,6 +205,11 @@ namespace InventBox.Desktop.Components.LocationForm
 			if (deleteDialog != DialogResult.Yes)
 				return;
 			ModelsList.locations.Remove(location);
+			CreateDirectory(TmpDir);
+			if (ModelsList.locations.Count > 0)
+				_dataManagement.Save(ModelsList.locations, TmpPath);
+			else
+				File.Delete(TmpPath);
 			_locations = ModelsList.locations;
 			Content = CreateDynamicLayout();
 			RefreshData();
@@ -218,6 +233,8 @@ namespace InventBox.Desktop.Components.LocationForm
 			var editLocationDialog = new LocationsDialog(modelView, Mode.Edit, location => ModelsList.locations[index] = location, _path, _logger);
 			editLocationDialog.Closed += (sender, e) =>
 			{
+				CreateDirectory(TmpDir);
+				_dataManagement.Save(ModelsList.locations, TmpPath);
 				_locations = ModelsList.locations;
 				RefreshData();
 			};
@@ -265,7 +282,10 @@ namespace InventBox.Desktop.Components.LocationForm
 			};
 			saveDialog.ShowDialog(this);
 			if (saveDialog.FileName != string.Empty && ModelsList.locations.Count > 0)
+			{
 				_dataManagement.Save(ModelsList.locations, saveDialog.FileName);
+				File.Delete(TmpPath);
+			}
 			else if (string.IsNullOrEmpty(saveDialog.FileName)){
 				saveDialog.Dispose();
 				return;

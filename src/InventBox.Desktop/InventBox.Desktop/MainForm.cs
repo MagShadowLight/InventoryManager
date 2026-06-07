@@ -8,6 +8,8 @@ using InventBox.Desktop.Components.CategoryForm;
 using System.Collections.Generic;
 using InventBox.Desktop.Components.LocationForm;
 using InventBox.Desktop.Utils;
+using InventBox.Core.Models;
+using InventBox.Desktop.ModelView;
 
 namespace InventBox.Desktop
 {
@@ -16,7 +18,15 @@ namespace InventBox.Desktop
 		/// <summary>
 		/// Set the properties for the whole application
 		/// </summary>
+		private static string TmpDir = Path.Combine(Path.GetTempPath(), "InventBox", "Data");
+		private static string TmpItemPath = Path.Combine(TmpDir, "Items", "Data-Item-tmp.csv");
+		private static string TmpCategoryPath = Path.Combine(TmpDir, "Category", "Data-Category-tmp.csv");
+		private static string TmpLocationPath = Path.Combine(TmpDir, "Locations", "Data-Location-tmp.csv");
 		private static string _path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".tmp", "InventBox", "Logs", $"{DateTime.Now.Month}-{DateTime.Now.Day}-{DateTime.Now.Year}_{DateTime.Now.Hour}:{DateTime.Now.Minute}-InventBox.log");
+		private DataManagement<Items> _itemManagement = new DataManagement<Items>(_path);
+		private DataManagement<Category> _categoryManagement = new DataManagement<Category>(_path);
+		private DataManagement<Locations> _locationsManagement = new DataManagement<Locations>(_path);
+
 		private static FileLogger _logger = new FileLogger();
 		ListItems listItemsForm = null;
 		ListCategories listCategories = null;
@@ -54,6 +64,8 @@ namespace InventBox.Desktop
 
 		public MainForm()
 		{
+			RecoverData();
+
 			SizeChanged += (sender, e) => CreateMainApp();
 			
 			CreateLogFile();
@@ -78,6 +90,35 @@ namespace InventBox.Desktop
 			// ToolBar = CreateToolbar();
 			if (!File.Exists("Done.md"))
 				ShowTutorial();
+		}
+
+		private void RecoverData()
+		{	
+			if (File.Exists(TmpItemPath) || File.Exists(TmpCategoryPath) || File.Exists(TmpLocationPath)) {
+				var recoverMessage = MessageBox.Show("InventBox will attempt to recover data.\nClick Ok to recover the data. Click Cancel to discard the data", MessageBoxButtons.OKCancel, MessageBoxType.Information, MessageBoxDefaultButton.OK);
+				if (recoverMessage == DialogResult.Ok) {
+					List<Items> items = new List<Items>();
+					List<Category> categories = new List<Category>();
+					List<Locations> locations = new List<Locations>();
+					if (File.Exists(TmpCategoryPath))
+						categories = _categoryManagement.Load(TmpCategoryPath);
+					if (File.Exists(TmpLocationPath))
+						locations = _locationsManagement.Load(TmpLocationPath);
+					if (File.Exists(TmpItemPath))
+						items = _itemManagement.Load(TmpItemPath);
+					if (!ModelsList.categories.Equals(categories))
+						ModelsList.categories = categories;
+					if (!ModelsList.locations.Equals(locations))
+						ModelsList.locations = locations;
+					if (!ModelsList.items.Equals(items))
+						ModelsList.items = items;
+				} else
+				{
+					File.Delete(TmpItemPath);
+					File.Delete(TmpCategoryPath);
+					File.Delete(TmpLocationPath);
+				}
+			}
 		}
 
 	private DynamicLayout CreateMainPanel()

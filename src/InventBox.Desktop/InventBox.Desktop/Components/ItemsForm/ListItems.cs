@@ -16,6 +16,8 @@ namespace InventBox.Desktop.Components.ItemsForm
 {
 	public partial class ListItems : Panel, IEventHandler, IControls<Items, ItemModelView>
 	{
+		private static string TmpDir = Path.Combine(Path.GetTempPath(), "InventBox", "Data", "Items");
+		private string TmpPath = Path.Combine(TmpDir, "Data-Item-tmp.csv");
 		private JsonParser<Items> jsonParser;
 		private Searchable search = Searchable.Name;
 		private TextBox searchBar;
@@ -40,6 +42,12 @@ namespace InventBox.Desktop.Components.ItemsForm
 			RefreshData();
 			Visible = false;
 			Content = CreateDynamicLayout();
+		}
+
+		private void CreateDirectory(string dir)
+		{
+			if (!Directory.Exists(dir))
+				Directory.CreateDirectory(dir);
 		}
 
 		public ContextMenu CreateContextMenu()
@@ -148,7 +156,6 @@ namespace InventBox.Desktop.Components.ItemsForm
 			EnumDropDown<Searchable> searchDropDown = CreateSearchDropDown();
 			searchBar = CreateSearchBar();
 			DynamicLayout layout = new DynamicLayout();
-			CreateTopSection(layout, searchDropDown);
 			layout.BeginVertical(null, null, true, true);
 			layout.BeginVertical();
 			layout.BeginHorizontal();
@@ -186,11 +193,6 @@ namespace InventBox.Desktop.Components.ItemsForm
 			layout.EndVertical();
 			layout.EndVertical();
 			return layout;
-		}
-
-		private void CreateTopSection(DynamicLayout layout, EnumDropDown<Searchable> searchDropDown)
-		{
-
 		}
 		private EnumDropDown<Searchable> CreateSearchDropDown()
 		{
@@ -265,6 +267,8 @@ namespace InventBox.Desktop.Components.ItemsForm
 			var createItemDialog = new ItemsDialog(modelView, Mode.Create, item => ModelsList.items.Add(item), _path, _logger);
 			createItemDialog.Closed += (sender, e) => RefreshData();
 			createItemDialog.ShowModal();
+			CreateDirectory(TmpDir);
+			_dataManagement.Save(ModelsList.items, TmpPath);
 			_items = ModelsList.items;
 			Content = CreateDynamicLayout();
 			RefreshData();
@@ -289,8 +293,10 @@ namespace InventBox.Desktop.Components.ItemsForm
 				Directory = homeDir
 			};
 			saveDialog.ShowDialog(this);
-			if (saveDialog.FileName != string.Empty && ModelsList.items.Count > 0)
+			if (saveDialog.FileName != string.Empty && ModelsList.items.Count > 0) {
 				_dataManagement.Save(ModelsList.items, saveDialog.FileName);
+				File.Delete(TmpPath);
+			}
 			else if (string.IsNullOrEmpty(saveDialog.FileName)) {
 				saveDialog.Dispose();
 				return;
@@ -355,6 +361,8 @@ namespace InventBox.Desktop.Components.ItemsForm
 			ItemModelView modelView = ModelViewCopy(item);
 			var editItemDialog = new ItemsDialog(modelView, Mode.Edit, item => ModelsList.items[index] = item, _path, _logger);
 			editItemDialog.Closed += (sender, e) => { 
+				CreateDirectory(TmpDir);
+				_dataManagement.Save(ModelsList.items, TmpPath);
 				_items = ModelsList.items;
 				RefreshData();			
 			};
@@ -379,6 +387,11 @@ namespace InventBox.Desktop.Components.ItemsForm
 			if (deleteDialog != DialogResult.Yes)
 				return;
 			ModelsList.items.Remove(item);
+			CreateDirectory(TmpDir);
+			if (ModelsList.items.Count > 0)
+				_dataManagement.Save(ModelsList.items, TmpPath);
+			else
+				File.Delete(TmpPath);
 			_items = ModelsList.items;
 			Content = CreateDynamicLayout();
 			RefreshData();
