@@ -105,7 +105,7 @@ namespace InventBox.Desktop
 					if (File.Exists(TmpLocationPath))
 						locations = _locationsManagement.Load(TmpLocationPath);
 					if (File.Exists(TmpItemPath))
-						items = _itemManagement.Load(TmpItemPath);
+						items = _itemManagement.Load(TmpItemPath, true);
 					if (!ModelsList.categories.Equals(categories))
 						ModelsList.categories = categories;
 					if (!ModelsList.locations.Equals(locations))

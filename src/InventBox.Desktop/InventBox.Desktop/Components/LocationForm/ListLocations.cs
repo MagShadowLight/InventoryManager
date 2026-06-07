@@ -18,6 +18,8 @@ namespace InventBox.Desktop.Components.LocationForm
 	{
 		private static string TmpDir = Path.Combine(Path.GetTempPath(), "InventBox", "Data", "Locations");
 		private string TmpPath = Path.Combine(TmpDir, "Data-Location-tmp.csv");
+		private static string TmpItemDir = Path.Combine(Path.GetTempPath(), "InventBox", "Data", "Items");
+		private string TmpItemPath = Path.Combine(TmpItemDir, "Data-Item-tmp.csv");
 		private string searchText = "";
 		private JsonParser<Locations> _jsonParser;
 		private TextBox searchBar;
@@ -25,6 +27,8 @@ namespace InventBox.Desktop.Components.LocationForm
 		private static string _path;
 		private FileLogger _logger;
 		private DataManagement<Locations> _dataManagement;
+		private DataManagement<Items> _itemmanagement;
+
 		private GridView _grid;
 
 		public ListLocations(string path, FileLogger logger)
@@ -189,6 +193,7 @@ namespace InventBox.Desktop.Components.LocationForm
 
         public void OnDelete()
         {
+			_itemmanagement = new DataManagement<Items>(_path);
 			if (_locations.Count <= 0) {
 				MessageBox.Show("The list is empty. Please create one or load from file.", "Location not selected", MessageBoxButtons.OK, MessageBoxType.Information);
 				return;
@@ -205,11 +210,17 @@ namespace InventBox.Desktop.Components.LocationForm
 			if (deleteDialog != DialogResult.Yes)
 				return;
 			ModelsList.locations.Remove(location);
+			foreach (var item in ModelsList.items)
+			{
+				if (item.Locations.Id == location.Id)
+					item.Locations = null;
+			}
 			CreateDirectory(TmpDir);
 			if (ModelsList.locations.Count > 0)
 				_dataManagement.Save(ModelsList.locations, TmpPath);
 			else
 				File.Delete(TmpPath);
+			_itemmanagement.Save(ModelsList.items, TmpItemPath);
 			_locations = ModelsList.locations;
 			Content = CreateDynamicLayout();
 			RefreshData();
@@ -217,6 +228,7 @@ namespace InventBox.Desktop.Components.LocationForm
 
         public void OnEdit()
         {
+			_itemmanagement = new DataManagement<Items>(_path);
 			if (_locations.Count <= 0) {
 				MessageBox.Show("The list is empty. Please create one or load from file.", "Location not selected", MessageBoxButtons.OK, MessageBoxType.Information);
 				return;
@@ -233,8 +245,14 @@ namespace InventBox.Desktop.Components.LocationForm
 			var editLocationDialog = new LocationsDialog(modelView, Mode.Edit, location => ModelsList.locations[index] = location, _path, _logger);
 			editLocationDialog.Closed += (sender, e) =>
 			{
+				foreach (var item in ModelsList.items)
+				{
+					if (item.Locations.Id == location.Id)
+						item.Locations = ModelsList.locations[index];
+				}
 				CreateDirectory(TmpDir);
 				_dataManagement.Save(ModelsList.locations, TmpPath);
+				_itemmanagement.Save(ModelsList.items, TmpItemPath);
 				_locations = ModelsList.locations;
 				RefreshData();
 			};

@@ -1,6 +1,7 @@
 using System.Globalization;
 using CsvHelper;
 using InventBox.Core.Interfaces;
+using InventBox.Core.Map;
 
 namespace InventBox.Core;
 
@@ -36,7 +37,7 @@ public class DataManagement<T> : IDataManagement<List<T>>
         }
     }
 
-    public List<T> Load(string path)
+    public List<T> Load(string path, bool isItem = false)
     {
         List<T> values = new List<T>();
         try {
@@ -44,6 +45,8 @@ public class DataManagement<T> : IDataManagement<List<T>>
             using (var reader = new StreamReader(path))
             using (var csvParser = new CsvReader(reader, CultureInfo.InvariantCulture))
             {
+                if (isItem)
+                    csvParser.Context.RegisterClassMap<ItemMap>();
                 while (csvParser.Read()) {
                     var records = csvParser.GetRecord<T>();
                     values.Add(records);

@@ -17,12 +17,16 @@ namespace InventBox.Desktop.Components.CategoryForm
 	{
 		private static string TmpDir = Path.Combine(Path.GetTempPath(), "InventBox", "Data", "Category");
 		private string TmpPath = Path.Combine(TmpDir, "Data-Category-tmp.csv");
+		private static string TmpItemDir = Path.Combine(Path.GetTempPath(), "InventBox", "Data", "Items");
+		private string TmpItemPath = Path.Combine(TmpItemDir, "Data-Item-tmp.csv");
+
 		private JsonParser<Category> jsonParser;
 		private TextBox searchBar;
 		private List<Category> _categories = new List<Category>();
 		private static string _path;
 		private static FileLogger _logger;
 		private DataManagement<Category> _datamanagement;
+		private DataManagement<Items> _itemmanagement;
 		private GridView _grid;
 		private string searchText = "";
 		public ListCategories(string path, FileLogger logger)
@@ -233,6 +237,7 @@ namespace InventBox.Desktop.Components.CategoryForm
 
         public void OnDelete()
         {
+			_itemmanagement = new DataManagement<Items>(_path);
 			if (_categories.Count <= 0) {
 				MessageBox.Show("The list is empty. Please create one or load from file.", "Category not selected", MessageBoxButtons.OK, MessageBoxType.Information);
 				return;
@@ -249,11 +254,17 @@ namespace InventBox.Desktop.Components.CategoryForm
 			if (deleteDialog != DialogResult.Yes)
 				return;
 			ModelsList.categories.Remove(category);
+			foreach (var item in ModelsList.items)
+			{
+				if (item.Category.Id == category.Id)
+					item.Category = null;
+			}
 			CreateDirectory(TmpDir);
-			if (ModelsList.categories.Count > 0)
+			if (ModelsList.categories.Count > 0) 
 				_datamanagement.Save(ModelsList.categories, TmpPath);
 			else
 				File.Delete(TmpPath);
+			_itemmanagement.Save(ModelsList.items, TmpItemPath);
 			_categories = ModelsList.categories;
 			Content = CreateDynamicLayout();
 			RefreshData();
@@ -261,6 +272,7 @@ namespace InventBox.Desktop.Components.CategoryForm
 
         public void OnEdit()
         {
+			_itemmanagement = new DataManagement<Items>(_path);
 			if (_categories.Count <= 0) {
 				MessageBox.Show("The list is empty. Please create one or load from file.", "Item not selected", MessageBoxButtons.OK, MessageBoxType.Information);
 				return;
@@ -274,11 +286,18 @@ namespace InventBox.Desktop.Components.CategoryForm
 			if (index < 0)
 				return;
 			CategoryModelView modelView = ModelViewCopy(category);
+			var categories = ModelsList.categories;
 			var editCategoryDialog = new CategoryDialog(modelView, Mode.Edit, category => ModelsList.categories[index] = category, _path, _logger);
 			editCategoryDialog.Closed += (sender, e) =>
 			{
+				foreach (var item in ModelsList.items)
+				{
+					if (item.Category.Id == category.Id)
+						item.Category = categories[index];
+				}
 				CreateDirectory(TmpDir);
 				_datamanagement.Save(ModelsList.categories, TmpPath);
+				_itemmanagement.Save(ModelsList.items, TmpItemPath);
 				_categories = ModelsList.categories;
 				RefreshData();
 			};
