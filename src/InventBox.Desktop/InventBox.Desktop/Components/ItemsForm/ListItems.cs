@@ -18,6 +18,9 @@ namespace InventBox.Desktop.Components.ItemsForm
 	{
 		private static string TmpDir = Path.Combine(Path.GetTempPath(), "InventBox", "Data", "Items");
 		private string TmpPath = Path.Combine(TmpDir, "Data-Item-tmp.csv");
+		private static string TmpDir2 = Path.Combine(Path.GetTempPath(), "InventBox", "Data");
+		private string TmpCategoryPath = Path.Combine(TmpDir2, "Category", "Data-Category-tmp.csv");
+		private string TmpLocationPath = Path.Combine(TmpDir2, "Locations", "Data-Location-tmp.csv");
 		private JsonParser<Items> jsonParser;
 		private Searchable search = Searchable.Name;
 		private TextBox searchBar;
@@ -27,6 +30,8 @@ namespace InventBox.Desktop.Components.ItemsForm
 		private BarCodeScanner _scanner;
 		private static FileLogger _logger;
 		private DataManagement<Items> _dataManagement;
+		private DataManagement<Category> _categoryManagement;
+		private DataManagement<Locations> _locationManagement;
 		private GridView _grid;
 		private string searchtext = "";
 		public ListItems(string path, FileLogger logger)
@@ -283,6 +288,8 @@ namespace InventBox.Desktop.Components.ItemsForm
 
 		public void OnSave()
 		{
+			_categoryManagement = new DataManagement<Category>(_path);
+			_locationManagement = new DataManagement<Locations>(_path);
 			Uri homeDir = new Uri(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile));	
 			var saveDialog = new SaveFileDialog
 			{
@@ -295,6 +302,12 @@ namespace InventBox.Desktop.Components.ItemsForm
 			saveDialog.ShowDialog(this);
 			if (saveDialog.FileName != string.Empty && ModelsList.items.Count > 0) {
 				_dataManagement.Save(ModelsList.items, saveDialog.FileName);
+				var categoryPath = Path.Combine(Path.GetDirectoryName(saveDialog.FileName), $"{saveDialog.FileName}-Category.csv");
+				var locationPath = Path.Combine(Path.GetDirectoryName(saveDialog.FileName), $"{saveDialog.FileName}-Location.csv");
+				_categoryManagement.Save(ModelsList.categories, categoryPath);
+				File.Delete(TmpCategoryPath);
+				_locationManagement.Save(ModelsList.locations, locationPath);
+				File.Delete(TmpLocationPath);
 				File.Delete(TmpPath);
 			}
 			else if (string.IsNullOrEmpty(saveDialog.FileName)) {
