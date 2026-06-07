@@ -68,6 +68,9 @@ public class ImageCapture
     public async Task StopCapture(string imagePath)
     {
         try {
+        if (device == null)
+            return;
+
         if (_frame == null)
             return;
 
@@ -84,5 +87,16 @@ public class ImageCapture
         }
     }
 
-
+    public async Task CloseCapture()
+    {
+        try
+        {
+            if (device == null)
+                return;
+            await device.StopAsync(token);
+        } catch (Exception ex)
+        {
+            MessageBox.Show(ex.Message, "Error:", MessageBoxButtons.OK, MessageBoxType.Error);
+        }
+    }
 }

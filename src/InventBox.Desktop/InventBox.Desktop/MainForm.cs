@@ -66,7 +66,7 @@ namespace InventBox.Desktop
 			/// Set the properties for the window.
 			/// </summary>
 			Title = "InventBox";
-			MinimumSize = new Size(800, 700);
+			MinimumSize = new Size(950, 850);
 			Resizable = true;
 			Content = CreateMainApp();
 			CreateCommand();	
@@ -79,6 +79,24 @@ namespace InventBox.Desktop
 			if (!File.Exists("Done.md"))
 				ShowTutorial();
 		}
+
+	private DynamicLayout CreateMainPanel()
+	{
+		return new DynamicLayout
+		{
+			Padding = 20,
+			Rows =
+			{
+				new Label
+				{
+					Text = "Click the button on the left to open either inventory, category, or location list",
+					TextAlignment = TextAlignment.Center,
+					VerticalAlignment = VerticalAlignment.Center,
+					Font = new Font(FontFamilies.Serif, 12.0f, FontStyle.Bold, FontDecoration.None),
+				}
+			}
+		};
+	}
 
 	async void ShowTutorial() {
 		await tutorial.ShowModalAsync();
@@ -253,7 +271,7 @@ namespace InventBox.Desktop
 				ApplicationItems =
 				{
 					// application (OS X) or file menu (others)
-					new ButtonMenuItem { Text = "&Preferences..." },
+					// new ButtonMenuItem { Text = "&Preferences..." },
 				},
 				QuitItem = quitCommand,
 				AboutItem = aboutCommand
@@ -275,7 +293,7 @@ namespace InventBox.Desktop
 				ProgramName = "InventBox",
 				ProgramDescription = "InventBox is a Inventory Management App where you can manage your own inventory.",
 				Title = "InventBox about",
-				Version = "Alpha 0.0.1",
+				Version = "Version 1.0",
 				WebsiteLabel = "Github",
 				Website = link
 			};
@@ -304,13 +322,15 @@ namespace InventBox.Desktop
 				panel = listCategories;
 			else if (listLocations != null && listLocations.Visible)
 				panel = listLocations;
+			else 
+				panel = CreateMainPanel();
         }
 
         private StackLayout NavigationButton()
 		{
-			var InventoryButton = AddButton("Inventory", 50, 50, OnItemListPanel);
-			var CategoryButton = AddButton("Category", 50, 50, CreateCategoryListPanel);
-			var LocationButton = AddButton("Locations", 50, 50, createLocationListPanel);
+			var InventoryButton = AddButton("Inventory", 100, 50, OnItemListPanel);
+			var CategoryButton = AddButton("Category", 100, 50, CreateCategoryListPanel);
+			var LocationButton = AddButton("Locations", 100, 50, createLocationListPanel);
 			return new StackLayout()
 			{
 				Padding = 5,

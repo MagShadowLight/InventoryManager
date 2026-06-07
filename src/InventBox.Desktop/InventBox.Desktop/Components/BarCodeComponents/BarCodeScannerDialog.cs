@@ -4,7 +4,6 @@ using Eto.Drawing;
 using System.Threading.Tasks;
 using InventBox.Core;
 using System.IO;
-using ZXing;
 
 namespace EtoApp
 {
@@ -26,6 +25,12 @@ namespace EtoApp
 			task.RunSynchronously();
 			Content = CreateLayout();
 		}
+
+        protected override void OnClosed(EventArgs e)
+        {
+            base.OnClosed(e);
+			Task.Run(async () => await _capture.CloseCapture());
+        }
 
 		private ImageView CreatePreview()
 		{
