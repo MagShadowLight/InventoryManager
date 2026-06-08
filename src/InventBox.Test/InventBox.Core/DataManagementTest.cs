@@ -1,15 +1,21 @@
 using InventBox.Core;
 using InventBox.Core.Models;
 using InventBox.Test.Utils;
-using Moq;
+using Xunit.Abstractions;
 
 namespace InventBox.Test.InventBox.Core;
 
 public class DataTransferTest
 {
+    private readonly ITestOutputHelper _output;
     private string[] _paths = ["DataTransfer.log","ItemExportTest.csv"];
     private List<Items>? _items;
-    private string _path = "ItemTest.csv";
+    private string _path = Path.Combine(AppContext.BaseDirectory, "Data", "ItemTest.csv");
+
+    public DataTransferTest(ITestOutputHelper output)
+    {
+        _output = output;
+    }
     [Fact]
     public void WhenUserAreImportingTheDataFromTheCSVFileThenItShouldBeStoredInAnObject()
     {
@@ -31,9 +37,9 @@ public class DataTransferTest
         // Arrange
         List<Items> items = new List<Items>()
         {
-            new Items { Id = 1, Name = "Test 1", Description = "This is a test", Quantity = 1, SerialNumber = "1bhabhahnaBHHBI", ModelNumber = "abhahbbhaba", Manufacturer = "Manufacturer 1", Insured = true, Notes = "This is a test note 1", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, Conditions = Conditions.Good},
-            new Items { Id = 2, Name = "Test 2", Description = "This is another test", Quantity = 10, SerialNumber = "nhnanjNJMIHUVWGYUICOIJHUY", ModelNumber = "HQACBACSINSHUCBHYUISUBHS", Manufacturer = "Manufacturer 2", Insured = false, Notes = "This is a test note 2", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, Conditions = Conditions.Acceptable},
-            new Items { Id = 3, Name = "Test 3", Description = "This is third test", Quantity = 3, SerialNumber = "hqwbnujwikJAUSHBWEVFDASJICHUDBEAUD", ModelNumber = "nqiubucuiaiuch", Manufacturer = "Manufacturer 3", Insured = false, Notes = "This is a test note 3", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, Conditions = Conditions.Excellent}
+            new Items { Id = 1, Name = "Test 1", Description = "This is a test", Quantity = 1, SerialNumber = "1bhabhahnaBHHBI", ModelNumber = "abhahbbhaba", Manufacturer = "Manufacturer 1", Notes = "This is a test note 1", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, Conditions = Conditions.Good},
+            new Items { Id = 2, Name = "Test 2", Description = "This is another test", Quantity = 10, SerialNumber = "nhnanjNJMIHUVWGYUICOIJHUY", ModelNumber = "HQACBACSINSHUCBHYUISUBHS", Manufacturer = "Manufacturer 2", Notes = "This is a test note 2", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, Conditions = Conditions.Acceptable},
+            new Items { Id = 3, Name = "Test 3", Description = "This is third test", Quantity = 3, SerialNumber = "hqwbnujwikJAUSHBWEVFDASJICHUDBEAUD", ModelNumber = "nqiubucuiaiuch", Manufacturer = "Manufacturer 3", Notes = "This is a test note 3", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, Conditions = Conditions.Excellent}
         };
         var csvParser = new DataManagement<Items>("DataTransfer.log");
         // Act

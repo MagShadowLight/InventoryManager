@@ -9,7 +9,7 @@ public class ImageCapture
     private ConsoleLogger logger = new ConsoleLogger();
     CancellationToken token;
     CaptureDevices? devices;
-    byte[]? _frame;
+    public byte[]? _frame;
     CaptureDeviceDescriptor? descriptor1;
     VideoCharacteristics? characteristic1;
     CaptureDevice? device;
