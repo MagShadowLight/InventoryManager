@@ -1,5 +1,4 @@
 using System.Text.Json;
-using InventBox.Core.Models;
 
 namespace InventBox.Core;
 
