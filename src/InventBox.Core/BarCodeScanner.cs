@@ -22,16 +22,7 @@ public class BarCodeScanner
     public string DecodeBarCode(string path, BarcodeFormat format = BarcodeFormat.CODE_128, bool tryHarder = true, bool tryInverted = true)
     {
         try {
-            var reader = new ZXing.BarcodeReader<Image<Rgba32>>(image => new ImageSharpLuminanceSource<Rgba32>(image))
-            {
-                AutoRotate = true,
-                Options = new DecodingOptions
-                {
-                    PossibleFormats = new[] { format },
-                    TryHarder = tryHarder,
-                    TryInverted = tryInverted
-                }
-            };
+            var reader = CreateReader(format, tryHarder, tryInverted);
 
             using var image = Image.Load<Rgba32>(path);
             var result = reader.Decode(image);
@@ -45,19 +36,26 @@ public class BarCodeScanner
 
      public string? ScanBarCode(byte[] data, BarcodeFormat format = BarcodeFormat.CODE_128, bool tryHarder = true, bool tryInverted = true)
     {
-        if (data == null || data.Length == 0)
-            return null;
+        try {
+            if (data.Length == 0)
+                return string.Empty;
 
-        var reader = CreateReader(format, tryHarder, tryInverted);
+            var reader = CreateReader(format, tryHarder, tryInverted);
 
-        using var stream = new MemoryStream(data);
-        using var image = Image.Load<Rgba32>(stream);
-        var result = reader.Decode(image);
-        return result?.Text;
+            using var stream = new MemoryStream(data);
+            using var image = Image.Load<Rgba32>(stream);
+            var result = reader.Decode(image);
+            return result?.Text;
+        }   catch (Exception ex)
+        {
+            _logger.Error($"Failed to read the bar code. Message: {ex.Message}", _loggerPath);
+            return string.Empty;
+        }
     }
 
     public void EncodeBarCode(string text, string path, int height = 100, int width = 100, int margin = 10, string foreground = "000000", string background = "FFFFFF", BarcodeFormat format = BarcodeFormat.CODE_128)
     {
+        try {
         var writer = new ZXing.ImageSharp.BarcodeWriter<Rgba32>()
         {
             Format = format,
@@ -76,6 +74,10 @@ public class BarCodeScanner
 
         using var image = writer.Write(text);
         image.SaveAsPng(path);
+        } catch (Exception ex)
+        {
+            _logger.Error($"Failed to write the bar code. Message: {ex.Message}", _loggerPath);
+        }
     }
 
     public ZXing.BarcodeReader<Image<Rgba32>> CreateReader(BarcodeFormat format = BarcodeFormat.CODE_128, bool tryHarder = true, bool tryInverted = true)

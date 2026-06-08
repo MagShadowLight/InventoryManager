@@ -31,6 +31,7 @@
 
   <Target Name="CopyCustomContent" AfterTargets="AfterBuild">
     <Copy SourceFiles="InventBox.Core/Data/ItemTest.csv" DestinationFolder="$(OutDir)/Data/" />
+    <Copy SourceFiles="InventBox.Core/Data/barcodeTest" DestinationFolder="$(OutDir)/Data/" />
   </Target>
 
 </Project>
