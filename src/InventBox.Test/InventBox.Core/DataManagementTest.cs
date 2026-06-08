@@ -22,7 +22,7 @@ public class DataTransferTest
         // Arrange
         var csv = new DataManagement<Items>("DataTransfer.log");
         // Act
-        _items = csv.Load(_path);
+        _items = csv.Load(_path, true);
         // Assert
         Assert.Equal(3, _items.Count);
         Assert.Contains("Item 1", _items.Where(x => x.Name == "Item 1").First().Name);

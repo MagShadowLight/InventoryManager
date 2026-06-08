@@ -25,6 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="InventBox.Core/Utils/" />
     <Folder Include="Utils/" />
   </ItemGroup>
 
