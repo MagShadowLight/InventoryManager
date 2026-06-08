@@ -307,9 +307,11 @@ namespace InventBox.Desktop.Components.ItemsForm
 				var categoryPath = Path.Combine(Path.GetDirectoryName(saveDialog.FileName), $"{saveDialog.FileName}-Category.csv");
 				var locationPath = Path.Combine(Path.GetDirectoryName(saveDialog.FileName), $"{saveDialog.FileName}-Location.csv");
 				_categoryManagement.Save(ModelsList.categories, categoryPath);
-				File.Delete(TmpCategoryPath);
+				if (File.Exists(TmpCategoryPath))
+					File.Delete(TmpCategoryPath);
 				_locationManagement.Save(ModelsList.locations, locationPath);
-				File.Delete(TmpLocationPath);
+				if (File.Exists(TmpLocationPath))
+					File.Delete(TmpLocationPath);
 				File.Delete(TmpPath);
 			}
 			else if (string.IsNullOrEmpty(saveDialog.FileName)) {

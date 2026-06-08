@@ -114,9 +114,12 @@ namespace InventBox.Desktop
 						ModelsList.items = items;
 				} else
 				{
-					File.Delete(TmpItemPath);
-					File.Delete(TmpCategoryPath);
-					File.Delete(TmpLocationPath);
+					if (File.Exists(TmpItemPath))
+						File.Delete(TmpItemPath);
+					if (File.Exists(TmpCategoryPath))
+						File.Delete(TmpCategoryPath);
+					if (File.Exists(TmpLocationPath))
+						File.Delete(TmpLocationPath);
 				}
 			}
 		}
