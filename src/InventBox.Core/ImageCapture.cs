@@ -41,7 +41,7 @@ public class ImageCapture
             IsCaptureOpen = true;
         } catch (Exception ex)
         {
-            MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxType.Error);
+            // MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxType.Error);
             IsCaptureOpen = false;
         }
     }
@@ -61,7 +61,7 @@ public class ImageCapture
         await device.StartAsync(token).ConfigureAwait(false);
         } catch (Exception ex)
         {
-            MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxType.Error);
+            // MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxType.Error);
             
         }
     }
