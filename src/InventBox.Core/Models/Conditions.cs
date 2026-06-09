@@ -1,5 +1,8 @@
 namespace InventBox.Core.Models;
 
+/// <summary>
+/// Represents a groups of conditions.
+/// </summary>
 public enum Conditions
 {
     NA = 0,
