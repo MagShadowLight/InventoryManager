@@ -2,7 +2,7 @@ using InventBox.Core;
 using InventBox.Core.Models;
 using Xunit.Abstractions;
 
-namespace InventBox.Test.InventBox.Core;
+namespace InventBox.Tests.InventBox.Core;
 
 public class JsonParserTest
 {

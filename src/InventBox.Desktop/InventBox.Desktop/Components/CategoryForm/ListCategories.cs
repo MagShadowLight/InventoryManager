@@ -13,6 +13,9 @@ using System.IO;
 
 namespace InventBox.Desktop.Components.CategoryForm
 {
+	/// <summary>
+	/// Represents a panel for list of categories.
+	/// </summary>
 	public partial class ListCategories : Panel, IEventHandler, IControls<Category, CategoryModelView>
 	{
 		private static string TmpDir = Path.Combine(Path.GetTempPath(), "InventBox", "Data", "Category");
@@ -29,6 +32,11 @@ namespace InventBox.Desktop.Components.CategoryForm
 		private DataManagement<Items> _itemmanagement;
 		private GridView _grid;
 		private string searchText = "";
+		/// <summary>
+		/// Initialize a new instance for the panel.
+		/// </summary>
+		/// <param name="path"></param>
+		/// <param name="logger"></param>
 		public ListCategories(string path, FileLogger logger)
 		{
 			jsonParser = new JsonParser<Category>();
@@ -41,11 +49,19 @@ namespace InventBox.Desktop.Components.CategoryForm
 			Visible = false;
 			Content = CreateDynamicLayout();
 		}
+		/// <summary>
+		/// Create the directory if the directory does not exist.
+		/// </summary>
+		/// <param name="dir">The path of the directory.</param>
 		private void CreateDirectory(string dir)
 		{
 			if (!Directory.Exists(dir))
 				Directory.CreateDirectory(dir);
 		}
+		/// <summary>
+		/// Create the context menu for the grid.
+		/// </summary>
+		/// <returns>The context menu with options.</returns>
 		public ContextMenu CreateContextMenu()
 		{
 			var CopyCategoryCommand = CreateMenuItem("Copy category", OnCopy);
@@ -75,7 +91,9 @@ namespace InventBox.Desktop.Components.CategoryForm
 				},
 			};
 		}
-
+		/// <summary>
+		/// Copy the category into the clipboard.
+		/// </summary>
 		public void OnCopy()
 		{
 			Category SelectedCategory = (Category)_grid.SelectedItem;
@@ -83,21 +101,36 @@ namespace InventBox.Desktop.Components.CategoryForm
 			Clipboard.Instance.Clear();		
 			Clipboard.Instance.Text = jsonItem;
 		}
-
+		/// <summary>
+		/// Create the button menu item for context menu.
+		/// </summary>
+		/// <param name="text">The text for the menu item.</param>
+		/// <param name="clickHandler">The handler for clicking into the menu.</param>
+		/// <param name="keys">The key shortcuts for the event.</param>
+		/// <returns>The button menu item for context menu.</returns>
 		public ButtonMenuItem CreateMenuItem(string text, Action clickHandler, Keys keys = Keys.None)
 		{			
 			var menuItem = new ButtonMenuItem{Text = text, Shortcut = keys};
 			menuItem.Click += (sender, eventArgs) => clickHandler();
 			return menuItem;
 		}
-
+		/// <summary>
+		/// Create a button for the panel.
+		/// </summary>
+		/// <param name="text">The text for the button.</param>
+		/// <param name="width">The width for the button.</param>
+		/// <param name="height">The height for the button.</param>
+		/// <param name="eventHandler">The handler for clicking the button.</param>
+		/// <returns>The button to be placed.</returns>
         public Button AddButton(string text, int width, int height, Action eventHandler)
         {
 			var command = new Command();
 			command.Executed += (sender, eventArgs) => eventHandler();
 			return new Button {Text = text, Width = width, Height = height, Command = command, Cursor = Cursors.Pointer};
         }
-
+		/// <summary>
+		/// Search the category by name.
+		/// </summary>
         public void Search()
         {
 			if (string.IsNullOrEmpty(searchText)) {
@@ -109,7 +142,10 @@ namespace InventBox.Desktop.Components.CategoryForm
 				_categories = ModelsList.categories.Where(category => category.Name.Contains(searchText)).ToList();
 			RefreshData();
         }
-
+		/// <summary>
+		/// Create the layout for the panel.
+		/// </summary>
+		/// <returns>The layout for the category list.</returns>
         public DynamicLayout CreateDynamicLayout()
         {
 			searchBar = CreateSearchBar();
@@ -155,7 +191,10 @@ namespace InventBox.Desktop.Components.CategoryForm
 			layout.EndVertical();
 			return layout;
         }
-
+		/// <summary>
+		/// Create the grid view for category list.
+		/// </summary>
+		/// <returns>The grid for viewed.</returns>
         public GridView CreateGrid()
         {
 			return new GridView()
@@ -171,7 +210,10 @@ namespace InventBox.Desktop.Components.CategoryForm
 				}
 			};
         }
-
+		/// <summary>
+		/// Create the search bar for searching the category name.
+		/// </summary>
+		/// <returns>The text box for searching.</returns>
         public TextBox CreateSearchBar()
         {
 			TextBox textBox = new TextBox()
@@ -193,7 +235,12 @@ namespace InventBox.Desktop.Components.CategoryForm
 			};
 			return textBox;
         }
-
+		/// <summary>
+		/// Create the grid column for the grid.
+		/// </summary>
+		/// <param name="header">The header for the column.</param>
+		/// <param name="data">The data for the column.</param>
+		/// <returns>The column for the grid.</returns>
         public GridColumn GetColumn(string header, Func<Category, string> data)
         {
 			return new GridColumn
@@ -203,7 +250,11 @@ namespace InventBox.Desktop.Components.CategoryForm
 				DataCell = GetData(data)
 			};
         }
-
+		/// <summary>
+		/// Create the text box cell for data.
+		/// </summary>
+		/// <param name="data">the data of the category.</param>
+		/// <returns>The text box cell that return the data.</returns>
         public TextBoxCell GetData(Func<Category, string> data)
         {
 			return new TextBoxCell
@@ -211,7 +262,11 @@ namespace InventBox.Desktop.Components.CategoryForm
 				Binding = Binding.Delegate<Category, string>(data, null)
 			};
         }
-
+		/// <summary>
+		/// Copy the category into the model view.
+		/// </summary>
+		/// <param name="category">The data from the category.</param>
+		/// <returns>Model view for the category.</returns>
         public CategoryModelView ModelViewCopy(Category category)
         {
 			return new CategoryModelView
@@ -221,7 +276,9 @@ namespace InventBox.Desktop.Components.CategoryForm
 				Description = category.Description
 			};
         }
-
+		/// <summary>
+		/// Create the category into the list.
+		/// </summary>
         public void OnCreate()
         {
 			CategoryModelView modelView = new CategoryModelView(){Id = ModelsList.categories.Count + 1};
@@ -234,7 +291,9 @@ namespace InventBox.Desktop.Components.CategoryForm
 			Content = CreateDynamicLayout();
 			RefreshData();
         }
-
+		/// <summary>
+		/// Delete the category from the list.
+		/// </summary>
         public void OnDelete()
         {
 			_itemmanagement = new DataManagement<Items>(_path);
@@ -269,7 +328,9 @@ namespace InventBox.Desktop.Components.CategoryForm
 			Content = CreateDynamicLayout();
 			RefreshData();
         }
-
+		/// <summary>
+		/// Edit the category and replace the old data to the new data.
+		/// </summary>
         public void OnEdit()
         {
 			_itemmanagement = new DataManagement<Items>(_path);
@@ -303,7 +364,9 @@ namespace InventBox.Desktop.Components.CategoryForm
 			};
 			editCategoryDialog.ShowModal();
         }
-
+		/// <summary>
+		/// Load the data from the file.
+		/// </summary>
         public void OnLoad()
         {
 			Uri path = new Uri(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile));
@@ -332,7 +395,9 @@ namespace InventBox.Desktop.Components.CategoryForm
 			}
 			loadDialog.Dispose();
         }
-
+		/// <summary>
+		/// Save the data from the list.
+		/// </summary>
         public void OnSave()
         {
 			Uri homeDir = new Uri(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile));
@@ -356,7 +421,9 @@ namespace InventBox.Desktop.Components.CategoryForm
 				MessageBox.Show("categories list is empty. Please add one or load from file.", "Save failed.", MessageBoxButtons.OK, MessageBoxType.Information);
 			saveDialog.Dispose();
         }
-
+		/// <summary>
+		/// Refresh the data for the grid.
+		/// </summary>
         public void RefreshData()
         {			
 			_grid.DataStore = _categories.ToArray();

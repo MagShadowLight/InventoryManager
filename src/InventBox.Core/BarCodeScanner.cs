@@ -6,19 +6,39 @@ using ZXing;
 using SixLabors.ImageSharp;
 using ZXing.OneD;
 using ZXing.ImageSharp.Rendering;
-using Eto.Forms;
 
 namespace InventBox.Core;
 
+/// <summary>
+/// Represents the scanner for bar code.
+/// </summary>
 public class BarCodeScanner
 {
+    /// <summary>
+    /// Initalize the logger for file.
+    /// </summary>
     private FileLogger _logger = new FileLogger();
+    /// <summary>
+    /// The path for the logger.
+    /// </summary>
     private string _loggerPath = string.Empty;
+    /// <summary>
+    /// Initalize a new instance of the <see cref="BarCodeScanner"/>
+    /// </summary>
+    /// <param name="path">The path for the logger.</param>
     public BarCodeScanner(string path)
     {
         _loggerPath = path;
     }
 
+    /// <summary>
+    /// Decode the bar code from the file into a string.
+    /// </summary>
+    /// <param name="path">The path for the bar code image.</param>
+    /// <param name="format">The format for the bar code.</param>
+    /// <param name="tryHarder"></param>
+    /// <param name="tryInverted"></param>
+    /// <returns></returns>
     public string DecodeBarCode(string path, BarcodeFormat format = BarcodeFormat.CODE_128, bool tryHarder = true, bool tryInverted = true)
     {
         try {
@@ -34,7 +54,15 @@ public class BarCodeScanner
         }
     }
 
-     public string? ScanBarCode(byte[] data, BarcodeFormat format = BarcodeFormat.CODE_128, bool tryHarder = true, bool tryInverted = true)
+    /// <summary>
+    /// Try to scan the bar code from the byte array.
+    /// </summary>
+    /// <param name="data">the byte array from the image.</param>
+    /// <param name="format">The format for the bar code.</param>
+    /// <param name="tryHarder"></param>
+    /// <param name="tryInverted"></param>
+    /// <returns></returns>
+     public string? TryScanBarCode(byte[] data, BarcodeFormat format = BarcodeFormat.CODE_128, bool tryHarder = true, bool tryInverted = true)
     {
         try {
             if (data.Length == 0)
@@ -53,6 +81,17 @@ public class BarCodeScanner
         }
     }
 
+    /// <summary>
+    /// Encode the message into a bar code and save it into images.
+    /// </summary>
+    /// <param name="text">The message for the barcode.</param>
+    /// <param name="path">The path to be place for barcode.</param>
+    /// <param name="height">The height of the barcode.</param>
+    /// <param name="width">The width of the barcode.</param>
+    /// <param name="margin"><The margin for the barcode./param>
+    /// <param name="foreground">The foreground color for the barcode.</param>
+    /// <param name="background">The background color for the barcode.</param>
+    /// <param name="format">The format for the barcode.</param>
     public void EncodeBarCode(string text, string path, int height = 100, int width = 100, int margin = 10, string foreground = "000000", string background = "FFFFFF", BarcodeFormat format = BarcodeFormat.CODE_128)
     {
         try {
@@ -80,6 +119,13 @@ public class BarCodeScanner
         }
     }
 
+    /// <summary>
+    /// Initialize the reader for the bar code.
+    /// </summary>
+    /// <param name="format">The format for the bar code.</param>
+    /// <param name="tryHarder"></param>
+    /// <param name="tryInverted"></param>
+    /// <returns></returns>
     public ZXing.BarcodeReader<Image<Rgba32>> CreateReader(BarcodeFormat format = BarcodeFormat.CODE_128, bool tryHarder = true, bool tryInverted = true)
     {        
         return new ZXing.BarcodeReader<Image<Rgba32>> (image => new ImageSharpLuminanceSource<Rgba32>(image))

@@ -4,7 +4,9 @@ using System.Runtime.CompilerServices;
 using InventBox.Core.Models;
 
 namespace InventBox.Desktop.ModelViews;
-
+/// <summary>
+/// Represents the model view for insurance.
+/// </summary>
 public class InsuranceModelView : Insurance, INotifyPropertyChanged
 {
     private int id;

@@ -3,6 +3,9 @@ using InventBox.Core.Models;
 
 namespace InventBox.Core.Map;
 
+/// <summary>
+/// Represents the class map for items.
+/// </summary>
 public class ItemMap : ClassMap<Items>
 {
     public ItemMap()

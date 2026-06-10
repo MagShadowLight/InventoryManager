@@ -2,7 +2,7 @@ using InventBox.Core;
 using Xunit.Abstractions;
 using Moq;
 
-namespace InventBox.Test.InventBox.Core;
+namespace InventBox.Tests.InventBox.Core;
 
 public class ConsoleLoggerTest 
 {

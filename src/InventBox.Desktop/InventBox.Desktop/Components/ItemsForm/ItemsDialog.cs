@@ -4,12 +4,9 @@ using Eto.Drawing;
 using InventBox.Desktop.ModelView;
 using InventBox.Core.Models;
 using System.Collections.Generic;
-using InventBox.Core.Utils;
-using System.Data;
 using InventBox.Core;
 using InventBox.Desktop.Interfaces;
 using InventBox.Desktop.ModelViews;
-using System.Linq;
 
 namespace InventBox.Desktop.Components.ItemsForm
 {
@@ -18,6 +15,9 @@ namespace InventBox.Desktop.Components.ItemsForm
 		Create, 
 		Edit
 	}
+	/// <summary>
+	/// Represents the dialog for creating and editing items.
+	/// </summary>
 	public partial class ItemsDialog : Dialog, IDialogs<ItemModelView>
 	{
 		private List<Category> categories = new List<Category>();
@@ -31,6 +31,14 @@ namespace InventBox.Desktop.Components.ItemsForm
 		private Insurance _insurance;
 		private readonly Action<Items> _onSubmit;
 		private ItemModelView _itemModel;
+		/// <summary>
+		/// Initialize a new instance for items dialog.
+		/// </summary>
+		/// <param name="modelView">Model view for the items.</param>
+		/// <param name="mode">The mode for switching between creating and editing items</param>
+		/// <param name="onSubmitEvent">Event handler for submit.</param>
+		/// <param name="path">The path for logging purpose.</param>
+		/// <param name="logger">The instance for logger.</param>
 		public ItemsDialog(ItemModelView modelView, Mode mode, Action<Items> onSubmitEvent, string path, FileLogger logger)
 		{
 			_itemModel = modelView;
@@ -55,11 +63,13 @@ namespace InventBox.Desktop.Components.ItemsForm
 			var form = CreateForm(modelView);
 			Content = form;
 		}
-
+		/// <summary>
+		/// Create the dynamic layout for creating or editing items.
+		/// </summary>
+		/// <param name="modelView">Model view for the item.</param>
+		/// <returns>Layout for the dialog.</returns>
 		public DynamicLayout CreateForm(ItemModelView modelView)
 		{
-			// Create dropdown list
-			
 			// Create Inputs
 			var nameInput = new TextBox() { Width = 200 };
 			var descriptionInput = new TextBox() { Width = 200 };
@@ -71,7 +81,7 @@ namespace InventBox.Desktop.Components.ItemsForm
 			var conditionsInput = new EnumDropDown<Conditions>() { 
 				Width = 200 
 			};		
-			var categoryInput = CreateCategory();
+			var categoryInput = CreateCategoryListBox();
 			var locationInput = CreateLocationListBox();
 
 			// Bind those input to data
@@ -140,7 +150,7 @@ namespace InventBox.Desktop.Components.ItemsForm
 			form.BeginVertical();
 			form.AddRow(
 				"Warrantly",
-				(warrantly == null) ? AddButton("Create Warrantly", 100, 40, OnWarrantCreate) : AddButton("Remove Warrant", 100, 40, OnWarrantDelete)
+				(warrantly == null) ? AddButton("Create Warrantly", 100, 40, OnWarrantlyCreate) : AddButton("Remove Warrant", 100, 40, OnWarrantlyDelete)
 			);
 			form.Add((warrantly != null) ? "Warrantly added" : "");
 			form.AddRow(
@@ -159,19 +169,25 @@ namespace InventBox.Desktop.Components.ItemsForm
 			form.AddRow("");
 			return form;
 		}
-
+		/// <summary>
+		/// Delete the insurance from the items.
+		/// </summary>
         private void OnInsuranceDelete()
         {
 			_insurance = null;
 			Content = CreateForm(_itemModel);
         }
-
-        private void OnWarrantDelete()
+		/// <summary>
+		/// Delete the warrantly from the items.
+		/// </summary>
+        private void OnWarrantlyDelete()
         {
 			warrantly = null;
 			Content = CreateForm(_itemModel);
         }
-
+		/// <summary>
+		/// Create the insurance with user input data.
+		/// </summary>
         private void OnInsuranceCreate()
         {
 			InsuranceModelView insurance = new InsuranceModelView() {Id = ModelsList.items.Count + 1};
@@ -182,7 +198,11 @@ namespace InventBox.Desktop.Components.ItemsForm
 			};
 			InsuranceDialog.ShowModal();
         }
-
+		/// <summary>
+		/// Copy the category data into the model view.
+		/// </summary>
+		/// <param name="category">The data of the category.</param>
+		/// <returns>The model view for the category.</returns>
         private CategoryModelView CopyCategoryModelView(Category category)
 		{
 			return new CategoryModelView
@@ -192,6 +212,11 @@ namespace InventBox.Desktop.Components.ItemsForm
 				Description = category.Description	
 			};
 		}
+		/// <summary>
+		/// Copy the location data into the model view.
+		/// </summary>
+		/// <param name="location">The data of the location.</param>
+		/// <returns>The model view for the location.</returns>
 		private LocationsModelView CopyLocationModelView(Locations location)
 		{
 			return new LocationsModelView
@@ -204,8 +229,11 @@ namespace InventBox.Desktop.Components.ItemsForm
 				Y = location.Y
 			};
 		}
-
-		private ListBox CreateCategory()
+		/// <summary>
+		/// Create the list box for displaying list of categories.
+		/// </summary>
+		/// <returns>List box for the dialog.</returns>
+		private ListBox CreateCategoryListBox()
 		{
 			return new ListBox
 			{
@@ -213,6 +241,10 @@ namespace InventBox.Desktop.Components.ItemsForm
 				DataStore = categories
 			};
 		}
+		/// <summary>
+		/// Create the list box for displaying list of locations.
+		/// </summary>
+		/// <returns>List box for the dialog.</returns>
 		private ListBox CreateLocationListBox()
 		{
 			return new ListBox
@@ -221,15 +253,18 @@ namespace InventBox.Desktop.Components.ItemsForm
 				DataStore = locations
 			};
 		}
-
+		/// <summary>
+		/// Create the command for submitting the data.
+		/// </summary>
+		/// <returns>The command for submit.</returns>
         public Command CreateSubmitButton()
 		{
 			var createCommand = new Command();
 			createCommand.Executed += (sender, e) =>
 			{
 				var model = (ItemModelView)DataContext;
-				model.Category = SubmitCategory(category);
-				model.Locations = SubmitLocation(location);
+				model.Category = CheckCategory(category);
+				model.Locations = CheckLocation(location);
 				model.UpdatedAt = DateTime.Now;
 				model.Warrantly = warrantly;
 				model.Insurance = _insurance;
@@ -247,8 +282,13 @@ namespace InventBox.Desktop.Components.ItemsForm
 			};
 			return createCommand;
 		}
+		/// <summary>
+		/// Check if the location is null or not.
+		/// </summary>
+		/// <param name="location">The data for the locations.</param>
+		/// <returns>It returns the locations or null.</returns>
 
-        private Locations SubmitLocation(Locations location)
+        private Locations CheckLocation(Locations location)
         {
 			if (location != null)
 				return new Locations
@@ -262,8 +302,12 @@ namespace InventBox.Desktop.Components.ItemsForm
 				};
 			return null;
         }
-
-        private Category SubmitCategory(Category category)
+		/// <summary>
+		/// Check if the category is null or not.
+		/// </summary>
+		/// <param name="category">The data for the category.</param>
+		/// <returns>It returens the category data or null.</returns>
+        private Category CheckCategory(Category category)
 		{
 			if (category != null)
 				return new Category
@@ -274,13 +318,24 @@ namespace InventBox.Desktop.Components.ItemsForm
 				};
 			return null;
 		}
+		/// <summary>
+		/// Create the button with the command attached.
+		/// </summary>
+		/// <param name="text">The text for the button.</param>
+		/// <param name="width">The width for the button.</param>
+		/// <param name="height">The height for the button.</param>
+		/// <param name="eventHandler">The handler for clicking the button.</param>
+		/// <returns></returns>
 		private Button AddButton(string text, int width, int height, Action eventHandler)
 		{
 			var command = new Command();
 			command.Executed += (sender, eventArgs) => eventHandler();
 			return new Button { Text = text, Width = width, Height = height, Command = command};
 		}
-		private void OnWarrantCreate()
+		/// <summary>
+		/// Create the warrantly with the user input data.
+		/// </summary>
+		private void OnWarrantlyCreate()
 		{
 			WarrantlyModelView warrant = new WarrantlyModelView() {Id = ModelsList.items.Count + 1};
 			var warrantDialog = new WarrantlyDialog(warrant, _path, _logger, Mode.Create, new Size(500, 250), warrantly => warrant = warrantlyModelCopy(warrantly));
@@ -290,29 +345,38 @@ namespace InventBox.Desktop.Components.ItemsForm
 			};
 			warrantDialog.ShowModal();
 		}
-		private WarrantlyModelView warrantlyModelCopy(Warrantly warrant)
+		/// <summary>
+		/// Copy the warrantly into the model view.
+		/// </summary>
+		/// <param name="warrantly">The warrantly data.</param>
+		/// <returns>The model view for warrantly.</returns>
+		private WarrantlyModelView warrantlyModelCopy(Warrantly warrantly)
 		{
 			return new WarrantlyModelView
 			{
-				Id = warrant.Id,
-				StartDate = warrant.StartDate,
-				EndDate = warrant.EndDate,
-				Status = warrant.Status,
-				Provider = warrant.Provider,
-				ContactNumber = warrant.ContactNumber	
+				Id = warrantly.Id,
+				StartDate = warrantly.StartDate,
+				EndDate = warrantly.EndDate,
+				Status = warrantly.Status,
+				Provider = warrantly.Provider,
+				ContactNumber = warrantly.ContactNumber	
 			};
 		} 
-		
-		private InsuranceModelView insuranceModelCopy(Insurance warrant)
+		/// <summary>
+		/// Copy the insurance into the model view.
+		/// </summary>
+		/// <param name="insurance">The data for insurance.</param>
+		/// <returns>The model view for insurance.</returns>
+		private InsuranceModelView insuranceModelCopy(Insurance insurance)
 		{
 			return new InsuranceModelView
 			{
-				Id = warrant.Id,
-				StartDate = warrant.StartDate,
-				EndDate = warrant.EndDate,
-				Insured = warrant.Insured,
-				Provider = warrant.Provider,
-				ContactNumber = warrant.ContactNumber	
+				Id = insurance.Id,
+				StartDate = insurance.StartDate,
+				EndDate = insurance.EndDate,
+				Insured = insurance.Insured,
+				Provider = insurance.Provider,
+				ContactNumber = insurance.ContactNumber	
 			};
 		} 
 	}

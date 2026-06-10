@@ -2,7 +2,7 @@ using InventBox.Core;
 using InventBox.Core.Models;
 using Xunit.Abstractions;
 
-namespace InventBox.Test.InventBox.Core;
+namespace InventBox.Tests.InventBox.Core;
 
 public class BarCodeScannerTest
 {
@@ -36,7 +36,7 @@ public class BarCodeScannerTest
         byte[]? barcode = new byte[]{};
         if (File.Exists(path))
             barcode = File.ReadAllBytes(path);
-        str_result = _scanner.ScanBarCode(barcode)!;
+        str_result = _scanner.TryScanBarCode(barcode)!;
         // Assert
         Assert.Contains(message, str_result);
         File.Delete(path);
@@ -50,8 +50,8 @@ public class BarCodeScannerTest
         byte[] emptyBytes = new byte[]{};
         // Act
         string result1 = _scanner.DecodeBarCode("InvalidBarCode.png");
-        string? result2 = _scanner.ScanBarCode(bytes);
-        string? result3 = _scanner.ScanBarCode(emptyBytes);
+        string? result2 = _scanner.TryScanBarCode(bytes);
+        string? result3 = _scanner.TryScanBarCode(emptyBytes);
         // Assert
         Assert.True(string.IsNullOrEmpty(result1));
         Assert.True(string.IsNullOrEmpty(result2));

@@ -1,6 +1,8 @@
 namespace InventBox.Desktop.Enum;
-
-public enum Searchable
+/// <summary>
+/// Represents a group of search options.
+/// </summary>
+public enum SearchOptions
 {
     Name = 1,
     Category = 2,

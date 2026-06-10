@@ -7,13 +7,16 @@ using System.Linq;
 using System;
 using InventBox.Desktop.Interfaces;
 using System.Threading.Tasks;
-using EtoApp;
 using System.IO;
 using System.Collections.Generic;
 using InventBox.Desktop.Enum;
+using InventBox.Desktop.Component.BarCodeComponents;
 
 namespace InventBox.Desktop.Components.ItemsForm
 {
+	/// <summary>
+	/// Represents the panel for list of items.
+	/// </summary>
 	public partial class ListItems : Panel, IEventHandler, IControls<Items, ItemModelView>
 	{
 		private static string TmpDir = Path.Combine(Path.GetTempPath(), "InventBox", "Data", "Items");
@@ -22,7 +25,7 @@ namespace InventBox.Desktop.Components.ItemsForm
 		private string TmpCategoryPath = Path.Combine(TmpDir2, "Category", "Data-Category-tmp.csv");
 		private string TmpLocationPath = Path.Combine(TmpDir2, "Locations", "Data-Location-tmp.csv");
 		private JsonParser<Items> jsonParser;
-		private Searchable search = Searchable.Name;
+		private SearchOptions search = SearchOptions.Name;
 		private TextBox searchBar;
 		private List<Items> _items = new List<Items>();
 		private ImageCapture _capture = new ImageCapture();
@@ -34,6 +37,11 @@ namespace InventBox.Desktop.Components.ItemsForm
 		private DataManagement<Locations> _locationManagement;
 		private GridView _grid;
 		private string searchtext = "";
+		/// <summary>
+		/// Initialize a new instance for the panel.
+		/// </summary>
+		/// <param name="path">The path for logger.</param>
+		/// <param name="logger">The file logger for logging purposes.</param>
 		public ListItems(string path, FileLogger logger)
 		{
 			jsonParser = new JsonParser<Items>();
@@ -48,13 +56,19 @@ namespace InventBox.Desktop.Components.ItemsForm
 			Visible = false;
 			Content = CreateDynamicLayout();
 		}
-
+		/// <summary>
+		/// Create the directory if the directory does not exists.
+		/// </summary>
+		/// <param name="dir">The path for the directory.</param>
 		private void CreateDirectory(string dir)
 		{
 			if (!Directory.Exists(dir))
 				Directory.CreateDirectory(dir);
 		}
-
+		/// <summary>
+		/// Creating the context menu for the grid.
+		/// </summary>
+		/// <returns>Context menu for grid with options.</returns>
 		public ContextMenu CreateContextMenu()
 		{
 			var CopyItemCommand = CreateMenuItem("Copy Item", OnCopy);
@@ -84,7 +98,9 @@ namespace InventBox.Desktop.Components.ItemsForm
 				},
 			};
 		}
-
+		/// <summary>
+		/// Copy the items data into the clipboard.
+		/// </summary>
 		public void OnCopy()
 		{
 			Items copiedItems = (Items)_grid.SelectedItem;
@@ -92,19 +108,30 @@ namespace InventBox.Desktop.Components.ItemsForm
 			Clipboard.Instance.Clear();		
 			Clipboard.Instance.Text = jsonItem;
 		}
-
+		/// <summary>
+		/// Create the menu item for the context menu.
+		/// </summary>
+		/// <param name="text">The text for the menu.</param>
+		/// <param name="clickHandler">The handler for clicking into the menu.</param>
+		/// <param name="keys">The key shortcut for the menu.</param>
+		/// <returns></returns>
 		public ButtonMenuItem CreateMenuItem(string text, Action clickHandler, Keys keys = Keys.None)
 		{			
 			var menuItem = new ButtonMenuItem{Text = text, Shortcut = keys};
 			menuItem.Click += (sender, eventArgs) => clickHandler();
 			return menuItem;
 		}
-
+		/// <summary>
+		/// Refresh the data into the grid.
+		/// </summary>
 		public void RefreshData()
 		{
 			_grid.DataStore = _items.ToArray<Items>();
 		}
-
+		/// <summary>
+		/// Create the grid for the panel.
+		/// </summary>
+		/// <returns>The view for the grid.</returns>
         public GridView CreateGrid()
         {
 			var grid = new GridView()
@@ -137,7 +164,12 @@ namespace InventBox.Desktop.Components.ItemsForm
 			};
 			return grid;
         }
-
+		/// <summary>
+		/// Create the column for the grid.
+		/// </summary>
+		/// <param name="header">The header text for the grid.</param>
+		/// <param name="data">The data for the grid.</param>
+		/// <returns>The column for the grid.</returns>
 		public GridColumn GetColumn(string header, Func<Items, string> data) {
 			return new GridColumn
 			{
@@ -146,7 +178,11 @@ namespace InventBox.Desktop.Components.ItemsForm
 				DataCell = GetData(data)
 			};
 		}
-
+		/// <summary>
+		/// Create the text box cell for the grid.
+		/// </summary>
+		/// <param name="data">The data for the text box cell.</param>
+		/// <returns>Text box cell to display.</returns>
         public TextBoxCell GetData(Func<Items, string> data)
         {
 			return new TextBoxCell
@@ -154,11 +190,13 @@ namespace InventBox.Desktop.Components.ItemsForm
 				Binding = Binding.Delegate<Items, string>(data, null)
 			};
         }
-
-
+		/// <summary>
+		/// Create the layout for the panel.
+		/// </summary>
+		/// <returns>The layout for display.</returns>
 		public DynamicLayout CreateDynamicLayout()
 		{
-			EnumDropDown<Searchable> searchDropDown = CreateSearchDropDown();
+			EnumDropDown<SearchOptions> searchDropDown = CreateSearchDropDown();
 			searchBar = CreateSearchBar();
 			DynamicLayout layout = new DynamicLayout();
 			layout.BeginVertical(null, null, true, true);
@@ -167,10 +205,9 @@ namespace InventBox.Desktop.Components.ItemsForm
 			layout.Add(searchDropDown, false);
 			layout.Add(searchBar, true);
 			layout.Add(AddButton("Search", 100, 50, () => Search()), false);
-			layout.Add(AddButton("Scan barcode", 100, 50, async () => await OnScanBarCode()), false);
+			layout.Add(AddButton("Scan item name", 100, 50, async () => await OnScanBarCode()), false);
 			layout.EndHorizontal();
 			layout.EndVertical();
-			// layout.AddSeparateRow(null, searchDropDown, searchBar, AddButton("Clear Search", 100, 50, () => ClearFilter()), AddButton("Scan barcode", 100, 50, async () => await OnScanBarCode()));
 			layout.BeginVertical();
 			layout.Add((ModelsList.items.Count > 0 
 				? _grid 
@@ -199,9 +236,13 @@ namespace InventBox.Desktop.Components.ItemsForm
 			layout.EndVertical();
 			return layout;
 		}
-		private EnumDropDown<Searchable> CreateSearchDropDown()
+		/// <summary>
+		/// Create the enum drop down for switching search mode.
+		/// </summary>
+		/// <returns>Drop down for the enum.</returns>
+		private EnumDropDown<SearchOptions> CreateSearchDropDown()
 		{
-			var dropdown = new EnumDropDown<Searchable>() {Cursor = Cursors.Pointer, Width = 100 };
+			var dropdown = new EnumDropDown<SearchOptions>() {Cursor = Cursors.Pointer, Width = 100 };
 			dropdown.SelectedValue = search;
 			dropdown.SelectedValueChanged += (sender, e) =>
 			{
@@ -210,7 +251,10 @@ namespace InventBox.Desktop.Components.ItemsForm
 			};
 			return dropdown;
 		}
-
+		/// <summary>
+		/// Create the text box for searching.
+		/// </summary>
+		/// <returns>Text box to display.</returns>
 		public TextBox CreateSearchBar()
 		{
 			TextBox textBox = new TextBox() {Text = "", PlaceholderText = $"Search {search.ToString().ToLower()}"};
@@ -227,7 +271,9 @@ namespace InventBox.Desktop.Components.ItemsForm
 			};
 			return textBox;
 		}
-
+		/// <summary>
+		/// Searching either the item name, category name, floor, or room for items.
+		/// </summary>
 		public void Search()
 		{
 			if (string.IsNullOrEmpty(searchtext)) 
@@ -237,18 +283,21 @@ namespace InventBox.Desktop.Components.ItemsForm
 				_items = ModelsList.items;
 			}
 			else {
-				if (search == Searchable.Name)
+				if (search == SearchOptions.Name)
 					_items = ModelsList.items.Where((item) => item.Name.Contains(searchtext)).ToList();
-				if (search == Searchable.Category)
+				if (search == SearchOptions.Category)
 					_items = ModelsList.items.Where(item => (item.Category != null) ? item.Category.Name.Contains(searchtext) : item.Name.Contains(string.Empty)).ToList();
-				if (search == Searchable.Floor)
+				if (search == SearchOptions.Floor)
 					_items = ModelsList.items.Where(item => (item.Locations != null) ? item.Locations.Floor.Contains(searchtext) : item.Name.Contains(string.Empty)).ToList();
-				if (search == Searchable.Room)
+				if (search == SearchOptions.Room)
 					_items = ModelsList.items.Where(item => (item.Locations != null) ? item.Locations.Room.Contains(searchtext) : item.Name.Contains(string.Empty)).ToList();
 			}
 			RefreshData();
 		} 
-
+		/// <summary>
+		/// Scan the bar code for filtering the item name.
+		/// </summary>
+		/// <returns></returns>
 		private async Task OnScanBarCode()
 		{
 			Items items = new Items();
@@ -265,7 +314,9 @@ namespace InventBox.Desktop.Components.ItemsForm
 			_items = ModelsList.items.Where(item => item.Name == name).ToList();
 			RefreshData();
 		}
-
+		/// <summary>
+		/// Create the items from the user input.
+		/// </summary>
 		public void OnCreate()
 		{
 			ItemModelView modelView = new ItemModelView(){Id = ModelsList.items.Count + 1, Conditions = Conditions.NA};
@@ -278,14 +329,23 @@ namespace InventBox.Desktop.Components.ItemsForm
 			Content = CreateDynamicLayout();
 			RefreshData();
 		}
-
+		/// <summary>
+		/// Create the button for the panel.
+		/// </summary>
+		/// <param name="text">The text for the button.</param>
+		/// <param name="width">The width for the button.</param>
+		/// <param name="height">The height for the button.</param>
+		/// <param name="eventHandler">The handler for clicking the button.</param>
+		/// <returns></returns>
 		public Button AddButton(string text, int width, int height, Action eventHandler)
 		{
 			var command = new Command();
 			command.Executed += (sender, eventArgs) => eventHandler();
 			return new Button { Text = text, Width = width, Height = height, Command = command, Cursor = Cursors.Pointer};
 		}
-
+		/// <summary>
+		/// Saving the data from the list into the file.
+		/// </summary>
 		public void OnSave()
 		{
 			_categoryManagement = new DataManagement<Category>(_path);
@@ -322,7 +382,9 @@ namespace InventBox.Desktop.Components.ItemsForm
 				MessageBox.Show("Items list is empty. Please add one or load from file.", "Save failed.", MessageBoxButtons.OK, MessageBoxType.Information);
 			saveDialog.Dispose();
 		}
-
+		/// <summary>
+		/// Loading the item data from the file.
+		/// </summary>
 		public void OnLoad()
 		{
 			Uri path = new Uri(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile));		
@@ -360,7 +422,9 @@ namespace InventBox.Desktop.Components.ItemsForm
 			}
 			loadDialog.Dispose();
 		}
-
+		/// <summary>
+		/// Edit the items from the selected list.
+		/// </summary>
 		public void OnEdit()
 		{
 			if (_items.Count <= 0) {
@@ -385,7 +449,9 @@ namespace InventBox.Desktop.Components.ItemsForm
 			};
 			editItemDialog.ShowModal();
 		}
-
+		/// <summary>
+		/// Delete the item from the list.
+		/// </summary>
 		public void OnDelete()
 		{
 			if (_items.Count <= 0) {
@@ -413,7 +479,11 @@ namespace InventBox.Desktop.Components.ItemsForm
 			Content = CreateDynamicLayout();
 			RefreshData();
 		}
-
+		/// <summary>
+		/// Copy the item data into model view.
+		/// </summary>
+		/// <param name="item">The data for the item.</param>
+		/// <returns>Model view for the item.</returns>
 		public ItemModelView ModelViewCopy(Items item) {
 			return new ItemModelView
 			{

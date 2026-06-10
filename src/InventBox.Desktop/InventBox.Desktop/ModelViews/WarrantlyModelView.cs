@@ -4,7 +4,9 @@ using System.Runtime.CompilerServices;
 using InventBox.Core.Models;
 
 namespace InventBox.Desktop.ModelViews;
-
+/// <summary>
+/// Represents the model view for warrantly.
+/// </summary>
 public class WarrantlyModelView : Warrantly, INotifyPropertyChanged
 {
     private int id;

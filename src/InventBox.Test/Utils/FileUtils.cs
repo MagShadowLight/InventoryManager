@@ -1,6 +1,6 @@
 using System;
 
-namespace InventBox.Test.Utils;
+namespace InventBox.Tests.Utils;
 
 public class FileUtils
 {

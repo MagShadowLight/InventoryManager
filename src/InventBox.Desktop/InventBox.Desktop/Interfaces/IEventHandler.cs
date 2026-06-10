@@ -1,7 +1,9 @@
 using System;
 
 namespace InventBox.Desktop.Interfaces;
-
+/// <summary>
+/// Represents the interface for event handler.
+/// </summary>
 public interface IEventHandler
 {
     public void OnCreate();

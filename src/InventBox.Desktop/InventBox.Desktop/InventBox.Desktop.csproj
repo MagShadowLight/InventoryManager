@@ -17,7 +17,6 @@
     <Folder Include="Components/BarCodeComponents/" />
     <Folder Include="Components/CategoryForm/" />
     <Folder Include="Components/LocationForm/" />
-    <Folder Include="Enum/" />
     <Folder Include="Interfaces/" />
     <Folder Include="Utils/" />
   </ItemGroup>

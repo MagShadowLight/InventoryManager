@@ -4,7 +4,9 @@ using System.Runtime.CompilerServices;
 using InventBox.Core.Models;
 
 namespace InventBox.Desktop.ModelView;
-
+/// <summary>
+/// Represents the model view for item.
+/// </summary>
 public class ItemModelView : Items, INotifyPropertyChanged
 {
     private int id;

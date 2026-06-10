@@ -3,7 +3,9 @@ using System.Runtime.CompilerServices;
 using InventBox.Core.Models;
 
 namespace InventBox.Desktop.ModelViews;
-
+/// <summary>
+/// Represents the model view for locations.
+/// </summary>
 public class LocationsModelView : Locations, INotifyPropertyChanged
 {
     private int id;

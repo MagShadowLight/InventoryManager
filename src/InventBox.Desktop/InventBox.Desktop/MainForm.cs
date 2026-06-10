@@ -12,7 +12,10 @@ using InventBox.Core.Models;
 using InventBox.Desktop.ModelView;
 
 namespace InventBox.Desktop
-{
+{	
+	/// <summary>
+	/// Represents the whole application UI.
+	/// </summary>
 	public partial class MainForm : Form
 	{
 		/// <summary>
@@ -61,7 +64,9 @@ namespace InventBox.Desktop
 
 
 		Tutorial tutorial = new Tutorial(new Size(500,500));
-
+		/// <summary>
+		/// Initialize a new instance for the application.
+		/// </summary>
 		public MainForm()
 		{
 			RecoverData();
@@ -91,7 +96,9 @@ namespace InventBox.Desktop
 			if (!File.Exists("Done.md"))
 				ShowTutorial();
 		}
-
+		/// <summary>
+		/// Recover the data if the application have crashed or close without saving.
+		/// </summary>
 		private void RecoverData()
 		{	
 			if (File.Exists(TmpItemPath) || File.Exists(TmpCategoryPath) || File.Exists(TmpLocationPath)) {
@@ -123,7 +130,10 @@ namespace InventBox.Desktop
 				}
 			}
 		}
-
+	/// <summary>
+	/// Create the main panel to show user where to press.
+	/// </summary>
+	/// <returns>Dynamic Layout to display.</returns>
 	private DynamicLayout CreateMainPanel()
 	{
 		return new DynamicLayout
@@ -141,10 +151,15 @@ namespace InventBox.Desktop
 			}
 		};
 	}
-
+	/// <summary>
+	/// Show the tutorial dialog (Wall of text)
+	/// </summary>
 	async void ShowTutorial() {
 		await tutorial.ShowModalAsync();
 	}
+	/// <summary>
+	/// Create the log file for logging purpose.
+	/// </summary>
 	private void CreateLogFile()
 		{
 			string[] path = new string[10];
@@ -170,12 +185,14 @@ namespace InventBox.Desktop
 					Directory.CreateDirectory(temp);
 			}
 		}
-
+		/// <summary>
+		/// Create the commands for the whole application.
+		/// </summary>
 		private void CreateCommand()
 		{
 			listItemCommand = CreateCommand("Inventory", "List items", Application.Instance.CommonModifier | Keys.I);
 			listItemCommand.Executed += (sender, e) => {
-				OnItemListPanel();
+				CreateItemListPanel();
 				CreateMainApp();
 			};
 
@@ -289,7 +306,10 @@ namespace InventBox.Desktop
 			aboutCommand = CreateCommand("About...");
 			aboutCommand.Executed += (sender, e) => aboutDialog.ShowDialog(this);
 		}
-
+		/// <summary>
+		/// Create the menu bar for the appplication.
+		/// </summary>
+		/// <returns>Menu bar to display.</returns>
 		private MenuBar CreateMenuBar()
 		{
 			var itemSubMenuItem = new SubMenuItem { Text = "&Edit", Items = { CreateItemCommand, UpdateItemCommand, DeleteItemCommand, SaveItemCommand, LoadItemCommand }, Visible = false };
@@ -321,12 +341,10 @@ namespace InventBox.Desktop
 				AboutItem = aboutCommand
 			};
 		}
-
-		private ToolBar CreateToolbar()
-		{
-			return new ToolBar { Items = { listItemCommand } };
-		}
-
+		/// <summary>
+		/// Create a dialog to explain to users what the application is with credits.
+		/// </summary>
+		/// <returns></returns>
 		private AboutDialog CreateAboutDialog()
 		{
 			var link = new Uri("https://github.com/MagShadowLight/InventoryManager");
@@ -335,13 +353,17 @@ namespace InventBox.Desktop
 				Developers = new [] {"MagShadowLight"},
 				Documenters = new [] {"MagShadowLight"},
 				ProgramName = "InventBox",
-				ProgramDescription = "InventBox is a Inventory Management App where you can manage your own inventory.",
+				ProgramDescription = "InventBox is a Inventory Management App where you can manage items in your own home.",
 				Title = "InventBox about",
 				Version = "Version 1.0",
 				WebsiteLabel = "Github",
 				Website = link
 			};
 		}
+		/// <summary>
+		/// Create the dynamic layout for the whole application.
+		/// </summary>
+		/// <returns>Layout to display.</returns>
 		private DynamicLayout CreateMainApp()
 		{
 			
@@ -357,7 +379,9 @@ namespace InventBox.Desktop
 			layout.EndHorizontal();
 			return layout;
 		}
-
+		/// <summary>
+		/// Change the active panel depending on which button that was pressed.
+		/// </summary>
         private void ChangeActivePanel()
         {
 			if (listItemsForm != null && listItemsForm.Visible)
@@ -369,10 +393,13 @@ namespace InventBox.Desktop
 			else 
 				panel = CreateMainPanel();
         }
-
+		/// <summary>
+		/// Create the stack layout for navigation.
+		/// </summary>
+		/// <returns>Layout to display.</returns>
         private StackLayout NavigationButton()
 		{
-			var InventoryButton = AddButton("Inventory", 100, 50, OnItemListPanel);
+			var InventoryButton = AddButton("Inventory", 100, 50, CreateItemListPanel);
 			var CategoryButton = AddButton("Category", 100, 50, CreateCategoryListPanel);
 			var LocationButton = AddButton("Locations", 100, 50, createLocationListPanel);
 			return new StackLayout()
@@ -386,15 +413,24 @@ namespace InventBox.Desktop
 				}
 			};
 		}
-
+		/// <summary>
+		/// Create a button for the application.
+		/// </summary>
+		/// <param name="text">Text for the button.</param>
+		/// <param name="width">Width for button.</param>
+		/// <param name="height">Height for button.</param>
+		/// <param name="eventHandler">Handler for clicking the button.</param>
+		/// <returns>Button to display.</returns>
 		private Button AddButton(string text, int width, int height, Action eventHandler)
 		{
 			var command = new Command(){MenuText = text, ToolBarText = text};
 			command.Executed += (sender, eventArgs) => eventHandler();
 			return new Button { Text = text, Width = width, Height = height, Command = command};
 		}
-
-		private void OnItemListPanel()
+		/// <summary>
+		/// Create a panel with list of items.
+		/// </summary>
+		private void CreateItemListPanel()
 		{
 			if (listItemsForm != null)
 				listItemsForm.Dispose();
@@ -405,7 +441,9 @@ namespace InventBox.Desktop
 			Menu = CreateMenuBar();
 			Content = CreateMainApp();
 		}
-
+		/// <summary>
+		/// Create a panel with list of categories.
+		/// </summary>
 		private void CreateCategoryListPanel()
 		{
 			if (listCategories != null)
@@ -417,6 +455,9 @@ namespace InventBox.Desktop
 			Menu = CreateMenuBar();
 			Content = CreateMainApp();
 		}
+		/// <summary>
+		/// Create a panel with list of locations.
+		/// </summary>
 		private void createLocationListPanel()
 		{
 			if (listLocations != null)
@@ -428,12 +469,23 @@ namespace InventBox.Desktop
 			Menu = CreateMenuBar();
 			Content = CreateMainApp();
 		}
+		/// <summary>
+		/// Clear the active panel before switching.
+		/// </summary>
+		/// <param name="panels">Panel to switch.</param>
 		private void ClearOtherPanel(List<Panel> panels)
 		{
 			foreach (var panel in panels)
 				if (panel != null)
 					panel.Visible = false;
 		}
+		/// <summary>
+		/// Create command for the button, menu bar, and other.
+		/// </summary>
+		/// <param name="menuText">The text for menu.</param>
+		/// <param name="toolbarText">The text for toolbar.</param>
+		/// <param name="shortcut">The key shortcut for the command.</param>
+		/// <returns>Command for use.</returns>
 		private Command CreateCommand(string menuText, string toolbarText = null, Keys shortcut = Keys.None)
 		{
 			return new Command() {MenuText = menuText, ToolBarText = toolbarText, Shortcut = shortcut};

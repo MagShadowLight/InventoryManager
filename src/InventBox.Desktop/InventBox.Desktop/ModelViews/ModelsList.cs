@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using InventBox.Core.Models;
 
 namespace InventBox.Desktop.ModelView;
-
+/// <summary>
+/// Represents the dataset for the application.
+/// </summary>
 public class ModelsList
 {
     public static List<Category> categories = new List<Category>();

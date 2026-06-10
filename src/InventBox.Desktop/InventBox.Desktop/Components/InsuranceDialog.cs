@@ -9,6 +9,9 @@ using InventBox.Core.Models;
 
 namespace InventBox.Desktop.Components
 {
+	/// <summary>
+	/// Represents a dialog for creating insurance.
+	/// </summary>
 	public partial class InsuranceDialog : Dialog, IDialogs<InsuranceModelView>
 	{
 		private static FileLogger _logger;
@@ -17,6 +20,15 @@ namespace InventBox.Desktop.Components
 		private readonly Action<Insurance> _onSubmit;
 		TextBox startDatePicker;
 		TextBox endDatePicker;
+		/// <summary>
+		/// Initialize a new instance for dialog.
+		/// </summary>
+		/// <param name="modelView">Model view for insurance.</param>
+		/// <param name="path">Path for logger.</param>
+		/// <param name="logger">Logger for logging purposes.</param>
+		/// <param name="mode">Mode for creating or editing.</param>
+		/// <param name="size">Size for the dialog.</param>
+		/// <param name="onSubmit">Event handler for submitting data.</param>
 		public InsuranceDialog(InsuranceModelView modelView, string path, FileLogger logger, Mode mode, Size size, Action<Insurance> onSubmit)
 		{
 			_path = path;
@@ -28,7 +40,11 @@ namespace InventBox.Desktop.Components
 			_onSubmit = onSubmit;
 			Title = _mode == Mode.Create ? "Add Insurance" : "Edit Insurance";
 		}
-
+		/// <summary>
+		/// Create the panel for the insurance dialog.
+		/// </summary>
+		/// <param name="modelView">The model view for insurance.</param>
+		/// <returns>Panel for display.</returns>
         private Control CreatePanel(InsuranceModelView modelView)
         {
 			return new Panel
@@ -36,25 +52,21 @@ namespace InventBox.Desktop.Components
 				Content = CreateForm(modelView)
 			};
         }
-
+		/// <summary>
+		/// Create the layout for creating insurance.
+		/// </summary>
+		/// <param name="modelView">Model view for insurance.</param>
+		/// <returns>Layout for display.</returns>
         public DynamicLayout CreateForm(InsuranceModelView modelView)
         {
 			// Create input variable
 			startDatePicker = new TextBox() {Text = modelView.StartDate.ToString("yyyy-MM-dd")};
 			endDatePicker = new TextBox() {Text = modelView.EndDate.ToString("yyyy-MM-dd")};
-			// DateTimePicker startDatePicker = new DateTimePicker() {Mode = DateTimePickerMode.Date};
-			// DateTimePicker endDatePicker = new DateTimePicker(){Mode = DateTimePickerMode.Date};
 			EnumDropDown<Status> statusDropDown = new EnumDropDown<Status>();
 			TextBox providerTextBox = new TextBox();
 			TextBox contactNoTextBox = new TextBox();
 			
 			// Bind those input to models
-			// startDatePicker.ValueBinding.BindDataContext(Binding.Property((WarrantlyModelView model) => model.StartDate).Convert<DateTime?>(
-			// 	v => v
-			// ));
-			// endDatePicker.ValueBinding.BindDataContext(Binding.Property((WarrantlyModelView model) => model.EndDate).Convert<DateTime?>(
-			// 	v => v
-			// ));
 			statusDropDown.SelectedValueBinding.BindDataContext(Binding.Property((WarrantlyModelView model) => model.Status));
 			providerTextBox.TextBinding.BindDataContext(Binding.Property((WarrantlyModelView model) => model.Provider));
 			contactNoTextBox.TextBinding.BindDataContext(Binding.Property((WarrantlyModelView model) => model.ContactNumber));
@@ -92,13 +104,15 @@ namespace InventBox.Desktop.Components
 			form.EndHorizontal();
 			return form;
         }
-
+		/// <summary>
+		/// Create a command for submitting data.
+		/// </summary>
+		/// <returns>submit command for button.</returns>
         public Command CreateSubmitButton()
         {
 			var command = new Command();
 			command.Executed += (sender, e) =>
-			{
-				
+			{				
 				var model = (InsuranceModelView)DataContext;
 				if (DateTime.TryParse(startDatePicker.Text, out var start))
 					model.StartDate = start;
@@ -114,7 +128,11 @@ namespace InventBox.Desktop.Components
 			};
 			return command;
         }
-
+		/// <summary>
+		/// Calculate the expiring date from the end date.
+		/// </summary>
+		/// <param name="end">Date for insurance expired</param>
+		/// <returns>Date and time for date before expire date.</returns>
         private DateTime GetExpireDate(DateTime end)
         {
 			var day = end.Day - 30;

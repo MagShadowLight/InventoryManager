@@ -3,7 +3,9 @@ using System.Runtime.CompilerServices;
 using InventBox.Core.Models;
 
 namespace InventBox.Desktop.ModelViews;
-
+/// <summary>
+/// Represents the model view for category.
+/// </summary>
 public class CategoryModelView : Category, INotifyPropertyChanged
 {
     private int id;

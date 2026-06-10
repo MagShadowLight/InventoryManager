@@ -5,6 +5,9 @@ using System.IO;
 
 namespace InventBox.Desktop.Utils
 {
+	/// <summary>
+	/// Represents the dialog for newcomers.
+	/// </summary>
 	public partial class Tutorial : Dialog
 	{
 		private string title = "InventBox";
@@ -17,6 +20,10 @@ namespace InventBox.Desktop.Utils
 		private string p4 = "Location section is similar to category section where you can create, manage, and delete location plus searching by room.";
 		private string p5 = "All of those section have the options to save and load the data from the file.";
 		private Size _size;	
+		/// <summary>
+		/// Initialize a new instance for dialog.
+		/// </summary>
+		/// <param name="size">The size for dialog.</param>
 		public Tutorial(Size size)
 		{
 			_size = size;
@@ -50,11 +57,24 @@ namespace InventBox.Desktop.Utils
 			};
 			Content = layout;
 		}
-
+		/// <summary>
+		/// Create the space for the dialog.
+		/// </summary>
+		/// <returns>Dynamic row for display.</returns>
 		private DynamicRow CreateSpace()
 		{
 			return new DynamicRow(null, true, false);
 		}
+		/// <summary>
+		/// Create a text for tutorial dialog.
+		/// </summary>
+		/// <param name="family">Font family for dialog.</param>
+		/// <param name="fontSize">Size for the font.</param>
+		/// <param name="message">Text to display.</param>
+		/// <param name="alignment">Align the text.</param>
+		/// <param name="style">Style the font.</param>
+		/// <param name="decoration">decorate the font.</param>
+		/// <returns>The label with text for display.</returns>
 		private Label CreateText(FontFamily family, float fontSize, string message, TextAlignment alignment, FontStyle style, FontDecoration decoration)
 		{
 			var label = new Label
@@ -67,12 +87,23 @@ namespace InventBox.Desktop.Utils
 			};
 			return label;
 		}
+		/// <summary>
+		/// Create button for dialog.
+		/// </summary>
+		/// <param name="text">The text for button.</param>
+		/// <param name="size">The size for button.</param>
+		/// <param name="eventHandler">handler for clicking the button.</param>
+		/// <param name="cursor">Cursor for button to show.</param>
+		/// <returns>Button to display.</returns>
 		private Button CreateButton(string text, Size size, Action eventHandler, Cursor cursor)
 		{
 			var command = new Command();
 			command.Executed += (sender, eventArgs) => eventHandler();
 			return new Button{Text = text, Size = size, Command = command, Cursor = cursor};
 		}
+		/// <summary>
+		/// End tutorial and create file for not showing tutorial for future uses.
+		/// </summary>
 		private void EndTutorial()
 		{
 			FileStream stream = File.Create("Done.md");

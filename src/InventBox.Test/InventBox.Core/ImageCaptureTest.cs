@@ -3,7 +3,7 @@ using InventBox.Core;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
-namespace InventBox.Test.InventBox.Core;
+namespace InventBox.Tests.InventBox.Core;
 
 public class ImageCaptureTest
 {

@@ -1,7 +1,7 @@
 using InventBox.Core.Models;
 using InventBox.Core.Utils;
 
-namespace InventBox.Test.InventBox.Core.Utils;
+namespace InventBox.Tests.InventBox.Core.Utils;
 
 public class EnumUtilsTest
 {

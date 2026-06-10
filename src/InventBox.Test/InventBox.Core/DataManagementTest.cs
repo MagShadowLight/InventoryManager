@@ -1,9 +1,9 @@
 using InventBox.Core;
 using InventBox.Core.Models;
-using InventBox.Test.Utils;
+using InventBox.Tests.Utils;
 using Xunit.Abstractions;
 
-namespace InventBox.Test.InventBox.Core;
+namespace InventBox.Tests.InventBox.Core;
 
 public class DataTransferTest
 {

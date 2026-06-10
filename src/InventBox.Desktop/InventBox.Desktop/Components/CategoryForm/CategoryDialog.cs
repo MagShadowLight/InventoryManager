@@ -9,12 +9,23 @@ using InventBox.Core.Models;
 
 namespace InventBox.Desktop.Components.CategoryForm
 {
+	/// <summary>
+	/// Represents the dialog for creating and editing category.
+	/// </summary>
 	public partial class CategoryDialog : Dialog, IDialogs<CategoryModelView>
 	{
 		private FileLogger _logger;
 		private string _path;
 		private readonly Mode _mode;
 		private readonly Action<Category> _onSubmit;
+		/// <summary>
+		/// Initialize a new instance for dialog to create or edit category.
+		/// </summary>
+		/// <param name="modelView">Model view for category.</param>
+		/// <param name="mode">Editing or creating mode.</param>
+		/// <param name="onSubmitEvent">Occurs when the user press the submit button.</param>
+		/// <param name="path">The path for the logger.</param>
+		/// <param name="logger">the logger for logging purpose.</param>
 		public CategoryDialog(CategoryModelView modelView, Mode mode, Action<Category> onSubmitEvent, string path, FileLogger logger)
 		{
 			_path = path;
@@ -28,7 +39,11 @@ namespace InventBox.Desktop.Components.CategoryForm
 			
 
 		}
-
+		/// <summary>
+		/// Create a layout for creating or editing category.
+		/// </summary>
+		/// <param name="modelView">Model view for category.</param>
+		/// <returns>Layout for the dialog.</returns>
         public DynamicLayout CreateForm(CategoryModelView modelView)
         {
 			var nameInput = new TextBox() { Width = 200 };
@@ -66,7 +81,10 @@ namespace InventBox.Desktop.Components.CategoryForm
 				}
 			};
         }
-
+		/// <summary>
+		/// Create the command for submit.
+		/// </summary>
+		/// <returns>Command for the button.</returns>
         public Command CreateSubmitButton()
         {
 			var createCommand = new Command();

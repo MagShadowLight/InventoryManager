@@ -5,14 +5,28 @@ using InventBox.Core.Map;
 
 namespace InventBox.Core;
 
+/// <summary>
+/// Provides the way to managing data.
+/// </summary>
+/// <typeparam name="T">The general variable of the data.</typeparam>
 public class DataManagement<T> : IDataManagement<List<T>>
 {
     private FileLogger _logger = new FileLogger();
     private string _loggerPath = string.Empty;
+    /// <summary>
+    /// Initialize a new instance of the <see cref="DataManagement"/>
+    /// </summary>
+    /// <param name="path">The path for the logger.</param>
     public DataManagement(string path)
     {
         _loggerPath = path;
     }
+
+    /// <summary>
+    /// Save the data into the file.
+    /// </summary>
+    /// <param name="values">The value that will be saved.</param>
+    /// <param name="path">The path that will be place for data.</param>
     public void Save(List<T> values, string path)
     {
         try {
@@ -37,6 +51,12 @@ public class DataManagement<T> : IDataManagement<List<T>>
         }
     }
 
+    /// <summary>
+    /// Load the data from the file.
+    /// </summary>
+    /// <param name="path"></param>
+    /// <param name="isItem"></param>
+    /// <returns></returns>
     public List<T> Load(string path, bool isItem = false)
     {
         List<T> values = new List<T>();
