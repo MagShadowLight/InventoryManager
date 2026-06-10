@@ -11,6 +11,7 @@ using System.IO;
 using System.Collections.Generic;
 using InventBox.Desktop.Enum;
 using InventBox.Desktop.Component.BarCodeComponents;
+using InventBox.Desktop.Utils;
 
 namespace InventBox.Desktop.Components.ItemsForm
 {
@@ -37,6 +38,7 @@ namespace InventBox.Desktop.Components.ItemsForm
 		private DataManagement<Locations> _locationManagement;
 		private GridView _grid;
 		private string searchtext = "";
+		private AppUtils<Items> _utils = new AppUtils<Items>();
 		/// <summary>
 		/// Initialize a new instance for the panel.
 		/// </summary>
@@ -52,18 +54,10 @@ namespace InventBox.Desktop.Components.ItemsForm
 			_dataManagement = new DataManagement<Items>(_path);
 
 			_grid = CreateGrid();
+			_utils = new AppUtils<Items>(_grid, jsonParser);
 			RefreshData();
 			Visible = false;
 			Content = CreateDynamicLayout();
-		}
-		/// <summary>
-		/// Create the directory if the directory does not exists.
-		/// </summary>
-		/// <param name="dir">The path for the directory.</param>
-		private void CreateDirectory(string dir)
-		{
-			if (!Directory.Exists(dir))
-				Directory.CreateDirectory(dir);
 		}
 		/// <summary>
 		/// Creating the context menu for the grid.
@@ -71,12 +65,12 @@ namespace InventBox.Desktop.Components.ItemsForm
 		/// <returns>Context menu for grid with options.</returns>
 		public ContextMenu CreateContextMenu()
 		{
-			var CopyItemCommand = CreateMenuItem("Copy Item", OnCopy);
-			var CreateItemCommand = CreateMenuItem("Create new item", OnCreate);
-			var UpdateItemCommand = CreateMenuItem("Edit item", OnEdit);			
-			var DeleteItemCommand = CreateMenuItem("Delete item", OnDelete);			
-			var SaveItemCommand = CreateMenuItem("Save items", OnSave);			
-			var LoadItemCommand = CreateMenuItem("Load items", OnLoad);
+			var CopyItemCommand = _utils.CreateMenuItem("Copy Item", _utils.OnCopy);
+			var CreateItemCommand = _utils.CreateMenuItem("Create new item", OnCreate);
+			var UpdateItemCommand = _utils.CreateMenuItem("Edit item", OnEdit);			
+			var DeleteItemCommand = _utils.CreateMenuItem("Delete item", OnDelete);			
+			var SaveItemCommand = _utils.CreateMenuItem("Save items", OnSave);			
+			var LoadItemCommand = _utils.CreateMenuItem("Load items", OnLoad);
 			var EditMenu = new ButtonMenuItem
 			{
 				Text = "Edit",
@@ -99,29 +93,6 @@ namespace InventBox.Desktop.Components.ItemsForm
 			};
 		}
 		/// <summary>
-		/// Copy the items data into the clipboard.
-		/// </summary>
-		public void OnCopy()
-		{
-			Items copiedItems = (Items)_grid.SelectedItem;
-			var jsonItem = jsonParser.ParseJson(copiedItems);
-			Clipboard.Instance.Clear();		
-			Clipboard.Instance.Text = jsonItem;
-		}
-		/// <summary>
-		/// Create the menu item for the context menu.
-		/// </summary>
-		/// <param name="text">The text for the menu.</param>
-		/// <param name="clickHandler">The handler for clicking into the menu.</param>
-		/// <param name="keys">The key shortcut for the menu.</param>
-		/// <returns></returns>
-		public ButtonMenuItem CreateMenuItem(string text, Action clickHandler, Keys keys = Keys.None)
-		{			
-			var menuItem = new ButtonMenuItem{Text = text, Shortcut = keys};
-			menuItem.Click += (sender, eventArgs) => clickHandler();
-			return menuItem;
-		}
-		/// <summary>
 		/// Refresh the data into the grid.
 		/// </summary>
 		public void RefreshData()
@@ -140,55 +111,29 @@ namespace InventBox.Desktop.Components.ItemsForm
 				AllowMultipleSelection = false,
 				Columns =
 				{
-					GetColumn("Id", i => i.Id.ToString()),
-					GetColumn("Name", i => i.Name),
-					GetColumn("Description", i => i.Description),
-					GetColumn("Quantity", i => i.Quantity.ToString()),
-					GetColumn("Serial Number", i => i.SerialNumber),
-					GetColumn("Model Number", i => i.ModelNumber),
-					GetColumn("Manufacturer", i => i.Manufacturer),
-					GetColumn("Notes", i => i.Notes),
-					GetColumn("Conditions", i => i.Conditions.ToString()),
-					GetColumn("Category", i => (i.Category != null) ? i.Category.Name : ""),
-					GetColumn("Floor", i => (i.Locations != null) ? i.Locations.Floor : ""),
-					GetColumn("Room", i => (i.Locations != null) ? i.Locations.Room : ""),
-					GetColumn("Container", i => (i.Locations != null) ? i.Locations.Container : ""),
-					GetColumn("Warrantly Status", i => (i.Warrantly != null && i.Warrantly.Status != 0) ? i.Warrantly.Status.ToString() : "Not Warranted"),
-					GetColumn("Warrant Provider", i => (i.Warrantly != null) ? i.Warrantly.Provider : ""),
-					GetColumn("Warrant Contact #", i => (i.Warrantly != null) ? i.Warrantly.ContactNumber : "" ),
-					GetColumn("Insurance Status", i => (i.Insurance != null && i.Insurance.Insured != 0) ? i.Insurance.Insured.ToString() : "Not Insured"),
-					GetColumn("Insurance Provider", i => (i.Insurance != null) ? i.Insurance.Provider : ""),
-					GetColumn("Insurance Contact #", i => (i.Insurance != null) ? i.Insurance.ContactNumber : "")
+					_utils.GetColumn("Id", i => i.Id.ToString()),
+					_utils.GetColumn("Name", i => i.Name),
+					_utils.GetColumn("Description", i => i.Description),
+					_utils.GetColumn("Quantity", i => i.Quantity.ToString()),
+					_utils.GetColumn("Serial Number", i => i.SerialNumber),
+					_utils.GetColumn("Model Number", i => i.ModelNumber),
+					_utils.GetColumn("Manufacturer", i => i.Manufacturer),
+					_utils.GetColumn("Notes", i => i.Notes),
+					_utils.GetColumn("Conditions", i => i.Conditions.ToString()),
+					_utils.GetColumn("Category", i => (i.Category != null) ? i.Category.Name : ""),
+					_utils.GetColumn("Floor", i => (i.Locations != null) ? i.Locations.Floor : ""),
+					_utils.GetColumn("Room", i => (i.Locations != null) ? i.Locations.Room : ""),
+					_utils.GetColumn("Container", i => (i.Locations != null) ? i.Locations.Container : ""),
+					_utils.GetColumn("Warrantly Status", i => (i.Warrantly != null && i.Warrantly.Status != 0) ? i.Warrantly.Status.ToString() : "Not Warranted"),
+					_utils.GetColumn("Warrant Provider", i => (i.Warrantly != null) ? i.Warrantly.Provider : ""),
+					_utils.GetColumn("Warrant Contact #", i => (i.Warrantly != null) ? i.Warrantly.ContactNumber : "" ),
+					_utils.GetColumn("Insurance Status", i => (i.Insurance != null && i.Insurance.Insured != 0) ? i.Insurance.Insured.ToString() : "Not Insured"),
+					_utils.GetColumn("Insurance Provider", i => (i.Insurance != null) ? i.Insurance.Provider : ""),
+					_utils.GetColumn("Insurance Contact #", i => (i.Insurance != null) ? i.Insurance.ContactNumber : "")
 				},
 				ContextMenu = CreateContextMenu()
 			};
 			return grid;
-        }
-		/// <summary>
-		/// Create the column for the grid.
-		/// </summary>
-		/// <param name="header">The header text for the grid.</param>
-		/// <param name="data">The data for the grid.</param>
-		/// <returns>The column for the grid.</returns>
-		public GridColumn GetColumn(string header, Func<Items, string> data) {
-			return new GridColumn
-			{
-				HeaderText = header,
-				Editable = false,
-				DataCell = GetData(data)
-			};
-		}
-		/// <summary>
-		/// Create the text box cell for the grid.
-		/// </summary>
-		/// <param name="data">The data for the text box cell.</param>
-		/// <returns>Text box cell to display.</returns>
-        public TextBoxCell GetData(Func<Items, string> data)
-        {
-			return new TextBoxCell
-			{
-				Binding = Binding.Delegate<Items, string>(data, null)
-			};
         }
 		/// <summary>
 		/// Create the layout for the panel.
@@ -204,8 +149,8 @@ namespace InventBox.Desktop.Components.ItemsForm
 			layout.BeginHorizontal();
 			layout.Add(searchDropDown, false);
 			layout.Add(searchBar, true);
-			layout.Add(AddButton("Search", 100, 50, () => Search()), false);
-			layout.Add(AddButton("Scan item name", 100, 50, async () => await OnScanBarCode()), false);
+			layout.Add(_utils.AddButton("Search", 100, 50, () => Search()), false);
+			layout.Add(_utils.AddButton("Scan item name", 100, 50, async () => await OnScanBarCode()), false);
 			layout.EndHorizontal();
 			layout.EndVertical();
 			layout.BeginVertical();
@@ -224,12 +169,12 @@ namespace InventBox.Desktop.Components.ItemsForm
 			layout.Add(null, true, false);
 			layout.AddSeparateRow(4, null, true, false,
 				new [] { 
-					AddButton("Create new item", 100, 50, OnCreate),
-					AddButton("Edit selected item", 100, 50, OnEdit),
-					AddButton("Delete selected item", 100, 50, OnDelete),
+					_utils.AddButton("Create new item", 100, 50, OnCreate),
+					_utils.AddButton("Edit selected item", 100, 50, OnEdit),
+					_utils.AddButton("Delete selected item", 100, 50, OnDelete),
 					null,
-					AddButton("Save Data", 100, 50, OnSave),
-					AddButton("Load Data", 100, 50, OnLoad)
+					_utils.AddButton("Save Data", 100, 50, OnSave),
+					_utils.AddButton("Load Data", 100, 50, OnLoad)
 				}
 			);
 			layout.EndVertical();
@@ -323,25 +268,11 @@ namespace InventBox.Desktop.Components.ItemsForm
 			var createItemDialog = new ItemsDialog(modelView, Mode.Create, item => ModelsList.items.Add(item), _path, _logger);
 			createItemDialog.Closed += (sender, e) => RefreshData();
 			createItemDialog.ShowModal();
-			CreateDirectory(TmpDir);
+			_utils.CreateDirectory(TmpDir);
 			_dataManagement.Save(ModelsList.items, TmpPath);
 			_items = ModelsList.items;
 			Content = CreateDynamicLayout();
 			RefreshData();
-		}
-		/// <summary>
-		/// Create the button for the panel.
-		/// </summary>
-		/// <param name="text">The text for the button.</param>
-		/// <param name="width">The width for the button.</param>
-		/// <param name="height">The height for the button.</param>
-		/// <param name="eventHandler">The handler for clicking the button.</param>
-		/// <returns></returns>
-		public Button AddButton(string text, int width, int height, Action eventHandler)
-		{
-			var command = new Command();
-			command.Executed += (sender, eventArgs) => eventHandler();
-			return new Button { Text = text, Width = width, Height = height, Command = command, Cursor = Cursors.Pointer};
 		}
 		/// <summary>
 		/// Saving the data from the list into the file.
@@ -397,6 +328,10 @@ namespace InventBox.Desktop.Components.ItemsForm
 				Directory = path
 			};
 			loadDialog.ShowDialog(this);
+			if (!loadDialog.CheckFileExists) {
+				loadDialog.Dispose();
+				return;
+			}
 			if (!loadDialog.FileName.Contains(".csv"))
 				loadDialog.FileName = string.Empty;
 			if (!string.IsNullOrEmpty(loadDialog.FileName)) {
@@ -442,7 +377,7 @@ namespace InventBox.Desktop.Components.ItemsForm
 			ItemModelView modelView = ModelViewCopy(item);
 			var editItemDialog = new ItemsDialog(modelView, Mode.Edit, item => ModelsList.items[index] = item, _path, _logger);
 			editItemDialog.Closed += (sender, e) => { 
-				CreateDirectory(TmpDir);
+				_utils.CreateDirectory(TmpDir);
 				_dataManagement.Save(ModelsList.items, TmpPath);
 				_items = ModelsList.items;
 				RefreshData();			
@@ -470,7 +405,7 @@ namespace InventBox.Desktop.Components.ItemsForm
 			if (deleteDialog != DialogResult.Yes)
 				return;
 			ModelsList.items.Remove(item);
-			CreateDirectory(TmpDir);
+			_utils.CreateDirectory(TmpDir);
 			if (ModelsList.items.Count > 0)
 				_dataManagement.Save(ModelsList.items, TmpPath);
 			else

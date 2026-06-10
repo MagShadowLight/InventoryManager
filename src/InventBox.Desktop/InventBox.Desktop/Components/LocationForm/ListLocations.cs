@@ -10,6 +10,7 @@ using InventBox.Desktop.ModelView;
 using System.Linq;
 using InventBox.Desktop.Components.ItemsForm;
 using System.IO;
+using InventBox.Desktop.Utils;
 
 namespace InventBox.Desktop.Components.LocationForm
 {
@@ -30,6 +31,7 @@ namespace InventBox.Desktop.Components.LocationForm
 		private FileLogger _logger;
 		private DataManagement<Locations> _dataManagement;
 		private DataManagement<Items> _itemmanagement;
+		private AppUtils<Locations> _utils = new AppUtils<Locations>();
 
 		private GridView _grid;
 		/// <summary>
@@ -46,33 +48,11 @@ namespace InventBox.Desktop.Components.LocationForm
 			_dataManagement = new DataManagement<Locations>(_path);
 
 			_grid = CreateGrid();
+			_utils = new AppUtils<Locations>(_grid, _jsonParser);
 			RefreshData();
 			Visible = false;
 			Content = CreateDynamicLayout();
 		}
-		/// <summary>
-		/// Create a directory if it does not exists.
-		/// </summary>
-		/// <param name="dir">The path for the directory.</param>
-		private void CreateDirectory(string dir)
-		{
-			if (!Directory.Exists(dir))
-				Directory.CreateDirectory(dir);
-		}
-		/// <summary>
-		/// Create a button for the panel.
-		/// </summary>
-		/// <param name="text">The text for the button.</param>
-		/// <param name="width">The width for the button.</param>
-		/// <param name="height">The height for the button.</param>
-		/// <param name="eventHandler">The handler for clicking the button.</param>
-		/// <returns>The button to display on panel.</returns>
-        public Button AddButton(string text, int width, int height, Action eventHandler)
-        {
-			var command = new Command();
-			command.Executed += (sender, eventArgs) => eventHandler();
-			return new Button { Text = text, Width = width, Height = height, Command = command, Cursor = Cursors.Pointer };
-        }
 		/// <summary>
 		/// Search the location by room.
 		/// </summary>
@@ -102,7 +82,7 @@ namespace InventBox.Desktop.Components.LocationForm
 			layout.BeginVertical();
 			layout.BeginHorizontal();
 			layout.Add(searchBar, true, false);
-			layout.Add(AddButton("Search", 100, 50, () => Search()));
+			layout.Add(_utils.AddButton("Search", 100, 50, () => Search()));
 			layout.EndVertical();
 			layout.BeginVertical();
 			layout.Add(((ModelsList.locations.Count > 0) ? _grid : new Label{
@@ -119,12 +99,12 @@ namespace InventBox.Desktop.Components.LocationForm
 			layout.AddSeparateRow(4, null, true, false,
 				new []
 				{
-					AddButton("Create new location", 100, 50, OnCreate),
-					AddButton("Edit selected location", 100, 50, OnEdit),
-					AddButton("Delete selected locations", 100, 50, OnDelete),
+					_utils.AddButton("Create new location", 100, 50, OnCreate),
+					_utils.AddButton("Edit selected location", 100, 50, OnEdit),
+					_utils.AddButton("Delete selected locations", 100, 50, OnDelete),
 					null,
-					AddButton("Save Location", 100, 50, OnSave),
-					AddButton("Load Location", 100, 50, OnLoad)
+					_utils.AddButton("Save Location", 100, 50, OnSave),
+					_utils.AddButton("Load Location", 100, 50, OnLoad)
 				}
 			);
 			layout.EndVertical();
@@ -144,12 +124,12 @@ namespace InventBox.Desktop.Components.LocationForm
 				AllowMultipleSelection = false,
 				Columns =
 				{
-					GetColumn("Id", l => l.Id.ToString()),
-					GetColumn("Floor", l => l.Floor),
-					GetColumn("Room", l => l.Room),
-					GetColumn("Container", l => l.Container),
-					GetColumn("X", l => l.X.ToString()),
-					GetColumn("Y", l => l.Y.ToString())
+					_utils.GetColumn("Id", l => l.Id.ToString()),
+					_utils.GetColumn("Floor", l => l.Floor),
+					_utils.GetColumn("Room", l => l.Room),
+					_utils.GetColumn("Container", l => l.Container),
+					_utils.GetColumn("X", l => l.X.ToString()),
+					_utils.GetColumn("Y", l => l.Y.ToString())
 				}	
 			};
         }
@@ -173,33 +153,6 @@ namespace InventBox.Desktop.Components.LocationForm
 				}
 			};
 			return textBox;
-        }
-		/// <summary>
-		/// Create the column for the grid.
-		/// </summary>
-		/// <param name="header">The header text for the column.</param>
-		/// <param name="data">The data for the column.</param>
-		/// <returns>The column for grid to display.</returns>
-        public GridColumn GetColumn(string header, Func<Locations, string> data)
-        {
-			return new GridColumn
-			{
-				HeaderText = header,
-				Editable = false,
-				DataCell = GetData(data)	
-			};
-        }
-		/// <summary>
-		/// Create the text box cell for the grid.
-		/// </summary>
-		/// <param name="data">The location data for the cell.</param>
-		/// <returns>The text box cell for display.</returns>
-        public TextBoxCell GetData(Func<Locations, string> data)
-        {
-			return new TextBoxCell
-			{
-				Binding = Binding.Delegate<Locations, string>(data, null)
-			};
         }
 		/// <summary>
 		/// Copy the location data for model view.
@@ -227,7 +180,7 @@ namespace InventBox.Desktop.Components.LocationForm
 			var createLocationDialog = new LocationsDialog(modelView, Mode.Create, location => ModelsList.locations.Add(location), _path, _logger);
 			createLocationDialog.Closed += (sender, e) => RefreshData();
 			createLocationDialog.ShowModal();
-			CreateDirectory(TmpDir);
+			_utils.CreateDirectory(TmpDir);
 			_dataManagement.Save(ModelsList.locations, TmpPath);
 			_locations = ModelsList.locations;
 			Content = CreateDynamicLayout();
@@ -260,7 +213,7 @@ namespace InventBox.Desktop.Components.LocationForm
 				if (item.Locations.Id == location.Id)
 					item.Locations = null;
 			}
-			CreateDirectory(TmpDir);
+			_utils.CreateDirectory(TmpDir);
 			if (ModelsList.locations.Count > 0)
 				_dataManagement.Save(ModelsList.locations, TmpPath);
 			else
@@ -297,7 +250,7 @@ namespace InventBox.Desktop.Components.LocationForm
 					if (item.Locations.Id == location.Id)
 						item.Locations = ModelsList.locations[index];
 				}
-				CreateDirectory(TmpDir);
+				_utils.CreateDirectory(TmpDir);
 				_dataManagement.Save(ModelsList.locations, TmpPath);
 				_itemmanagement.Save(ModelsList.items, TmpItemPath);
 				_locations = ModelsList.locations;
@@ -320,6 +273,10 @@ namespace InventBox.Desktop.Components.LocationForm
 				Directory = homeDir
 			};
 			loadDialog.ShowDialog(this);
+			if (!loadDialog.CheckFileExists) {
+				loadDialog.Dispose();
+				return;
+			}
 			if (!loadDialog.FileName.Contains(".csv"))
 				loadDialog.FileName = string.Empty;
 			if (!string.IsNullOrEmpty(loadDialog.FileName))
@@ -371,27 +328,17 @@ namespace InventBox.Desktop.Components.LocationForm
 			_grid.DataStore = _locations.ToArray();
         }
 		/// <summary>
-		/// copy the location data into the clipboard.
-		/// </summary>
-        public void OnCopy()
-        {
-			Locations SelectedLocation = (Locations)_grid.SelectedItem;
-			var jsonItem = _jsonParser.ParseJson(SelectedLocation);
-			Clipboard.Instance.Clear();		
-			Clipboard.Instance.Text = jsonItem;
-        }
-		/// <summary>
 		/// Create the context menu for the grid.
 		/// </summary>
 		/// <returns>Context menu for grid with options.</returns>
         public ContextMenu CreateContextMenu()
         {
-			var CopyLocationCommand = CreateMenuItem("Copy location", OnCopy);
-			var CreateLocationCommand = CreateMenuItem("Create new location", OnCreate);
-			var UpdateLocationCommand = CreateMenuItem("Edit location", OnEdit);			
-			var DeleteLocationCommand = CreateMenuItem("Delete location", OnDelete);			
-			var SaveLocationCommand = CreateMenuItem("Save location", OnSave);			
-			var LoadLocationCommand = CreateMenuItem("Load location", OnLoad);
+			var CopyLocationCommand = _utils.CreateMenuItem("Copy location", _utils.OnCopy);
+			var CreateLocationCommand = _utils.CreateMenuItem("Create new location", OnCreate);
+			var UpdateLocationCommand = _utils.CreateMenuItem("Edit location", OnEdit);			
+			var DeleteLocationCommand = _utils.CreateMenuItem("Delete location", OnDelete);			
+			var SaveLocationCommand = _utils.CreateMenuItem("Save location", OnSave);			
+			var LoadLocationCommand = _utils.CreateMenuItem("Load location", OnLoad);
 			var EditMenu = new ButtonMenuItem
 			{
 				Text = "Edit",
@@ -412,19 +359,6 @@ namespace InventBox.Desktop.Components.LocationForm
 					CopyLocationCommand
 				},
 			};
-        }
-		/// <summary>
-		/// Create the menu item for the context menu.
-		/// </summary>
-		/// <param name="text">The text for the menu.</param>
-		/// <param name="clickHandler">The handler for clicking the menu.</param>
-		/// <param name="keys">The key shortcut for the menu.</param>
-		/// <returns>The menu item for context menu with commands.</returns>
-        public ButtonMenuItem CreateMenuItem(string text, Action clickHandler, Keys keys = Keys.None)
-        {
-			var menuItem = new ButtonMenuItem{Text = text, Shortcut = keys};
-			menuItem.Click += (sender, eventArgs) => clickHandler();
-			return menuItem;
         }
     }
 }

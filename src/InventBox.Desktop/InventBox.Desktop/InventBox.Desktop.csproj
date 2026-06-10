@@ -18,6 +18,5 @@
     <Folder Include="Components/CategoryForm/" />
     <Folder Include="Components/LocationForm/" />
     <Folder Include="Interfaces/" />
-    <Folder Include="Utils/" />
   </ItemGroup>
 </Project>
