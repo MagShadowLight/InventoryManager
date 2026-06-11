@@ -30,7 +30,7 @@ namespace InventBox.Desktop.Components.ItemsForm
 		private TextBox searchBar;
 		private List<Items> _items = new List<Items>();
 		private ImageCapture _capture = new ImageCapture();
-		private static string _path;
+		private static string _loggerpath;
 		private BarCodeScanner _scanner;
 		private static FileLogger _logger;
 		private DataManagement<Items> _dataManagement;
@@ -48,10 +48,10 @@ namespace InventBox.Desktop.Components.ItemsForm
 		{
 			jsonParser = new JsonParser<Items>();
 			_items = ModelsList.items;
-			_path = path;
+			_loggerpath = path;
 			_logger = logger;
-			_scanner = new BarCodeScanner(_path);
-			_dataManagement = new DataManagement<Items>(_path);
+			_scanner = new BarCodeScanner(_loggerpath);
+			_dataManagement = new DataManagement<Items>(_loggerpath);
 
 			_grid = CreateGrid();
 			_utils = new AppUtils<Items>(_grid, jsonParser);
@@ -105,6 +105,7 @@ namespace InventBox.Desktop.Components.ItemsForm
 		/// <returns>The view for the grid.</returns>
         public GridView CreateGrid()
         {
+			_logger.Logs("Creating the item grid.", _loggerpath);
 			var grid = new GridView()
 			{
 				GridLines = GridLines.Both,
@@ -141,6 +142,7 @@ namespace InventBox.Desktop.Components.ItemsForm
 		/// <returns>The layout for display.</returns>
 		public DynamicLayout CreateDynamicLayout()
 		{
+			_logger.Logs("Creating the Inventory layout", _loggerpath);
 			EnumDropDown<SearchOptions> searchDropDown = CreateSearchDropDown();
 			searchBar = CreateSearchBar();
 			DynamicLayout layout = new DynamicLayout();
@@ -187,6 +189,7 @@ namespace InventBox.Desktop.Components.ItemsForm
 		/// <returns>Drop down for the enum.</returns>
 		private EnumDropDown<SearchOptions> CreateSearchDropDown()
 		{
+			_logger.Logs("Creating the search option drop down.", _loggerpath);
 			var dropdown = new EnumDropDown<SearchOptions>() {Cursor = Cursors.Pointer, Width = 100 };
 			dropdown.SelectedValue = search;
 			dropdown.SelectedValueChanged += (sender, e) =>
@@ -202,6 +205,8 @@ namespace InventBox.Desktop.Components.ItemsForm
 		/// <returns>Text box to display.</returns>
 		public TextBox CreateSearchBar()
 		{
+			_logger.Logs("Creating the search bar.", _loggerpath);
+
 			TextBox textBox = new TextBox() {Text = "", PlaceholderText = $"Search {search.ToString().ToLower()}"};
 			textBox.TextChanged += (sender, e) =>
 			{
@@ -221,9 +226,12 @@ namespace InventBox.Desktop.Components.ItemsForm
 		/// </summary>
 		public void Search()
 		{
+			_logger.Logs($"Searching the item by {searchBar.Text}", _loggerpath);
 			if (string.IsNullOrEmpty(searchtext)) 
 			{
-				if (_items.Count == ModelsList.items.Count)
+				if (ModelsList.items.Count <= 0)
+					MessageBox.Show("The item list is empty. Please add one to search.", "Search", MessageBoxButtons.OK, MessageBoxType.Information);
+				else if (_items.Count == ModelsList.items.Count)
 					MessageBox.Show("Search bar is empty. Please type in the search bar", "Search", MessageBoxButtons.OK, MessageBoxType.Information);
 				_items = ModelsList.items;
 			}
@@ -245,32 +253,37 @@ namespace InventBox.Desktop.Components.ItemsForm
 		/// <returns></returns>
 		private async Task OnScanBarCode()
 		{
+			_logger.Logs("Scanning item name by bar code.", _loggerpath);
 			Items items = new Items();
 			await _capture.OpenCapture(new System.Threading.CancellationTokenSource());
 			if (!_capture.IsCaptureOpen)
 				return;
-			var dialog = new BarCodeScannerDialog(_capture, _path);
+			var dialog = new BarCodeScannerDialog(_capture, _loggerpath);
 			dialog.ShowModal();
 			string name = _scanner.DecodeBarCode(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),".tmp", "InventBox", "Images", "Barcode.png"));
 			if (string.IsNullOrEmpty(name)) {
+				_logger.Logs("Failed to scan barcode.", _loggerpath);
 				var faileddialog = MessageBox.Show("Failed to scan barcode", MessageBoxButtons.OK, MessageBoxType.Error);
 				return;
 			}
 			_items = ModelsList.items.Where(item => item.Name == name).ToList();
 			RefreshData();
+			_logger.Logs("Bar code scanned", _loggerpath);
 		}
 		/// <summary>
 		/// Create the items from the user input.
 		/// </summary>
 		public void OnCreate()
 		{
+			_logger.Logs("Creating a new item.", _loggerpath);
 			ItemModelView modelView = new ItemModelView(){Id = ModelsList.items.Count + 1, Conditions = Conditions.NA};
-			var createItemDialog = new ItemsDialog(modelView, Mode.Create, item => ModelsList.items.Add(item), _path, _logger);
+			var createItemDialog = new ItemsDialog(modelView, Mode.Create, item => ModelsList.items.Add(item), _loggerpath, _logger);
 			createItemDialog.Closed += (sender, e) => RefreshData();
 			createItemDialog.ShowModal();
 			_utils.CreateDirectory(TmpDir);
 			_dataManagement.Save(ModelsList.items, TmpPath);
 			_items = ModelsList.items;
+			_logger.Logs("Item created successfully.", _loggerpath);
 			Content = CreateDynamicLayout();
 			RefreshData();
 		}
@@ -279,8 +292,9 @@ namespace InventBox.Desktop.Components.ItemsForm
 		/// </summary>
 		public void OnSave()
 		{
-			_categoryManagement = new DataManagement<Category>(_path);
-			_locationManagement = new DataManagement<Locations>(_path);
+			_logger.Logs("Saving items into file.", _loggerpath);
+			_categoryManagement = new DataManagement<Category>(_loggerpath);
+			_locationManagement = new DataManagement<Locations>(_loggerpath);
 			Uri homeDir = new Uri(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile));	
 			var saveDialog = new SaveFileDialog
 			{
@@ -304,13 +318,17 @@ namespace InventBox.Desktop.Components.ItemsForm
 				if (File.Exists(TmpLocationPath))
 					File.Delete(TmpLocationPath);
 				File.Delete(TmpPath);
+				_logger.Logs("Data saved successfully.", _loggerpath);
 			}
 			else if (string.IsNullOrEmpty(saveDialog.FileName)) {
+				_logger.Logs("Saving data cancelled.", _loggerpath);
 				saveDialog.Dispose();
 				return;
 			}
-			else
+			else {
+				_logger.Error("Saving failed. Item list is empty.");
 				MessageBox.Show("Items list is empty. Please add one or load from file.", "Save failed.", MessageBoxButtons.OK, MessageBoxType.Information);
+			}
 			saveDialog.Dispose();
 		}
 		/// <summary>
@@ -318,6 +336,7 @@ namespace InventBox.Desktop.Components.ItemsForm
 		/// </summary>
 		public void OnLoad()
 		{
+			_logger.Logs("Loading data from file.", _loggerpath);
 			Uri path = new Uri(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile));		
 			var loadDialog = new OpenFileDialog
 			{
@@ -329,6 +348,7 @@ namespace InventBox.Desktop.Components.ItemsForm
 			};
 			loadDialog.ShowDialog(this);
 			if (!loadDialog.CheckFileExists) {
+				_logger.Logs("Loading data cancelled.", _loggerpath);
 				loadDialog.Dispose();
 				return;
 			}
@@ -338,6 +358,7 @@ namespace InventBox.Desktop.Components.ItemsForm
 				ModelsList.items = _dataManagement.Load(loadDialog.FileName, true);
 				if (ModelsList.items.Count == 0)
 				{
+					_logger.Error("Loading item failed. Invalid data.", _loggerpath);
 					MessageBox.Show("Invalid data. Please choose a different file", "Load failed.", MessageBoxButtons.OK, MessageBoxType.Information);
 					return;
 				}
@@ -349,11 +370,13 @@ namespace InventBox.Desktop.Components.ItemsForm
 					if (!ModelsList.locations.Contains(ModelsList.locations.Find(i => i.Id == item.Locations.Id)) && item.Locations.Id > 0 || item.Locations != null)
 						ModelsList.locations.Add(item.Locations);
 				}
+				_logger.Logs("Loading data successfully.", _loggerpath);
 				Content = CreateDynamicLayout();
 				RefreshData();
 			} else
 			{
-				// MessageBox.Show("File name is empty.", "Load failed.", MessageBoxButtons.OK, MessageBoxType.Information);
+				_logger.Error("Loading data failed. File name is empty.", _loggerpath);
+				MessageBox.Show("File name is empty.", "Load failed.", MessageBoxButtons.OK, MessageBoxType.Information);
 			}
 			loadDialog.Dispose();
 		}
@@ -362,24 +385,26 @@ namespace InventBox.Desktop.Components.ItemsForm
 		/// </summary>
 		public void OnEdit()
 		{
+			_logger.Logs("Editing the item.", _loggerpath);
 			if (_items.Count <= 0) {
+				_logger.Error("Editing item failed. Item list is empty.", _loggerpath);
 				MessageBox.Show("The list is empty. Please create one or load from file.", "Item not selected", MessageBoxButtons.OK, MessageBoxType.Information);
 				return;
 			}
 			if (_grid.SelectedItem == null) {
+				_logger.Error("Editing item failed. Item is not selected.", _loggerpath);
 				MessageBox.Show("Item have not been selected. Please select one", "Item not selected", MessageBoxButtons.OK, MessageBoxType.Information);
 				return;
 			}
 			Items item = (Items)_grid.SelectedItem;
 			var index = ModelsList.items.IndexOf(item);
-			if (index < 0 )
-				return;
 			ItemModelView modelView = ModelViewCopy(item);
-			var editItemDialog = new ItemsDialog(modelView, Mode.Edit, item => ModelsList.items[index] = item, _path, _logger);
+			var editItemDialog = new ItemsDialog(modelView, Mode.Edit, item => ModelsList.items[index] = item, _loggerpath, _logger);
 			editItemDialog.Closed += (sender, e) => { 
 				_utils.CreateDirectory(TmpDir);
 				_dataManagement.Save(ModelsList.items, TmpPath);
 				_items = ModelsList.items;
+				_logger.Logs("Item edited successfully.", _loggerpath);
 				RefreshData();			
 			};
 			editItemDialog.ShowModal();
@@ -389,21 +414,24 @@ namespace InventBox.Desktop.Components.ItemsForm
 		/// </summary>
 		public void OnDelete()
 		{
+			_logger.Logs("Deleting item from the list.", _loggerpath);
 			if (_items.Count <= 0) {
+				_logger.Error("Deleting item failed. Item list is empty.", _loggerpath);
 				MessageBox.Show("The list is empty. Please create one or load from file.", "Item not selected", MessageBoxButtons.OK, MessageBoxType.Information);
 				return;
 			}
 			if (_grid.SelectedItem == null) {
+				_logger.Error("Deleting item failed. Item is not selected.", _loggerpath);
 				MessageBox.Show("Item have not been selected. Please select one", "Item not selected", MessageBoxButtons.OK, MessageBoxType.Information);
 				return;
 			}
 			Items item = (Items)_grid.SelectedItem;
 			var index = ModelsList.items.IndexOf(item);
-			if (index < 0)
-				return;
 			var deleteDialog = MessageBox.Show("Are you sure to delete the selected item?", "Delete selected item", MessageBoxButtons.YesNo, MessageBoxType.Question, MessageBoxDefaultButton.Yes);
-			if (deleteDialog != DialogResult.Yes)
+			if (deleteDialog != DialogResult.Yes) {
+				_logger.Logs("Deleting item cancelled.", _loggerpath);
 				return;
+			}
 			ModelsList.items.Remove(item);
 			_utils.CreateDirectory(TmpDir);
 			if (ModelsList.items.Count > 0)
@@ -411,6 +439,7 @@ namespace InventBox.Desktop.Components.ItemsForm
 			else
 				File.Delete(TmpPath);
 			_items = ModelsList.items;
+			_logger.Logs("Item deleted successfully.", _loggerpath);
 			Content = CreateDynamicLayout();
 			RefreshData();
 		}
