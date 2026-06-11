@@ -34,6 +34,7 @@ namespace InventBox.Desktop.Components
 			_path = path;
 			_logger = logger;
 			_mode = mode;
+			_logger.Logs("Opening create warrantly dialog.", _path);
 			Size = size;
 			DataContext = modelView;
 			Content = CreatePanel(modelView);
@@ -111,7 +112,7 @@ namespace InventBox.Desktop.Components
 			var command = new Command();
 			command.Executed += (sender, e) =>
 			{
-				
+				_logger.Logs("Submitting warrantly data.", _path);
 				var model = (WarrantlyModelView)DataContext;
 				if (DateTime.TryParse(startDatePicker.Text, out var start))
 					model.StartDate = start;

@@ -34,6 +34,7 @@ namespace InventBox.Desktop.Components
 			_path = path;
 			_logger = logger;
 			_mode = mode;
+			_logger.Logs("Opening create insurance dialog.", _path);
 			Size = size;
 			DataContext = modelView;
 			Content = CreatePanel(modelView);
@@ -112,7 +113,8 @@ namespace InventBox.Desktop.Components
         {
 			var command = new Command();
 			command.Executed += (sender, e) =>
-			{				
+			{
+				_logger.Logs("Submitting insurance.", _path);
 				var model = (InsuranceModelView)DataContext;
 				if (DateTime.TryParse(startDatePicker.Text, out var start))
 					model.StartDate = start;
