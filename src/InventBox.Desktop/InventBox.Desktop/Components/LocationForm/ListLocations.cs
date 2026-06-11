@@ -58,6 +58,7 @@ namespace InventBox.Desktop.Components.LocationForm
 		/// </summary>
         public void Search()
         {
+			_logger.Logs($"Searching the room by {searchText}", _path);
 			if (string.IsNullOrEmpty(searchText)) {
 			if (_locations.Count == ModelsList.locations.Count)
 					MessageBox.Show("Search bar is empty. Please type in the search bar", "Search", MessageBoxButtons.OK, MessageBoxType.Information);
@@ -176,6 +177,7 @@ namespace InventBox.Desktop.Components.LocationForm
 		/// </summary>
         public void OnCreate()
         {
+			_logger.Logs("Creating the location.", _path);
 			LocationsModelView modelView = new LocationsModelView() {Id = ModelsList.locations.Count + 1};
 			var createLocationDialog = new LocationsDialog(modelView, Mode.Create, location => ModelsList.locations.Add(location), _path, _logger);
 			createLocationDialog.Closed += (sender, e) => RefreshData();
@@ -183,6 +185,7 @@ namespace InventBox.Desktop.Components.LocationForm
 			_utils.CreateDirectory(TmpDir);
 			_dataManagement.Save(ModelsList.locations, TmpPath);
 			_locations = ModelsList.locations;
+			_logger.Logs("Location created successfully.", _path);
 			Content = CreateDynamicLayout();
 			RefreshData();
         }
@@ -191,22 +194,24 @@ namespace InventBox.Desktop.Components.LocationForm
 		/// </summary>
         public void OnDelete()
         {
+			_logger.Logs("Deleting the location from the list", _path);
 			_itemmanagement = new DataManagement<Items>(_path);
 			if (_locations.Count <= 0) {
+				_logger.Error("Deleting location failed. List is empty.", _path);
 				MessageBox.Show("The list is empty. Please create one or load from file.", "Location not selected", MessageBoxButtons.OK, MessageBoxType.Information);
 				return;
 			}
 			if (_grid.SelectedItem == null) {
+				_logger.Error("Deleting location failed. Location is not selected.", _path);
 				MessageBox.Show("Location have not been selected. Please select one", "Location not selected", MessageBoxButtons.OK, MessageBoxType.Information);
 				return;
 			}
 			Locations location = (Locations)_grid.SelectedItem;
-			var index = ModelsList.locations.IndexOf(location);
-			if (index < 0)
-				return;
 			var deleteDialog = MessageBox.Show("Are you sure to delete the selected location?", "Delete selected location", MessageBoxButtons.YesNo, MessageBoxType.Question, MessageBoxDefaultButton.Yes);
-			if (deleteDialog != DialogResult.Yes)
+			if (deleteDialog != DialogResult.Yes) {
+				_logger.Logs("Deleting location cancelled.", _path);
 				return;
+			}
 			ModelsList.locations.Remove(location);
 			foreach (var item in ModelsList.items)
 			{
@@ -220,6 +225,7 @@ namespace InventBox.Desktop.Components.LocationForm
 				File.Delete(TmpPath);
 			_itemmanagement.Save(ModelsList.items, TmpItemPath);
 			_locations = ModelsList.locations;
+			_logger.Logs("Location deleted successfully.", _path);
 			Content = CreateDynamicLayout();
 			RefreshData();
         }
@@ -228,19 +234,20 @@ namespace InventBox.Desktop.Components.LocationForm
 		/// </summary>
         public void OnEdit()
         {
+			_logger.Logs("Editing location.", _path);
 			_itemmanagement = new DataManagement<Items>(_path);
 			if (_locations.Count <= 0) {
+				_logger.Error("Editing location failed. List is empty.", _path);
 				MessageBox.Show("The list is empty. Please create one or load from file.", "Location not selected", MessageBoxButtons.OK, MessageBoxType.Information);
 				return;
 			}
 			if (_grid.SelectedItem == null) {
+				_logger.Error("Editing location failed. Location is not selected.", _path);
 				MessageBox.Show("Location have not been selected. Please select one", "Location not selected", MessageBoxButtons.OK, MessageBoxType.Information);
 				return;
 			}
 			Locations location = (Locations)_grid.SelectedItem;
 			var index = ModelsList.locations.IndexOf(location);
-			if (index < 0)
-				return;
 			LocationsModelView modelView = ModelViewCopy(location);
 			var editLocationDialog = new LocationsDialog(modelView, Mode.Edit, location => ModelsList.locations[index] = location, _path, _logger);
 			editLocationDialog.Closed += (sender, e) =>
@@ -254,6 +261,7 @@ namespace InventBox.Desktop.Components.LocationForm
 				_dataManagement.Save(ModelsList.locations, TmpPath);
 				_itemmanagement.Save(ModelsList.items, TmpItemPath);
 				_locations = ModelsList.locations;
+				_logger.Logs("Location edited successfully.", _path);
 				RefreshData();
 			};
 			editLocationDialog.ShowModal();
@@ -263,6 +271,7 @@ namespace InventBox.Desktop.Components.LocationForm
 		/// </summary>
         public void OnLoad()
         {
+			_logger.Logs("Loading location from file.", _path);
 			Uri homeDir = new Uri(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile));
 			var loadDialog = new OpenFileDialog
 			{
@@ -274,6 +283,7 @@ namespace InventBox.Desktop.Components.LocationForm
 			};
 			loadDialog.ShowDialog(this);
 			if (!loadDialog.CheckFileExists) {
+				_logger.Logs("Loading file cancelled.", _path);
 				loadDialog.Dispose();
 				return;
 			}
@@ -284,9 +294,11 @@ namespace InventBox.Desktop.Components.LocationForm
 				_locations = ModelsList.locations = _dataManagement.Load(loadDialog.FileName);
 				if (ModelsList.locations.Count == 0)
 				{
+					_logger.Error("Loading location failed. Data is invalid.", _path);
 					MessageBox.Show("Invalid data. Please choose a different file", "Load failed.", MessageBoxButtons.OK, MessageBoxType.Information);
 					return;
 				}
+				_logger.Logs("Location loaded successfully", _path);
 				Content = CreateDynamicLayout();
 				RefreshData();
 			}
@@ -297,6 +309,7 @@ namespace InventBox.Desktop.Components.LocationForm
 		/// </summary>
         public void OnSave()
         {
+			_logger.Logs("Saving location into file.", _path);
 			Uri homeDir = new Uri(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile));
 			var saveDialog = new SaveFileDialog
 			{
@@ -311,13 +324,17 @@ namespace InventBox.Desktop.Components.LocationForm
 			{
 				_dataManagement.Save(ModelsList.locations, saveDialog.FileName);
 				File.Delete(TmpPath);
+				_logger.Logs("Location saved successfully.", _path);
 			}
 			else if (string.IsNullOrEmpty(saveDialog.FileName)){
+				_logger.Logs("Saving location cancelled.", _path);
 				saveDialog.Dispose();
 				return;
 			}
-			else
+			else {
+				_logger.Error("Saving location failed. List is empty.", _path);
 				MessageBox.Show("locations list is empty. Please add one or load from file.", "Save failed.", MessageBoxButtons.OK, MessageBoxType.Information);
+			}
 			saveDialog.Dispose();
         }
 		/// <summary>
@@ -325,6 +342,7 @@ namespace InventBox.Desktop.Components.LocationForm
 		/// </summary>
         public void RefreshData()
         {
+			_logger.Logs("Refreshing data.", _path);
 			_grid.DataStore = _locations.ToArray();
         }
 		/// <summary>
@@ -333,6 +351,7 @@ namespace InventBox.Desktop.Components.LocationForm
 		/// <returns>Context menu for grid with options.</returns>
         public ContextMenu CreateContextMenu()
         {
+			_logger.Logs("Creating context menu.", _path);
 			var CopyLocationCommand = _utils.CreateMenuItem("Copy location", _utils.OnCopy);
 			var CreateLocationCommand = _utils.CreateMenuItem("Create new location", OnCreate);
 			var UpdateLocationCommand = _utils.CreateMenuItem("Edit location", OnEdit);			
