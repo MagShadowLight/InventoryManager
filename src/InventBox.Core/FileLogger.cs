@@ -26,8 +26,8 @@ public class FileLogger : ILogger
         fileLength = File.ReadAllText(path).Length;
         _stream = File.OpenWrite(path);
         if (fileLength > 0)
-            _stream.Position = fileLength;
-        WriteText(_stream, $"[LOG] {message}");
+            _stream.Position = fileLength + 1;
+        WriteText(_stream, $"[LOG] {message}\n");
         _stream.Close();
     }
     /// <summary>
@@ -45,7 +45,7 @@ public class FileLogger : ILogger
         fileLength = File.ReadAllText(path).Length;
         _stream = File.OpenWrite(path);
         if (fileLength > 0)
-            _stream.Position = fileLength;
+            _stream.Position = fileLength + 1;
         WriteText(_stream, $"[WARN] {message}");
         _stream.Close();
     }
@@ -64,7 +64,7 @@ public class FileLogger : ILogger
         fileLength = File.ReadAllText(path).Length;
         _stream = File.OpenWrite(path);
         if (fileLength > 0)
-            _stream.Position = fileLength;
+            _stream.Position = fileLength + 1;
         WriteText(_stream, $"[ERROR] {message}");
         _stream.Close();
     }

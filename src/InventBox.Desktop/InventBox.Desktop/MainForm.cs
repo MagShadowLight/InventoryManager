@@ -37,6 +37,7 @@ namespace InventBox.Desktop
 		List<Panel> panels;
 		private AboutDialog aboutDialog;
 		Control panel = null;
+		AppUtils<object> appUtils = new AppUtils<object>();
 
 		/// <summary>
 		/// Create commands variables
@@ -69,11 +70,12 @@ namespace InventBox.Desktop
 		/// </summary>
 		public MainForm()
 		{
+			CreateLogFile();
+			_logger.Logs($"Opening InventBox at {DateTime.Now}", _path);
 			RecoverData();
 
 			SizeChanged += (sender, e) => CreateMainApp();
 			
-			CreateLogFile();
 			/// <summary>
 			/// Create an About Dialog for the application
 			/// </summary>
@@ -102,8 +104,10 @@ namespace InventBox.Desktop
 		private void RecoverData()
 		{	
 			if (File.Exists(TmpItemPath) || File.Exists(TmpCategoryPath) || File.Exists(TmpLocationPath)) {
+				_logger.Logs("Attempting to recover data.", _path);
 				var recoverMessage = MessageBox.Show("InventBox will attempt to recover data.\nClick Ok to recover the data. Click Cancel to discard the data", MessageBoxButtons.OKCancel, MessageBoxType.Information, MessageBoxDefaultButton.OK);
 				if (recoverMessage == DialogResult.Ok) {
+					_logger.Logs("Recovering data.", _path);
 					List<Items> items = new List<Items>();
 					List<Category> categories = new List<Category>();
 					List<Locations> locations = new List<Locations>();
@@ -121,6 +125,7 @@ namespace InventBox.Desktop
 						ModelsList.items = items;
 				} else
 				{
+					_logger.Logs("Discarding data.", _path);
 					if (File.Exists(TmpItemPath))
 						File.Delete(TmpItemPath);
 					if (File.Exists(TmpCategoryPath))
@@ -136,6 +141,7 @@ namespace InventBox.Desktop
 	/// <returns>Dynamic Layout to display.</returns>
 	private DynamicLayout CreateMainPanel()
 	{
+		_logger.Logs("Creating the main panel.", _path);
 		return new DynamicLayout
 		{
 			Padding = 20,
@@ -155,41 +161,43 @@ namespace InventBox.Desktop
 	/// Show the tutorial dialog (Wall of text)
 	/// </summary>
 	async void ShowTutorial() {
+		_logger.Logs("Showing tutorial for first time users.");
 		await tutorial.ShowModalAsync();
 	}
 	/// <summary>
 	/// Create the log file for logging purpose.
 	/// </summary>
 	private void CreateLogFile()
+	{
+		string[] path = new string[10];
+		if (Platform.IsGtk)
+			path = _path.Split("/");
+		else if (Platform.IsWpf)
+			path = _path.Split("\\");
+		else if (Platform.IsMac)
+			path = _path.Split(".");
+		
+		string temp = string.Empty;
+		foreach (var test in path)
 		{
-			string[] path = new string[10];
 			if (Platform.IsGtk)
-				path = _path.Split("/");
+				temp += Path.Combine(test + "/");
 			else if (Platform.IsWpf)
-				path = _path.Split("\\");
+				temp += Path.Combine(test + "\\");
 			else if (Platform.IsMac)
-				path = _path.Split(".");
-			
-			string temp = string.Empty;
-			foreach (var test in path)
-			{
-				if (Platform.IsGtk)
-					temp += Path.Combine(test + "/");
-				else if (Platform.IsWpf)
-					temp += Path.Combine(test + "\\");
-				else if (Platform.IsMac)
-					temp += Path.Combine(test + ".");
-				if (test.Contains(".log"))
-					return;
-				if (!Directory.Exists(temp))
-					Directory.CreateDirectory(temp);
-			}
+				temp += Path.Combine(test + ".");
+			if (test.Contains(".log"))
+				return;
+			if (!Directory.Exists(temp))
+				Directory.CreateDirectory(temp);
 		}
+	}
 		/// <summary>
 		/// Create the commands for the whole application.
 		/// </summary>
 		private void CreateCommand()
 		{
+			_logger.Logs("Creating commands for the application", _path);
 			listItemCommand = CreateCommand("Inventory", "List items", Application.Instance.CommonModifier | Keys.I);
 			listItemCommand.Executed += (sender, e) => {
 				CreateItemListPanel();
@@ -305,6 +313,7 @@ namespace InventBox.Desktop
 
 			aboutCommand = CreateCommand("About...");
 			aboutCommand.Executed += (sender, e) => aboutDialog.ShowDialog(this);
+			_logger.Logs("Commands created", _path);
 		}
 		/// <summary>
 		/// Create the menu bar for the appplication.
@@ -312,6 +321,7 @@ namespace InventBox.Desktop
 		/// <returns>Menu bar to display.</returns>
 		private MenuBar CreateMenuBar()
 		{
+			_logger.Logs("Creating menu bar", _path);
 			var itemSubMenuItem = new SubMenuItem { Text = "&Edit", Items = { CreateItemCommand, UpdateItemCommand, DeleteItemCommand, SaveItemCommand, LoadItemCommand }, Visible = false };
 			var categorySubMenuItem = new SubMenuItem { Text = "&Edit", Items = { CreateCategoryCommand, UpdateCategoryCommand, DeleteCategoryCommand, SaveCategoryCommand, LoadCategoryCommand }, Visible = false };
 			var locationSubMenuItem = new SubMenuItem { Text = "&Edit", Items = { CreateLocationCommand, UpdateLocationCommand, DeleteLocationCommand, SaveLocationCommand, LoadLocationCommand }, Visible = false };
@@ -347,6 +357,7 @@ namespace InventBox.Desktop
 		/// <returns></returns>
 		private AboutDialog CreateAboutDialog()
 		{
+			_logger.Logs("Creating about application.", _path);
 			var link = new Uri("https://github.com/MagShadowLight/InventoryManager");
 			return new AboutDialog()
 			{
@@ -366,7 +377,7 @@ namespace InventBox.Desktop
 		/// <returns>Layout to display.</returns>
 		private DynamicLayout CreateMainApp()
 		{
-			
+			_logger.Logs("Creating whole application.", _path);
 			var layout = new DynamicLayout
 			{
 				Padding = 10,
@@ -384,6 +395,7 @@ namespace InventBox.Desktop
 		/// </summary>
         private void ChangeActivePanel()
         {
+			_logger.Logs("Switching panel", _path);
 			if (listItemsForm != null && listItemsForm.Visible)
 				panel = listItemsForm;
 			else if (listCategories != null && listCategories.Visible)
@@ -399,9 +411,10 @@ namespace InventBox.Desktop
 		/// <returns>Layout to display.</returns>
         private StackLayout NavigationButton()
 		{
-			var InventoryButton = AddButton("Inventory", 100, 50, CreateItemListPanel);
-			var CategoryButton = AddButton("Category", 100, 50, CreateCategoryListPanel);
-			var LocationButton = AddButton("Locations", 100, 50, createLocationListPanel);
+			_logger.Logs("Creating navigation button.", _path);
+			var InventoryButton = appUtils.AddButton("Inventory", 100, 50, CreateItemListPanel);
+			var CategoryButton = appUtils.AddButton("Category", 100, 50, CreateCategoryListPanel);
+			var LocationButton = appUtils.AddButton("Locations", 100, 50, createLocationListPanel);
 			return new StackLayout()
 			{
 				Padding = 5,
@@ -414,24 +427,11 @@ namespace InventBox.Desktop
 			};
 		}
 		/// <summary>
-		/// Create a button for the application.
-		/// </summary>
-		/// <param name="text">Text for the button.</param>
-		/// <param name="width">Width for button.</param>
-		/// <param name="height">Height for button.</param>
-		/// <param name="eventHandler">Handler for clicking the button.</param>
-		/// <returns>Button to display.</returns>
-		private Button AddButton(string text, int width, int height, Action eventHandler)
-		{
-			var command = new Command(){MenuText = text, ToolBarText = text};
-			command.Executed += (sender, eventArgs) => eventHandler();
-			return new Button { Text = text, Width = width, Height = height, Command = command};
-		}
-		/// <summary>
 		/// Create a panel with list of items.
 		/// </summary>
 		private void CreateItemListPanel()
 		{
+			_logger.Logs("Opening the item list.", _path);
 			if (listItemsForm != null)
 				listItemsForm.Dispose();
 			panels = new List<Panel>() {listCategories, listLocations};
@@ -440,12 +440,14 @@ namespace InventBox.Desktop
 			listItemsForm.Visible = true;
 			Menu = CreateMenuBar();
 			Content = CreateMainApp();
+			_logger.Logs("Item list opened", _path);
 		}
 		/// <summary>
 		/// Create a panel with list of categories.
 		/// </summary>
 		private void CreateCategoryListPanel()
 		{
+			_logger.Logs("Opening the category list.", _path);
 			if (listCategories != null)
 				listCategories.Dispose();
 			panels = new List<Panel>() {listItemsForm, listLocations};
@@ -454,12 +456,14 @@ namespace InventBox.Desktop
 			listCategories.Visible = true;
 			Menu = CreateMenuBar();
 			Content = CreateMainApp();
+			_logger.Logs("Category list opened", _path);
 		}
 		/// <summary>
 		/// Create a panel with list of locations.
 		/// </summary>
 		private void createLocationListPanel()
 		{
+			_logger.Logs("Opening the location list.", _path);
 			if (listLocations != null)
 				listLocations.Dispose();
 			panels = new List<Panel>() {listItemsForm, listCategories};
@@ -468,6 +472,7 @@ namespace InventBox.Desktop
 			listLocations.Visible = true;
 			Menu = CreateMenuBar();
 			Content = CreateMainApp();
+			_logger.Logs("Location list opened.", _path);
 		}
 		/// <summary>
 		/// Clear the active panel before switching.
@@ -490,5 +495,10 @@ namespace InventBox.Desktop
 		{
 			return new Command() {MenuText = menuText, ToolBarText = toolbarText, Shortcut = shortcut};
 		}
+        protected override void OnClosed(EventArgs e)
+        {
+            base.OnClosed(e);
+			_logger.Logs($"Closing InventBox at {DateTime.Now}", _path);
+        }
     }
 }

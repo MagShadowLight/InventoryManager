@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using InventBox.Core.Models;
 
-namespace InventBox.Desktop.ModelView;
+namespace InventBox.Desktop;
 /// <summary>
 /// Represents the dataset for the application.
 /// </summary>
