@@ -1,5 +1,21 @@
 # Wireframes
 
+## New Design:
+Inventory UI:
+
+https://wireframe.cc/1qw6ru
+
+Category UI:
+
+https://wireframe.cc/418mtu
+
+Location UI:
+
+https://wireframe.cc/AKtogQ
+
+
+## Old Design:
+
 Inventory UI:
 
 https://wireframe.cc/HNObqJ
