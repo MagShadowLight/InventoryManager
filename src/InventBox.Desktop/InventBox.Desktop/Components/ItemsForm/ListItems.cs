@@ -39,6 +39,14 @@ namespace InventBox.Desktop.Components.ItemsForm
 		private GridView _grid;
 		private string searchtext = "";
 		private AppUtils<Items> _utils;
+		private Tutorial itemTutorial = new Tutorial(new Size(500,550),
+		"ItemTutorialDone.md",
+		"Inventory section is where you can create, manage, and delete items into or from the list.",
+		"It include the item id, name, description, quantity, serial and model number, manufacturer name, notes, category, where the items at, warrantly, and insurance information.",
+		"To create, click the 'Create new item' button. To edit or delete, you must select item from the list first then click either 'Edit selected items' or 'Delete selected item'. You can also save and load items from the inventory into a file. Click 'Save Data' button to save and 'Load Data' button to load.",
+		"You can search through the items. Click the dropdown at the top left that say 'Name' and select either item name, category name, and the floor or room the item is at and then type in the search bar to filter and click the 'search' button.",
+		"You can also scan the bar code to filter the item name from the list. Click the 'Scan item name' button and scan the bar code by holding it on camera or bar code scanner."
+		);
 		/// <summary>
 		/// Initialize a new instance for the panel.
 		/// </summary>
@@ -46,7 +54,7 @@ namespace InventBox.Desktop.Components.ItemsForm
 		/// <param name="logger">The file logger for logging purposes.</param>
 		public ListItems(string path, FileLogger logger)
 		{
-			jsonParser = new JsonParser<Items>();
+			jsonParser = new JsonParser<Items>(_logger, _loggerpath);
 			_items = ModelsList.items;
 			_loggerpath = path;
 			_logger = logger;
@@ -58,6 +66,16 @@ namespace InventBox.Desktop.Components.ItemsForm
 			RefreshData();
 			Visible = false;
 			Content = CreateDynamicLayout();
+
+			if (!File.Exists("ItemTutorialDone.md"))
+				ShowTutorial();
+		}
+		/// <summary>
+		/// Show the tutorial dialog (Wall of text)
+		/// </summary>
+		async void ShowTutorial() {
+			_logger.Logs("Showing item tutorial for first time users.", _loggerpath);
+			await itemTutorial.ShowModalAsync();
 		}
 		/// <summary>
 		/// Creating the context menu for the grid.

@@ -29,6 +29,7 @@ namespace InventBox.Desktop
 		private DataManagement<Items> _itemManagement = new DataManagement<Items>(_path);
 		private DataManagement<Category> _categoryManagement = new DataManagement<Category>(_path);
 		private DataManagement<Locations> _locationsManagement = new DataManagement<Locations>(_path);
+		private bool IsFullScreen = false; 
 
 		private static FileLogger _logger = new FileLogger();
 		ListItems listItemsForm = null;
@@ -60,11 +61,20 @@ namespace InventBox.Desktop
         Command DeleteLocationCommand;
 		Command SaveLocationCommand;
 		Command LoadLocationCommand;
+		Command FullScreenCommand;
         Command quitCommand;
 		Command aboutCommand;
+		private Size currentSize = new Size(950, 850);
 
 
-		Tutorial tutorial = new Tutorial(new Size(500,500));
+		Tutorial tutorial = new Tutorial(new Size(500,500),
+			"MainDone.md",
+			"InventBox is the inventory management application where you can manage the inventory in your home. It include the items, categories, locations, and optional warrantly and insurance.",
+			"Inventory section is where you can create, manage, and delete items inside the grid. In this section, you can search for the items by name, category, floor, and room via dropdown and scan the barcode from the camera.",
+			"Category section is where you can create, manage, and delete category inside the grid. In this section, you can search the category by name",
+			"Location section is similar to category section where you can create, manage, and delete location plus searching by room.",
+			"All of those section have the options to save and load the data from the file."
+			);
 		/// <summary>
 		/// Initialize a new instance for the application.
 		/// </summary>
@@ -86,7 +96,7 @@ namespace InventBox.Desktop
 			/// Set the properties for the window.
 			/// </summary>
 			Title = "InventBox";
-			MinimumSize = new Size(950, 850);
+			MinimumSize =  new Size(950, 850);
 			Resizable = true;
 			Content = CreateMainApp();
 			CreateCommand();	
@@ -96,9 +106,14 @@ namespace InventBox.Desktop
 
 			// create toolbar			
 			// ToolBar = CreateToolbar();
-			if (!File.Exists("Done.md"))
+			if (!File.Exists("MainDone.md"))
 				ShowTutorial();
 		}
+        protected override void OnSizeChanged(EventArgs e)
+        {
+            base.OnSizeChanged(e);
+			currentSize = ClientSize; 
+        }
 		/// <summary>
 		/// Recover the data if the application have crashed or close without saving.
 		/// </summary>
@@ -162,7 +177,7 @@ namespace InventBox.Desktop
 	/// Show the tutorial dialog (Wall of text)
 	/// </summary>
 	async void ShowTutorial() {
-		_logger.Logs("Showing tutorial for first time users.");
+		_logger.Logs("Showing tutorial for first time users.", _path);
 		await tutorial.ShowModalAsync();
 	}
 	/// <summary>
@@ -308,12 +323,15 @@ namespace InventBox.Desktop
                 if (listLocations != null && listLocations.Visible)
                     listLocations.OnLoad();
             };
+			FullScreenCommand = CreateCommand((!IsFullScreen ? "Enter full screen" : "Exit full screen"), (!IsFullScreen ? "Enter full screen" : "Exit full screen"), Keys.F11);
+			FullScreenCommand.Executed += (sender, e) => FullScreen();
 
             quitCommand = CreateCommand("Quit", null, Application.Instance.CommonModifier | Keys.Q);
 			quitCommand.Executed += (sender, e) => Application.Instance.Quit();
 
 			aboutCommand = CreateCommand("About...");
 			aboutCommand.Executed += (sender, e) => aboutDialog.ShowDialog(this);
+			
 			_logger.Logs("Commands created", _path);
 		}
 		/// <summary>
@@ -337,7 +355,7 @@ namespace InventBox.Desktop
 				Items =
 				{
 					// File submenu
-					new SubMenuItem { Text = "&File", Items = { listItemCommand, listCategoryCommand, listLocationCommand } },
+					new SubMenuItem { Text = "&File", Items = { listItemCommand, listCategoryCommand, listLocationCommand, FullScreenCommand } },
 					itemSubMenuItem,
 					categorySubMenuItem,
 					locationSubMenuItem
@@ -351,6 +369,26 @@ namespace InventBox.Desktop
 				QuitItem = quitCommand,
 				AboutItem = aboutCommand
 			};
+		}
+		private void FullScreen()
+		{
+			if (!IsFullScreen) {
+				Maximize();
+				WindowStyle = WindowStyle.None;
+				IsFullScreen = true;
+				FullScreenCommand = CreateCommand((!IsFullScreen ? "Enter full screen" : "Exit full screen"), (!IsFullScreen ? "Enter full screen" : "Exit full screen"), Keys.F11);
+				FullScreenCommand.Executed += (sender, e) => FullScreen();
+				Menu = CreateMenuBar();
+			} else
+			{
+				ClientSize = currentSize;
+				WindowStyle = WindowStyle.Default;
+				WindowState = WindowState.Normal;
+				IsFullScreen = false;
+				FullScreenCommand = CreateCommand((!IsFullScreen ? "Enter full screen" : "Exit full screen"), (!IsFullScreen ? "Enter full screen" : "Exit full screen"), Keys.F11);
+				FullScreenCommand.Executed += (sender, e) => FullScreen();
+				Menu = CreateMenuBar();
+			}
 		}
 		/// <summary>
 		/// Create a dialog to explain to users what the application is with credits.
@@ -416,6 +454,7 @@ namespace InventBox.Desktop
 			var InventoryButton = appUtils.AddButton("Inventory", 100, 50, CreateItemListPanel);
 			var CategoryButton = appUtils.AddButton("Category", 100, 50, CreateCategoryListPanel);
 			var LocationButton = appUtils.AddButton("Locations", 100, 50, createLocationListPanel);
+			
 			return new StackLayout()
 			{
 				Padding = 5,

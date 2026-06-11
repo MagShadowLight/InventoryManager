@@ -32,6 +32,13 @@ namespace InventBox.Desktop.Components.LocationForm
 		private DataManagement<Locations> _dataManagement;
 		private DataManagement<Items> _itemmanagement;
 		private AppUtils<Locations> _utils;
+		private Tutorial locationTutorial = new Tutorial(new Size(500,550),
+		"LocationTutorialDone.md",
+		"Location section is where you can create, manage, and delete places into or from the list.",
+		"It include the id, floor, room, container, and coordinate with x and y.",
+		"To create, click the 'Create new place' button. To edit or delete, you must select place from the list first then click either 'Edit selected place' or 'Delete selected place'. You can also save and load item locations from the list into a file. Click 'Save place' button to save and 'Load place' button to load.",
+		"You can search through the place. To do so, type the room in search bar to filter and click the 'search' button"
+		);
 
 		private GridView _grid;
 		/// <summary>
@@ -41,7 +48,7 @@ namespace InventBox.Desktop.Components.LocationForm
 		/// <param name="logger">The logger for logging purposes.</param>
 		public ListLocations(string path, FileLogger logger)
 		{
-			_jsonParser = new JsonParser<Locations>();
+			_jsonParser = new JsonParser<Locations>(_logger, _path);
 			_locations = ModelsList.locations;
 			_path = path;
 			_logger = logger;
@@ -51,6 +58,15 @@ namespace InventBox.Desktop.Components.LocationForm
 			RefreshData();
 			Visible = false;
 			Content = CreateDynamicLayout();
+			if (!File.Exists("LocationTutorialDone.md"))
+				ShowTutorial();
+		}
+		/// <summary>
+		/// Show the tutorial dialog (Wall of text)
+		/// </summary>
+		async void ShowTutorial() {
+			_logger.Logs("Showing item tutorial for first time users.", _path);
+			await locationTutorial.ShowModalAsync();
 		}
 		/// <summary>
 		/// Search the location by room.
@@ -99,12 +115,12 @@ namespace InventBox.Desktop.Components.LocationForm
 			layout.AddSeparateRow(4, null, true, false,
 				new []
 				{
-					_utils.AddButton("Create new location", 100, 50, OnCreate),
-					_utils.AddButton("Edit selected location", 100, 50, OnEdit),
-					_utils.AddButton("Delete selected locations", 100, 50, OnDelete),
+					_utils.AddButton("Create new place", 100, 50, OnCreate),
+					_utils.AddButton("Edit selected place", 100, 50, OnEdit),
+					_utils.AddButton("Delete selected place", 100, 50, OnDelete),
 					null,
-					_utils.AddButton("Save Location", 100, 50, OnSave),
-					_utils.AddButton("Load Location", 100, 50, OnLoad)
+					_utils.AddButton("Save places", 100, 50, OnSave),
+					_utils.AddButton("Load places", 100, 50, OnLoad)
 				}
 			);
 			layout.EndVertical();

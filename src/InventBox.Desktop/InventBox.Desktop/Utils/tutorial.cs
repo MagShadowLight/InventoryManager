@@ -11,21 +11,25 @@ namespace InventBox.Desktop.Utils
 	public partial class Tutorial : Dialog
 	{
 		private string title = "InventBox";
-		private string p1 = "InventBox is the inventory management application where you can manage the inventory in your home."
-		+ "It include the items, categories, locations, and optional warrantly and insurance.";
-		private string p2 = "Inventory section is where you can create, manage, and delete items inside the grid."
-		+ "In this section, you can search for the items by name, category, floor, and room via dropdown and scan the barcode from the camera.";
-		private string p3 = "Category section is where you can create, manage, and delete category inside the grid."
-		+ "In this section, you can search the category by name";
-		private string p4 = "Location section is similar to category section where you can create, manage, and delete location plus searching by room.";
-		private string p5 = "All of those section have the options to save and load the data from the file.";
+		private string _p1;
+		private string _p2;
+		private string _p3;
+		private string _p4;
+		private string _p5;
 		private Size _size;	
+		private string _path;
 		/// <summary>
 		/// Initialize a new instance for dialog.
 		/// </summary>
 		/// <param name="size">The size for dialog.</param>
-		public Tutorial(Size size)
+		public Tutorial(Size size, string path, string p1 = null, string p2 = null, string p3 = null, string p4 = null, string p5 = null)
 		{
+			_path = path;
+			_p1 = p1;
+			_p2 = p2;
+			_p3 = p3;
+			_p4 = p4;
+			_p5 = p5;
 			_size = size;
 			var layout = new DynamicLayout
 			{
@@ -34,15 +38,15 @@ namespace InventBox.Desktop.Utils
 				{
 					CreateText(FontFamilies.Cursive, 16.0f, title, TextAlignment.Center, FontStyle.Bold, FontDecoration.None),
 					CreateSpace(),
-					CreateText(FontFamilies.Serif, 12.0f, p1, TextAlignment.Left, FontStyle.None, FontDecoration.None),
+					CreateText(FontFamilies.Serif, 12.0f, _p1, TextAlignment.Left, FontStyle.None, FontDecoration.None),
 					CreateSpace(),
-					CreateText(FontFamilies.Serif, 12.0f, p2, TextAlignment.Left, FontStyle.None, FontDecoration.None),
+					CreateText(FontFamilies.Serif, 12.0f, _p2, TextAlignment.Left, FontStyle.None, FontDecoration.None),
 					CreateSpace(),
-					CreateText(FontFamilies.Serif, 12.0f, p3, TextAlignment.Left, FontStyle.None, FontDecoration.None),
+					CreateText(FontFamilies.Serif, 12.0f, _p3, TextAlignment.Left, FontStyle.None, FontDecoration.None),
 					CreateSpace(),
-					CreateText(FontFamilies.Serif, 12.0f, p4, TextAlignment.Left, FontStyle.None, FontDecoration.None),
+					CreateText(FontFamilies.Serif, 12.0f, _p4, TextAlignment.Left, FontStyle.None, FontDecoration.None),
 					CreateSpace(),
-					CreateText(FontFamilies.Serif, 12.0f, p5, TextAlignment.Left, FontStyle.None, FontDecoration.None),
+					CreateText(FontFamilies.Serif, 12.0f, _p5, TextAlignment.Left, FontStyle.None, FontDecoration.None),
 					new StackLayout
 					{
 						VerticalContentAlignment = VerticalAlignment.Top,
@@ -106,7 +110,7 @@ namespace InventBox.Desktop.Utils
 		/// </summary>
 		private void EndTutorial()
 		{
-			FileStream stream = File.Create("Done.md");
+			FileStream stream = File.Create(_path);
 			stream.Dispose();
 			Close();
 		}

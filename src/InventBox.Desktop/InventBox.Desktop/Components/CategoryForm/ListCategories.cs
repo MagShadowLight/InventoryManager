@@ -33,6 +33,13 @@ namespace InventBox.Desktop.Components.CategoryForm
 		private DataManagement<Items> _itemmanagement;
 		private GridView _grid;
 		private string searchText = "";
+		private Tutorial categoryTutorial = new Tutorial(new Size(500,550),
+		"CategoryTutorialDone.md",
+		"Category section is where you can create, manage, and delete category into or from the list.",
+		"It include the category id, name, and description.",
+		"To create, click the 'Create new category' button. To edit or delete, you must select category from the list first then click either 'Edit selected category' or 'Delete selected category'. You can also save and load category from the list into a file. Click 'Save Category' button to save and 'Load Category' button to load.",
+		"You can search through the category. To do so, type in the search bar to filter and click the 'search' button"
+		);
 		/// <summary>
 		/// Initialize a new instance for the panel.
 		/// </summary>
@@ -42,7 +49,7 @@ namespace InventBox.Desktop.Components.CategoryForm
 		{
 			_path = path;
 			_logger = logger;
-			jsonParser = new JsonParser<Category>();
+			jsonParser = new JsonParser<Category>(_logger, _path);
 			_categories = ModelsList.categories;
 			_datamanagement = new DataManagement<Category>(_path);
 			_utils = new AppUtils<Category>(_logger, _path, _grid, jsonParser);
@@ -50,6 +57,15 @@ namespace InventBox.Desktop.Components.CategoryForm
 			RefreshData();
 			Visible = false;
 			Content = CreateDynamicLayout();
+			if (!File.Exists("CategoryTutorialDone.md"))
+				ShowTutorial();
+		}
+		/// <summary>
+		/// Show the tutorial dialog (Wall of text)
+		/// </summary>
+		async void ShowTutorial() {
+			_logger.Logs("Showing item tutorial for first time users.", _path);
+			await categoryTutorial.ShowModalAsync();
 		}
 		/// <summary>
 		/// Create the context menu for the grid.
