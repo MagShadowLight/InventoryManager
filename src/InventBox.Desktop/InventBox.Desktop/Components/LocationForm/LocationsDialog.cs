@@ -31,6 +31,7 @@ namespace InventBox.Desktop.Components.LocationForm
 			_path = path;
 			_logger = logger;
 			_mode = mode;
+			_logger.Logs($"Opening {(_mode == Mode.Create ? "Create location dialog" : "Edit location dialog")}", _path);
 			_onSubmit = onSubmitEvent;
 			DataContext = modelView;
 			Title = _mode == Mode.Create ? "Create Location" : "Edit Location";
@@ -110,6 +111,7 @@ namespace InventBox.Desktop.Components.LocationForm
 			var createCommand = new Command();
 			createCommand.Executed += (sender, e) =>
 			{
+				_logger.Logs("Submitting data.", _path);
 				var model = (LocationsModelView)DataContext;
 				_onSubmit?.Invoke(model);
 				Close();
