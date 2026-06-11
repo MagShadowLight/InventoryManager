@@ -41,6 +41,10 @@ namespace InventBox.Desktop.Components.ItemsForm
 		/// <param name="logger">The instance for logger.</param>
 		public ItemsDialog(ItemModelView modelView, Mode mode, Action<Items> onSubmitEvent, string path, FileLogger logger)
 		{
+			_path = path;
+			_logger = logger;
+			_mode = mode;
+			_logger.Logs($"Opening {(_mode == Mode.Create ? "Create item dialog" : "Edit item dialog")}", _path);
 			_itemModel = modelView;
 			foreach (var category in ModelsList.categories)
 			{
@@ -52,9 +56,6 @@ namespace InventBox.Desktop.Components.ItemsForm
 				var temp = CopyLocationModelView(location);
 				locations.Add(temp);
 			}
-			_path = path;
-			_logger = logger;
-			_mode = mode;
 			_onSubmit = onSubmitEvent;
 			Resizable = true;
 			DataContext = modelView;
@@ -174,7 +175,9 @@ namespace InventBox.Desktop.Components.ItemsForm
 		/// </summary>
         private void OnInsuranceDelete()
         {
+			_logger.Logs("Removing insurance from the item.", _path);
 			_insurance = null;
+			_logger.Logs("Insurance removed.", _path);
 			Content = CreateForm(_itemModel);
         }
 		/// <summary>
@@ -182,7 +185,9 @@ namespace InventBox.Desktop.Components.ItemsForm
 		/// </summary>
         private void OnWarrantlyDelete()
         {
+			_logger.Logs("Removing warrantly from the item.", _path);
 			warrantly = null;
+			_logger.Logs("warrantly removed.", _path);
 			Content = CreateForm(_itemModel);
         }
 		/// <summary>
@@ -190,10 +195,12 @@ namespace InventBox.Desktop.Components.ItemsForm
 		/// </summary>
         private void OnInsuranceCreate()
         {
+			_logger.Logs("Creating insurance into the item.", _path);
 			InsuranceModelView insurance = new InsuranceModelView() {Id = ModelsList.items.Count + 1};
 			var InsuranceDialog = new InsuranceDialog(insurance, _path, _logger, _mode, new Size(500,250), insure => insurance = insuranceModelCopy(insure));
 			InsuranceDialog.Closed += (sender, e) => {
 				_insurance = insurance;
+				_logger.Logs("insurance created.", _path);
 				Content = CreateForm(_itemModel);
 			};
 			InsuranceDialog.ShowModal();
@@ -259,6 +266,7 @@ namespace InventBox.Desktop.Components.ItemsForm
 		/// <returns>The command for submit.</returns>
         public Command CreateSubmitButton()
 		{
+			_logger.Logs("Submitting data", _path);
 			var createCommand = new Command();
 			createCommand.Executed += (sender, e) =>
 			{
@@ -268,16 +276,14 @@ namespace InventBox.Desktop.Components.ItemsForm
 				model.UpdatedAt = DateTime.Now;
 				model.Warrantly = warrantly;
 				model.Insurance = _insurance;
-				if (model.Name != null && model.Quantity > 0)
+				if (model.Name == null)
+					MessageBox.Show("Please add the name to the items", "Empty Name Detected", MessageBoxButtons.OK, MessageBoxType.Information);
+				else if (model.Quantity <= 0)
+					MessageBox.Show("Quantity must be greater than zero.", "Quantity less than or equal to zero detected", MessageBoxButtons.OK, MessageBoxType.Information);
+				else
 				{
 					_onSubmit?.Invoke(model);
 					Close();
-				} else
-				{
-					if (model.Name == null)
-						MessageBox.Show("Please add the name to the items", "Empty Name Detected", MessageBoxButtons.OK, MessageBoxType.Information);
-					else
-						MessageBox.Show("Quantity must be greater than zero.", "Quantity less than or equal to zero detected", MessageBoxButtons.OK, MessageBoxType.Information);
 				}
 			};
 			return createCommand;
@@ -337,10 +343,12 @@ namespace InventBox.Desktop.Components.ItemsForm
 		/// </summary>
 		private void OnWarrantlyCreate()
 		{
+			_logger.Logs("Creating warrantly into item.", _path);
 			WarrantlyModelView warrant = new WarrantlyModelView() {Id = ModelsList.items.Count + 1};
 			var warrantDialog = new WarrantlyDialog(warrant, _path, _logger, Mode.Create, new Size(500, 250), warrantly => warrant = warrantlyModelCopy(warrantly));
 			warrantDialog.Closed += (sender, e) => {
 				warrantly = warrant;
+				_logger.Logs("Warrantly created.", _path);
 				Content = CreateForm(_itemModel);
 			};
 			warrantDialog.ShowModal();

@@ -65,6 +65,7 @@ namespace InventBox.Desktop.Components.ItemsForm
 		/// <returns>Context menu for grid with options.</returns>
 		public ContextMenu CreateContextMenu()
 		{
+			_logger.Logs("Creating context menu", _loggerpath);
 			var CopyItemCommand = _utils.CreateMenuItem("Copy Item", _utils.OnCopy);
 			var CreateItemCommand = _utils.CreateMenuItem("Create new item", OnCreate);
 			var UpdateItemCommand = _utils.CreateMenuItem("Edit item", OnEdit);			
@@ -236,6 +237,8 @@ namespace InventBox.Desktop.Components.ItemsForm
 				_items = ModelsList.items;
 			}
 			else {
+				if (ModelsList.items.Count <= 0)
+					MessageBox.Show("The item list is empty. Please add one to search.", "Search", MessageBoxButtons.OK, MessageBoxType.Information);
 				if (search == SearchOptions.Name)
 					_items = ModelsList.items.Where((item) => item.Name.Contains(searchtext)).ToList();
 				if (search == SearchOptions.Category)
