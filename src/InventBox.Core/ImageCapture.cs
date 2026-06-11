@@ -18,7 +18,10 @@ public class ImageCapture
     VideoCharacteristics? characteristic1;
     CaptureDevice? device;
     public bool IsCaptureOpen = false;
-
+    /// <summary>
+    /// Initialize a new instance of Image capture class.
+    /// </summary>
+    /// <param name="path">Path for logger.</param>
     public ImageCapture(string path)
     {
         _path = path;

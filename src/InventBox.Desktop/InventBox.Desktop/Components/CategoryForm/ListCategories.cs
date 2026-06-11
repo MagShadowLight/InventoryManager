@@ -19,7 +19,7 @@ namespace InventBox.Desktop.Components.CategoryForm
 	public partial class ListCategories : Panel, IEventHandler, IControls<Category, CategoryModelView>
 	{
 		private static string TmpDir = Path.Combine(Path.GetTempPath(), "InventBox", "Data", "Category");
-		private AppUtils<Category> _utils = new AppUtils<Category>();
+		private AppUtils<Category> _utils;
 		private string TmpPath = Path.Combine(TmpDir, "Data-Category-tmp.csv");
 		private static string TmpItemDir = Path.Combine(Path.GetTempPath(), "InventBox", "Data", "Items");
 		private string TmpItemPath = Path.Combine(TmpItemDir, "Data-Item-tmp.csv");
@@ -45,8 +45,8 @@ namespace InventBox.Desktop.Components.CategoryForm
 			jsonParser = new JsonParser<Category>();
 			_categories = ModelsList.categories;
 			_datamanagement = new DataManagement<Category>(_path);
+			_utils = new AppUtils<Category>(_logger, _path, _grid, jsonParser);
 			_grid = CreateGrid();
-			_utils = new AppUtils<Category>(_grid, jsonParser);
 			RefreshData();
 			Visible = false;
 			Content = CreateDynamicLayout();

@@ -30,7 +30,7 @@ public class DataManagement<T> : IDataManagement<List<T>>
     public void Save(List<T> values, string path)
     {
         try {
-            _logger.Logs("Writing the list of item in csv file.", _loggerPath);
+            _logger.Logs("Writing the Data in csv file.", _loggerPath);
             if (values.Count == 0)
                 throw new Exception("data is empty");
             using (var writer = new StreamWriter(path))
@@ -44,7 +44,7 @@ public class DataManagement<T> : IDataManagement<List<T>>
                     csvParser.NextRecord();
                 }
             }
-            _logger.Logs("List of items have been stored", _loggerPath);
+            _logger.Logs("Data have been stored", _loggerPath);
         } catch (Exception ex)
         {
             _logger.Error(ex.Message, _loggerPath);
@@ -72,11 +72,11 @@ public class DataManagement<T> : IDataManagement<List<T>>
                     values.Add(records);
                 }
             }
-            _logger.Logs("Item data have been imported.", _loggerPath);
+            _logger.Logs("Data have been imported successfully.", _loggerPath);
             return values;
         } catch (Exception ex)
         {
-            _logger.Error(ex.Message, _loggerPath);
+            _logger.Error($"Loading data failed. Message: {ex.Message}", _loggerPath);
             return values;
         }
     }

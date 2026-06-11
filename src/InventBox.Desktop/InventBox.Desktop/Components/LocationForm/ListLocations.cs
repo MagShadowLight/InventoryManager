@@ -31,7 +31,7 @@ namespace InventBox.Desktop.Components.LocationForm
 		private FileLogger _logger;
 		private DataManagement<Locations> _dataManagement;
 		private DataManagement<Items> _itemmanagement;
-		private AppUtils<Locations> _utils = new AppUtils<Locations>();
+		private AppUtils<Locations> _utils;
 
 		private GridView _grid;
 		/// <summary>
@@ -46,9 +46,8 @@ namespace InventBox.Desktop.Components.LocationForm
 			_path = path;
 			_logger = logger;
 			_dataManagement = new DataManagement<Locations>(_path);
-
+			_utils = new AppUtils<Locations>(_logger, _path, _grid, _jsonParser);
 			_grid = CreateGrid();
-			_utils = new AppUtils<Locations>(_grid, _jsonParser);
 			RefreshData();
 			Visible = false;
 			Content = CreateDynamicLayout();

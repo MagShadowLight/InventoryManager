@@ -8,6 +8,18 @@ namespace InventBox.Core;
 /// <typeparam name="T">General object for json.</typeparam>
 public class JsonParser<T>
 {
+    private FileLogger _logger;
+    private string _path;
+    /// <summary>
+    /// Initialize a new instance of json parser.
+    /// </summary>
+    /// <param name="logger">File logger for logging purpose.</param>
+    /// <param name="path">Path for logger.</param>
+    public JsonParser(FileLogger logger, string path)
+    {
+        _logger = logger;
+        _path = path;
+    }
     /// <summary>
     /// Parse the object into a json string.
     /// </summary>

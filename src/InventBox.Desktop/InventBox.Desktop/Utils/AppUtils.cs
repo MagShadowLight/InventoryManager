@@ -12,8 +12,12 @@ public class AppUtils<T>
 {
     private GridView? _grid;
     private JsonParser<T> jsonParser;
-    public AppUtils(GridView grid = null, JsonParser<T> parser = null)
+    private FileLogger _logger;
+    private string _path;
+    public AppUtils(FileLogger logger, string path, GridView grid = null, JsonParser<T> parser = null)
     {
+        _logger = logger;
+        _path = path;
         _grid = grid;
         jsonParser = parser;
     }
@@ -22,10 +26,12 @@ public class AppUtils<T>
     /// </summary>
     public void OnCopy()
     {
+        _logger.Logs("Copying data to clipboard.", _path);
         T SelectedValues = (T)_grid.SelectedItem;
         var jsonItem = jsonParser.ParseJson(SelectedValues);
         Clipboard.Instance.Clear();		
         Clipboard.Instance.Text = jsonItem;
+        _logger.Logs("Data copied successfully", _path);
     }
     /// <summary>
     /// Create a button for the panel.
@@ -47,8 +53,10 @@ public class AppUtils<T>
     /// <param name="dir">The path for the directory.</param>
     public void CreateDirectory(string dir)
     {
-        if (!Directory.Exists(dir))
+        if (!Directory.Exists(dir)) {
+            _logger.Logs("Creating a directory.", _path);
             Directory.CreateDirectory(dir);
+        }
     }
     /// <summary>
     /// Create the button menu item for context menu.

@@ -42,10 +42,12 @@ public class BarCodeScanner
     public string DecodeBarCode(string path, BarcodeFormat format = BarcodeFormat.CODE_128, bool tryHarder = true, bool tryInverted = true)
     {
         try {
+            _logger.Logs("Scanning the bar code", _loggerPath);
             var reader = CreateReader(format, tryHarder, tryInverted);
 
             using var image = Image.Load<Rgba32>(path);
             var result = reader.Decode(image);
+            _logger.Logs("Bar code scanned successfully.", _loggerPath);
             return result.Text;
         } catch (Exception ex)
         {
@@ -68,11 +70,13 @@ public class BarCodeScanner
             if (data.Length == 0)
                 return string.Empty;
 
+            _logger.Logs("Trying to scan bar code.", _loggerPath);
             var reader = CreateReader(format, tryHarder, tryInverted);
 
             using var stream = new MemoryStream(data);
             using var image = Image.Load<Rgba32>(stream);
             var result = reader.Decode(image);
+            _logger.Logs("Bar code scanned successfully.", _loggerPath);
             return result?.Text;
         }   catch (Exception ex)
         {
@@ -95,24 +99,26 @@ public class BarCodeScanner
     public void EncodeBarCode(string text, string path, int height = 100, int width = 100, int margin = 10, string foreground = "000000", string background = "FFFFFF", BarcodeFormat format = BarcodeFormat.CODE_128)
     {
         try {
-        var writer = new ZXing.ImageSharp.BarcodeWriter<Rgba32>()
-        {
-            Format = format,
-            Options = new Code128EncodingOptions
+            _logger.Logs("Generating a new bar code.", _loggerPath);
+            var writer = new ZXing.ImageSharp.BarcodeWriter<Rgba32>()
             {
-                Height = height,
-                Width = width,
-                Margin = margin
-            },
-            Renderer = new ImageSharpRenderer<Rgba32>
-            {
-                Foreground = Rgba32.ParseHex(foreground),
-                Background = Rgba32.ParseHex(background)
-            }
-        };
+                Format = format,
+                Options = new Code128EncodingOptions
+                {
+                    Height = height,
+                    Width = width,
+                    Margin = margin
+                },
+                Renderer = new ImageSharpRenderer<Rgba32>
+                {
+                    Foreground = Rgba32.ParseHex(foreground),
+                    Background = Rgba32.ParseHex(background)
+                }
+            };
 
-        using var image = writer.Write(text);
-        image.SaveAsPng(path);
+            using var image = writer.Write(text);
+            image.SaveAsPng(path);
+            _logger.Logs("Bar code generated successfully.", _loggerPath);
         } catch (Exception ex)
         {
             _logger.Error($"Failed to write the bar code. Message: {ex.Message}", _loggerPath);

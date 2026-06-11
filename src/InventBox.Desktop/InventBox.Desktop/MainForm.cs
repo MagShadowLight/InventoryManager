@@ -37,7 +37,7 @@ namespace InventBox.Desktop
 		List<Panel> panels;
 		private AboutDialog aboutDialog;
 		Control panel = null;
-		AppUtils<object> appUtils = new AppUtils<object>();
+		AppUtils<object> appUtils;
 
 		/// <summary>
 		/// Create commands variables
@@ -70,6 +70,7 @@ namespace InventBox.Desktop
 		/// </summary>
 		public MainForm()
 		{
+			appUtils = new AppUtils<object>(_logger, _path);
 			CreateLogFile();
 			_logger.Logs($"Opening InventBox at {DateTime.Now}", _path);
 			RecoverData();

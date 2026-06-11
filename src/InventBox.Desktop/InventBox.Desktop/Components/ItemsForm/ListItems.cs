@@ -38,7 +38,7 @@ namespace InventBox.Desktop.Components.ItemsForm
 		private DataManagement<Locations> _locationManagement;
 		private GridView _grid;
 		private string searchtext = "";
-		private AppUtils<Items> _utils = new AppUtils<Items>();
+		private AppUtils<Items> _utils;
 		/// <summary>
 		/// Initialize a new instance for the panel.
 		/// </summary>
@@ -53,8 +53,8 @@ namespace InventBox.Desktop.Components.ItemsForm
 			_scanner = new BarCodeScanner(_loggerpath);
 			_dataManagement = new DataManagement<Items>(_loggerpath);
 			_capture = new ImageCapture(_loggerpath);
+			_utils = new AppUtils<Items>(_logger, _loggerpath, _grid, jsonParser);
 			_grid = CreateGrid();
-			_utils = new AppUtils<Items>(_grid, jsonParser);
 			RefreshData();
 			Visible = false;
 			Content = CreateDynamicLayout();
