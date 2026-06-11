@@ -9,7 +9,7 @@ namespace InventBox.Core;
 /// </summary>
 public class FileLogger : ILogger
 {
-    private FileStream _stream;
+    private FileStream _stream!;
     int fileLength;
     /// <summary>
     /// Print the log message into the file.

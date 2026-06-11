@@ -6,7 +6,6 @@ using InventBox.Desktop.ModelViews;
 using System.Collections.Generic;
 using InventBox.Core;
 using Eto.Drawing;
-using InventBox.Desktop.ModelView;
 using System.Linq;
 using InventBox.Desktop.Components.ItemsForm;
 using System.IO;
@@ -41,10 +40,10 @@ namespace InventBox.Desktop.Components.CategoryForm
 		/// <param name="logger"></param>
 		public ListCategories(string path, FileLogger logger)
 		{
-			jsonParser = new JsonParser<Category>();
-			_categories = ModelsList.categories;
 			_path = path;
 			_logger = logger;
+			jsonParser = new JsonParser<Category>();
+			_categories = ModelsList.categories;
 			_datamanagement = new DataManagement<Category>(_path);
 			_grid = CreateGrid();
 			_utils = new AppUtils<Category>(_grid, jsonParser);
@@ -58,6 +57,7 @@ namespace InventBox.Desktop.Components.CategoryForm
 		/// <returns>The context menu with options.</returns>
 		public ContextMenu CreateContextMenu()
 		{
+			_logger.Logs("Creating context menu", _path);
 			var CopyCategoryCommand = _utils.CreateMenuItem("Copy category", _utils.OnCopy);
 			var CreateCategoryCommand = _utils.CreateMenuItem("Create new category", OnCreate);
 			var UpdateCategoryCommand = _utils.CreateMenuItem("Edit category", OnEdit);			
@@ -90,6 +90,7 @@ namespace InventBox.Desktop.Components.CategoryForm
 		/// </summary>
         public void Search()
         {
+			_logger.Logs($"Searching category by {searchText}", _path);
 			if (string.IsNullOrEmpty(searchText)) {
 				if (_categories.Count == ModelsList.categories.Count)
 					MessageBox.Show("Search bar is empty. Please type in the search bar", "Search", MessageBoxButtons.OK, MessageBoxType.Information);
@@ -105,6 +106,7 @@ namespace InventBox.Desktop.Components.CategoryForm
 		/// <returns>The layout for the category list.</returns>
         public DynamicLayout CreateDynamicLayout()
         {
+			_logger.Logs("Creating layout for category.", _path);
 			searchBar = CreateSearchBar();
 			DynamicLayout layout = new DynamicLayout()
 			{
@@ -211,6 +213,7 @@ namespace InventBox.Desktop.Components.CategoryForm
 		/// </summary>
         public void OnCreate()
         {
+			_logger.Logs("Creating category.", _path);
 			CategoryModelView modelView = new CategoryModelView(){Id = ModelsList.categories.Count + 1};
 			var createCategoryDialog = new CategoryDialog(modelView, Mode.Create, category => ModelsList.categories.Add(category), _path, _logger);
 			createCategoryDialog.Closed += (sender, e) => RefreshData();
@@ -218,6 +221,7 @@ namespace InventBox.Desktop.Components.CategoryForm
 			_utils.CreateDirectory(TmpDir);
 			_datamanagement.Save(ModelsList.categories, TmpPath);
 			_categories = ModelsList.categories;
+			_logger.Logs("Category created.", _path);
 			Content = CreateDynamicLayout();
 			RefreshData();
         }
@@ -226,19 +230,19 @@ namespace InventBox.Desktop.Components.CategoryForm
 		/// </summary>
         public void OnDelete()
         {
+			_logger.Logs("Deleting category from list.", _path);
 			_itemmanagement = new DataManagement<Items>(_path);
 			if (_categories.Count <= 0) {
+				_logger.Error("Deleting category failed. List is empty.", _path);
 				MessageBox.Show("The list is empty. Please create one or load from file.", "Category not selected", MessageBoxButtons.OK, MessageBoxType.Information);
 				return;
 			}
 			if (_grid.SelectedItem == null) {
+				_logger.Error("Deleting category failed. Category is not selected.", _path);
 				MessageBox.Show("Category have not been selected. Please select one", "Category not selected", MessageBoxButtons.OK, MessageBoxType.Information);
 				return;
 			}
 			Category category = (Category)_grid.SelectedItem;
-			var index = ModelsList.categories.IndexOf(category);
-			if (index < 0)
-				return;
 			var deleteDialog = MessageBox.Show("Are you sure to delete the selected category?", "Delete selected category", MessageBoxButtons.YesNo, MessageBoxType.Information, MessageBoxDefaultButton.Yes);
 			if (deleteDialog != DialogResult.Yes)
 				return;
@@ -255,6 +259,7 @@ namespace InventBox.Desktop.Components.CategoryForm
 				File.Delete(TmpPath);
 			_itemmanagement.Save(ModelsList.items, TmpItemPath);
 			_categories = ModelsList.categories;
+			_logger.Logs("Category deleted successfully.", _path);
 			Content = CreateDynamicLayout();
 			RefreshData();
         }
@@ -263,19 +268,20 @@ namespace InventBox.Desktop.Components.CategoryForm
 		/// </summary>
         public void OnEdit()
         {
+			_logger.Logs("Editing category.", _path);
 			_itemmanagement = new DataManagement<Items>(_path);
 			if (_categories.Count <= 0) {
+				_logger.Error("Editing category failed. List is empty.", _path);
 				MessageBox.Show("The list is empty. Please create one or load from file.", "Item not selected", MessageBoxButtons.OK, MessageBoxType.Information);
 				return;
 			}
 			if (_grid.SelectedItem == null) {
+				_logger.Error("Editing category failed. Category is not selected.", _path);
 				MessageBox.Show("Category have not been selected. Please select one", "Item not selected", MessageBoxButtons.OK, MessageBoxType.Information);
 				return;
 			}
 			Category category = (Category)_grid.SelectedItem;
 			var index = ModelsList.categories.IndexOf(category);
-			if (index < 0)
-				return;
 			CategoryModelView modelView = ModelViewCopy(category);
 			var categories = ModelsList.categories;
 			var editCategoryDialog = new CategoryDialog(modelView, Mode.Edit, category => ModelsList.categories[index] = category, _path, _logger);
@@ -290,6 +296,7 @@ namespace InventBox.Desktop.Components.CategoryForm
 				_datamanagement.Save(ModelsList.categories, TmpPath);
 				_itemmanagement.Save(ModelsList.items, TmpItemPath);
 				_categories = ModelsList.categories;
+				_logger.Logs("Category edited successfully.", _path);
 				RefreshData();
 			};
 			editCategoryDialog.ShowModal();
@@ -299,6 +306,7 @@ namespace InventBox.Desktop.Components.CategoryForm
 		/// </summary>
         public void OnLoad()
         {
+			_logger.Logs("Loading category from file.", _path);
 			Uri path = new Uri(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile));
 			var loadDialog = new OpenFileDialog
 			{
@@ -310,6 +318,7 @@ namespace InventBox.Desktop.Components.CategoryForm
 			};
 			loadDialog.ShowDialog(this);
 			if (!loadDialog.CheckFileExists) {
+				_logger.Logs("Loading data cancelled.", _path);
 				loadDialog.Dispose();
 				return;
 			}
@@ -320,10 +329,12 @@ namespace InventBox.Desktop.Components.CategoryForm
 				ModelsList.categories = _datamanagement.Load(loadDialog.FileName);
 				if (ModelsList.categories.Count == 0)
 				{
+					_logger.Error("Loading category failed. Invalid data.", _path);
 					MessageBox.Show("Invalid data. Please choose a different file", "Load failed.", MessageBoxButtons.OK, MessageBoxType.Information);
 					return;
 				}
 				_categories = ModelsList.categories;
+				_logger.Logs("Category loaded successfully.", _path);
 				Content = CreateDynamicLayout();
 				RefreshData();
 			}
@@ -334,6 +345,7 @@ namespace InventBox.Desktop.Components.CategoryForm
 		/// </summary>
         public void OnSave()
         {
+			_logger.Logs("Saving the category to file", _path);
 			Uri homeDir = new Uri(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile));
 			var saveDialog = new SaveFileDialog
 			{
@@ -345,14 +357,18 @@ namespace InventBox.Desktop.Components.CategoryForm
 			};
 			saveDialog.ShowDialog(this);
 			if (saveDialog.FileName != string.Empty  && ModelsList.categories.Count > 0) {
+				_logger.Logs("Category saved successfully.", _path);
 				_datamanagement.Save(ModelsList.categories, saveDialog.FileName);
 				File.Delete(TmpPath);
 			}
 			else if (string.IsNullOrEmpty(saveDialog.FileName)){
+				_logger.Logs("Saving category cancelled.", _path);
 				saveDialog.Dispose();
 				return;
-			} else
+			} else {
+				_logger.Error("Saving category failed. Category List is empty.");
 				MessageBox.Show("categories list is empty. Please add one or load from file.", "Save failed.", MessageBoxButtons.OK, MessageBoxType.Information);
+			}
 			saveDialog.Dispose();
         }
 		/// <summary>
@@ -360,6 +376,7 @@ namespace InventBox.Desktop.Components.CategoryForm
 		/// </summary>
         public void RefreshData()
         {			
+			_logger.Logs("Refreshing the data.", _path);
 			_grid.DataStore = _categories.ToArray();
         }
     }
