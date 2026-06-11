@@ -9,7 +9,8 @@ namespace InventBox.Core;
 /// </summary>
 public class ImageCapture
 {
-    private ConsoleLogger logger = new ConsoleLogger();
+    private FileLogger _logger = new FileLogger();
+    private string _path = string.Empty;
     CancellationToken token;
     CaptureDevices? devices;
     public byte[]? _frame;
@@ -17,6 +18,11 @@ public class ImageCapture
     VideoCharacteristics? characteristic1;
     CaptureDevice? device;
     public bool IsCaptureOpen = false;
+
+    public ImageCapture(string path)
+    {
+        _path = path;
+    }
     /// <summary>
     /// Open the capture device.
     /// </summary>
@@ -24,6 +30,7 @@ public class ImageCapture
     /// <returns>Task Operation.</returns>
     public async Task OpenCapture(CancellationTokenSource source)
     {
+        _logger.Logs("Opening camera", _path);
         token = source.Token;
         
         devices = new CaptureDevices();
@@ -33,7 +40,7 @@ public class ImageCapture
             {
                 if (descriptor == null)
                 {
-                    logger.Error("Could not detect camera device");
+                    _logger.Error("Could not detect camera device");
                     continue;
                 }
                 descriptor1 = descriptor;
@@ -46,9 +53,10 @@ public class ImageCapture
                 break;
             }
             IsCaptureOpen = true;
+            _logger.Logs("camera opened", _path);
         } catch (Exception ex)
         {
-            // MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxType.Error);
+            _logger.Error($"camera have failed to open. Message: {ex.Message}", _path);
             IsCaptureOpen = false;
         }
     }
@@ -60,21 +68,22 @@ public class ImageCapture
     public async Task StartCapture(Action<byte[]>? onFrame = null)
     {
         try {
-        device = await descriptor1!.OpenAsync(
+            _logger.Logs("Starting camera", _path);
+            device = await descriptor1!.OpenAsync(
             characteristic1!,
             BufferScope =>
-            {                
-                var image = BufferScope.Buffer.CopyImage();
-                _frame = image;
-                onFrame?.Invoke(image);
-            },
-            token
-        );
-        await device.StartAsync(token).ConfigureAwait(false);
+                {                
+                    var image = BufferScope.Buffer.CopyImage();
+                    _frame = image;
+                    onFrame?.Invoke(image);
+                },
+                token
+            );
+            await device.StartAsync(token).ConfigureAwait(false);
+            _logger.Logs("Camera started", _path);
         } catch (Exception ex)
         {
-            // MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxType.Error);
-            
+            _logger.Error("Failed to start capture", _path);            
         }
     }
     /// <summary>
@@ -85,21 +94,25 @@ public class ImageCapture
     public async Task StopCapture(string imagePath)
     {
         try {
-        if (device == null)
-            return;
+            _logger.Logs("Stopping capture.", _path);
+            if (device == null)
+                return;
 
-        if (_frame == null)
-            return;
+            if (_frame == null)
+                return;
 
-        await device.StopAsync(token);
-        using var fileStream = new FileStream(
-            imagePath,
-            FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite
-        );
-        await fileStream.WriteAsync(_frame, 0, _frame.Length, token);
-        await fileStream.FlushAsync(token);
+            await device.StopAsync(token);
+            _logger.Logs("Capture stopped. Saving image to file.", _path);
+            using var fileStream = new FileStream(
+                imagePath,
+                FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite
+            );
+            await fileStream.WriteAsync(_frame, 0, _frame.Length, token);
+            await fileStream.FlushAsync(token);
+            _logger.Logs("Image saved to file.", _path);
         } catch (Exception ex)
         {
+            _logger.Error($"Failed to stop capture or save file. {ex.Message}", _path);
             MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxType.Error);
         }
     }
@@ -111,12 +124,14 @@ public class ImageCapture
     {
         try
         {
+            _logger.Logs("Closing capture.", _path);
             if (device == null)
                 return;
             await device.StopAsync(token);
+            _logger.Logs("Capture closed.", _path);
         } catch (Exception ex)
         {
-            MessageBox.Show(ex.Message, "Error:", MessageBoxButtons.OK, MessageBoxType.Error);
+            _logger.Error($"Failed to close capture. {ex.Message}", _path);
         }
     }
 }

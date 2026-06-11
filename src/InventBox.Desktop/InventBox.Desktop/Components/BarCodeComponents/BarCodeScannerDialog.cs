@@ -13,8 +13,9 @@ namespace InventBox.Desktop.Component.BarCodeComponents
 	public partial class BarCodeScannerDialog : Dialog
 	{
 		private BarCodeScanner _scanner;
-		private string _loggerPath = string.Empty;
-		private ImageCapture _capture = new ImageCapture();
+		private static string _loggerPath = string.Empty;
+		private ImageCapture _capture = new ImageCapture(_loggerPath);
+		private FileLogger _logger;
 		private ImageView _preview;
 		private string _path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),".tmp", "InventBox", "Images", "Barcode.png");
 
@@ -23,9 +24,11 @@ namespace InventBox.Desktop.Component.BarCodeComponents
 		/// </summary>
 		/// <param name="capture">The capture for the image.</param>
 		/// <param name="path">The path for the logger.</param>
-		public BarCodeScannerDialog(ImageCapture capture, string path)
+		public BarCodeScannerDialog(ImageCapture capture, string path, FileLogger logger)
 		{
 			_loggerPath = path;
+			_logger = logger;
+			_logger.Logs("Opening bar code scanner.", _loggerPath);
 			_scanner = new BarCodeScanner(_loggerPath);
 			_capture = capture;
 			_preview = CreatePreview();
@@ -40,6 +43,7 @@ namespace InventBox.Desktop.Component.BarCodeComponents
         protected override void OnClosed(EventArgs e)
         {
             base.OnClosed(e);
+			_logger.Logs("Closing bar code scanner", _path);
 			Task.Run(async () => await _capture.CloseCapture());
         }
 		/// <summary>
@@ -87,20 +91,6 @@ namespace InventBox.Desktop.Component.BarCodeComponents
 		{
 			await _capture.StopCapture(_path);
 			Close();
-		}
-		/// <summary>
-		/// Create the button into the GUI.
-		/// </summary>
-		/// <param name="text">The text for the button.</param>
-		/// <param name="width">The width for the button.</param>
-		/// <param name="height">The height for the button.</param>
-		/// <param name="eventHandler">The event handler for button.</param>
-		/// <returns>The button to be created into GUI.</returns>
-		private Button AddButton(string text, int width, int height, Action eventHandler)
-		{
-			var command = new Command();
-			command.Executed += (sender, eventArgs) => eventHandler();
-			return new Button { Text = text, Width = width, Height = height, Command = command};
 		}
 		/// <summary>
 		/// Capture the frame from the camera.

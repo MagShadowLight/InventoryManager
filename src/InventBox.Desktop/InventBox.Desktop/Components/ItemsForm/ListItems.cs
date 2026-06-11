@@ -29,8 +29,8 @@ namespace InventBox.Desktop.Components.ItemsForm
 		private SearchOptions search = SearchOptions.Name;
 		private TextBox searchBar;
 		private List<Items> _items = new List<Items>();
-		private ImageCapture _capture = new ImageCapture();
 		private static string _loggerpath;
+		private ImageCapture _capture;
 		private BarCodeScanner _scanner;
 		private static FileLogger _logger;
 		private DataManagement<Items> _dataManagement;
@@ -52,7 +52,7 @@ namespace InventBox.Desktop.Components.ItemsForm
 			_logger = logger;
 			_scanner = new BarCodeScanner(_loggerpath);
 			_dataManagement = new DataManagement<Items>(_loggerpath);
-
+			_capture = new ImageCapture(_loggerpath);
 			_grid = CreateGrid();
 			_utils = new AppUtils<Items>(_grid, jsonParser);
 			RefreshData();
@@ -261,7 +261,7 @@ namespace InventBox.Desktop.Components.ItemsForm
 			await _capture.OpenCapture(new System.Threading.CancellationTokenSource());
 			if (!_capture.IsCaptureOpen)
 				return;
-			var dialog = new BarCodeScannerDialog(_capture, _loggerpath);
+			var dialog = new BarCodeScannerDialog(_capture, _loggerpath, _logger);
 			dialog.ShowModal();
 			string name = _scanner.DecodeBarCode(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),".tmp", "InventBox", "Images", "Barcode.png"));
 			if (string.IsNullOrEmpty(name)) {
