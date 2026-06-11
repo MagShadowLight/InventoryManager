@@ -31,6 +31,7 @@ namespace InventBox.Desktop.Components.CategoryForm
 			_path = path;
 			_logger = logger;
 			_mode = mode;
+			_logger.Logs($"Opening {(_mode == Mode.Create ? "Create category dialog" : "Edit category dialog")}", _path);
 			_onSubmit = onSubmitEvent;
 			DataContext = modelView;
 			Title = _mode == Mode.Create ? "Create Category" : "Edit Category";
@@ -90,6 +91,7 @@ namespace InventBox.Desktop.Components.CategoryForm
 			var createCommand = new Command();
 			createCommand.Executed += (sender, e) =>
 			{
+				_logger.Logs("Submitting data.", _path);
 				var model = (CategoryModelView)DataContext;
 				_onSubmit?.Invoke(model);
 				Close();	
