@@ -21,7 +21,7 @@ public class JsonParserTest
     {
         // Arrange
         var category = new Category{Id = 1, Name = "Test", Description = "This is test that going to be parse as JSON!"};
-        _parser = new JsonParser<Category>();
+        _parser = new JsonParser<Category>(new FileLogger(), "InventBox_Test.log");
         // Act
         str_result = _parser.ParseJson(category);
         // Assert
@@ -39,7 +39,7 @@ public class JsonParserTest
             "Description": "This is test that going to be deparse as Object!"
         }
         """;
-        _parser = new JsonParser<Category>();
+        _parser = new JsonParser<Category>(new FileLogger(), "InventBox_Test.log");
         // Act
         category_result = _parser.DeParseJson(json)!;
         // Arrange

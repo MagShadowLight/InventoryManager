@@ -71,14 +71,14 @@ public class DataTransferTest
     public void WhenUserTriedToImportANonExistentCSVFileIntoADataThenItShouldThrowException()
     {
         // Arrange
-        List<Receipt> receipts = new List<Receipt>();
-        var csvParser = new DataManagement<Receipt>(_paths[0]);
+        List<Category> categories = new List<Category>();
+        var csvParser = new DataManagement<Category>(_paths[0]);
         string result = string.Empty;
         // Act
         csvParser.Load("NonExistentData.csv");
         result = File.ReadAllText(_paths[0]);
         // Assert
-        Assert.Contains("[ERROR] Could not find file", result);
+        Assert.Contains("Could not find file", result);
         FileUtils.CleanUpFile(_paths);
     }
 }

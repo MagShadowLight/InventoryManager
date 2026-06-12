@@ -18,7 +18,7 @@ public class ImageCaptureTest
     public async Task When_Camera_Device_Were_Opened_Then_It_Should_Start_Capture()
     {
         // Arrange
-        _capture = new ImageCapture();
+        _capture = new ImageCapture("InventBox_Test.log");
         var path = Path.Combine(AppContext.BaseDirectory, "TestImage.png");
         await _capture.OpenCapture(source);
         // Act
@@ -47,7 +47,7 @@ public class ImageCaptureTest
     [InlineData(4000)]
     public async Task When_Camera_Device_Were_Opened_Then_It_Should_Close_Capture_WIthout_Saving_File(int timer)
     {
-        _capture = new ImageCapture();
+        _capture = new ImageCapture("InventBox_Test.log");
         var path = Path.Combine(AppContext.BaseDirectory, "TestImage.png");
         await _capture.OpenCapture(source);
         // Act
