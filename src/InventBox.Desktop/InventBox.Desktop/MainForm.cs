@@ -79,7 +79,7 @@ namespace InventBox.Desktop
 		/// Initialize a new instance for the application.
 		/// </summary>
 		public MainForm()
-		{
+		{		
 			appUtils = new AppUtils<object>(_logger, _path);
 			CreateLogFile();
 			_logger.Logs($"Opening InventBox at {DateTime.Now}", _path);

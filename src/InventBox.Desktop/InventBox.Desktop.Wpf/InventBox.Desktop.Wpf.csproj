@@ -4,6 +4,7 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>net10.0-windows</TargetFramework>
     <SelfContained>true</SelfContained>
+    <ApplicationIcon>HomeInventory.ico</ApplicationIcon>
   </PropertyGroup>
   
   <ItemGroup>
