@@ -10,7 +10,7 @@ namespace InventBox.Desktop.Utils
 	/// </summary>
 	public partial class Tutorial : Dialog
 	{
-		private string title = "InventBox";
+		private string title = "HomeInventBox";
 		private string _p1;
 		private string _p2;
 		private string _p3;

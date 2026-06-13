@@ -69,7 +69,7 @@ namespace InventBox.Desktop
 
 		Tutorial tutorial = new Tutorial(new Size(500,500),
 			"MainDone.md",
-			"InventBox is the inventory management application where you can manage the inventory in your home. It include the items, categories, locations, and optional warrantly and insurance.",
+			"HomeInventBox is the inventory management application where you can manage the inventory in your home. It include the items, categories, locations, and optional warrantly and insurance.",
 			"Inventory section is where you can create, manage, and delete items inside the grid. In this section, you can search for the items by name, category, floor, and room via dropdown and scan the barcode from the camera.",
 			"Category section is where you can create, manage, and delete category inside the grid. In this section, you can search the category by name",
 			"Location section is similar to category section where you can create, manage, and delete location plus searching by room.",
@@ -82,7 +82,7 @@ namespace InventBox.Desktop
 		{		
 			appUtils = new AppUtils<object>(_logger, _path);
 			CreateLogFile();
-			_logger.Logs($"Opening InventBox at {DateTime.Now}", _path);
+			_logger.Logs($"Opening HomeInventory at {DateTime.Now}", _path);
 			RecoverData();
 
 			SizeChanged += (sender, e) => CreateMainApp();
@@ -95,7 +95,7 @@ namespace InventBox.Desktop
 			///<summary>
 			/// Set the properties for the window.
 			/// </summary>
-			Title = "InventBox";
+			Title = "HomeInventBox";
 			MinimumSize =  new Size(950, 850);
 			Resizable = true;
 			Content = CreateMainApp();
@@ -402,9 +402,9 @@ namespace InventBox.Desktop
 			{
 				Developers = new [] {"MagShadowLight"},
 				Documenters = new [] {"MagShadowLight"},
-				ProgramName = "InventBox",
-				ProgramDescription = "InventBox is a Inventory Management App where you can manage items in your own home.",
-				Title = "InventBox about",
+				ProgramName = "HomeInventBox",
+				ProgramDescription = "HomeInventBox is a Inventory Management App where you can manage items in your own home.",
+				Title = "HomeInventBox about",
 				Version = "Version 1.0",
 				WebsiteLabel = "Github",
 				Website = link
@@ -538,7 +538,7 @@ namespace InventBox.Desktop
         protected override void OnClosed(EventArgs e)
         {
             base.OnClosed(e);
-			_logger.Logs($"Closing InventBox at {DateTime.Now}", _path);
+			_logger.Logs($"Closing HomeInventBox at {DateTime.Now}", _path);
         }
     }
 }
