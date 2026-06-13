@@ -199,6 +199,8 @@ namespace InventBox.Desktop.Components.ItemsForm
 			InsuranceModelView insurance = new InsuranceModelView() {Id = ModelsList.items.Count + 1};
 			var InsuranceDialog = new InsuranceDialog(insurance, _path, _logger, _mode, new Size(500,250), insure => insurance = insuranceModelCopy(insure));
 			InsuranceDialog.Closed += (sender, e) => {
+				if (insurance.StartDate <= DateTime.MinValue.AddDays(30) || insurance.EndDate <= DateTime.MinValue.AddDays(30))
+					return;
 				_insurance = insurance;
 				_logger.Logs("insurance created.", _path);
 				Content = CreateForm(_itemModel);
@@ -344,10 +346,12 @@ namespace InventBox.Desktop.Components.ItemsForm
 		private void OnWarrantlyCreate()
 		{
 			_logger.Logs("Creating warrantly into item.", _path);
-			WarrantlyModelView warrant = new WarrantlyModelView() {Id = ModelsList.items.Count + 1};
-			var warrantDialog = new WarrantlyDialog(warrant, _path, _logger, Mode.Create, new Size(500, 250), warrantly => warrant = warrantlyModelCopy(warrantly));
+			WarrantlyModelView warrantly = new WarrantlyModelView() {Id = ModelsList.items.Count + 1};
+			var warrantDialog = new WarrantlyDialog(warrantly, _path, _logger, Mode.Create, new Size(500, 250), warrantly => warrantly = warrantlyModelCopy(warrantly));
 			warrantDialog.Closed += (sender, e) => {
-				warrantly = warrant;
+				if (warrantly.StartDate <= DateTime.MinValue.AddDays(30) || warrantly.EndDate <= DateTime.MinValue.AddDays(30))
+					return;
+				this.warrantly = warrantly;
 				_logger.Logs("Warrantly created.", _path);
 				Content = CreateForm(_itemModel);
 			};

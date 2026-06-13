@@ -43,7 +43,7 @@ namespace InventBox.Desktop.Component.BarCodeComponents
         protected override void OnClosed(EventArgs e)
         {
             base.OnClosed(e);
-			_logger.Logs("Closing bar code scanner", _path);
+			_logger.Logs("Closing bar code scanner", _loggerPath);
 			Task.Run(async () => await _capture.CloseCapture());
         }
 		/// <summary>

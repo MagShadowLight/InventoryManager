@@ -48,7 +48,7 @@ public class BarCodeScanner
             using var image = Image.Load<Rgba32>(path);
             var result = reader.Decode(image);
             _logger.Logs("Bar code scanned successfully.", _loggerPath);
-            return result.Text;
+            return result?.Text;
         } catch (Exception ex)
         {
             _logger.Error($"Failed to read the bar code. Message: {ex.Message}", _loggerPath);

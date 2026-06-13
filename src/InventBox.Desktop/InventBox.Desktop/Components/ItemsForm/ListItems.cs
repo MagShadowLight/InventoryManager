@@ -38,7 +38,7 @@ namespace InventBox.Desktop.Components.ItemsForm
 		private DataManagement<Locations> _locationManagement;
 		private GridView _grid;
 		private string searchtext = "";
-		private AppUtils<Items> _utils;
+		private AppUtils<Items> _utils = new AppUtils<Items>(_logger, _loggerpath);
 		private Tutorial itemTutorial = new Tutorial(new Size(500,550),
 		"ItemTutorialDone.md",
 		"Inventory section is where you can create, manage, and delete items into or from the list.",
@@ -54,21 +54,35 @@ namespace InventBox.Desktop.Components.ItemsForm
 		/// <param name="logger">The file logger for logging purposes.</param>
 		public ListItems(string path, FileLogger logger)
 		{
-			jsonParser = new JsonParser<Items>(_logger, _loggerpath);
 			_items = ModelsList.items;
 			_loggerpath = path;
 			_logger = logger;
+			jsonParser = new JsonParser<Items>(_logger, _loggerpath);
 			_scanner = new BarCodeScanner(_loggerpath);
 			_dataManagement = new DataManagement<Items>(_loggerpath);
 			_capture = new ImageCapture(_loggerpath);
-			_utils = new AppUtils<Items>(_logger, _loggerpath, _grid, jsonParser);
 			_grid = CreateGrid();
+			_utils = new AppUtils<Items>(_logger, _loggerpath, _grid, jsonParser);
 			RefreshData();
 			Visible = false;
 			Content = CreateDynamicLayout();
 
 			if (!File.Exists("ItemTutorialDone.md"))
 				ShowTutorial();
+		}
+		/// <summary>
+		/// Copy the items into the clipboard.
+		/// </summary>
+		public void OnCopy()
+		{
+			_logger.Logs("Copying data to clipboard.", _loggerpath);
+			if (_grid.SelectedItem == null)
+				return;
+			Items SelectedValues = (Items)_grid.SelectedItem;
+			var jsonItem = jsonParser.ParseJson(SelectedValues);
+			Clipboard.Instance.Clear();		
+			Clipboard.Instance.Text = jsonItem;
+			_logger.Logs("Data copied successfully", _loggerpath);
 		}
 		/// <summary>
 		/// Show the tutorial dialog (Wall of text)
@@ -84,7 +98,7 @@ namespace InventBox.Desktop.Components.ItemsForm
 		public ContextMenu CreateContextMenu()
 		{
 			_logger.Logs("Creating context menu", _loggerpath);
-			var CopyItemCommand = _utils.CreateMenuItem("Copy Item", _utils.OnCopy);
+			var CopyItemCommand = _utils.CreateMenuItem("Copy Item", OnCopy);
 			var CreateItemCommand = _utils.CreateMenuItem("Create new item", OnCreate);
 			var UpdateItemCommand = _utils.CreateMenuItem("Edit item", OnEdit);			
 			var DeleteItemCommand = _utils.CreateMenuItem("Delete item", OnDelete);			
@@ -258,13 +272,13 @@ namespace InventBox.Desktop.Components.ItemsForm
 				if (ModelsList.items.Count <= 0)
 					MessageBox.Show("The item list is empty. Please add one to search.", "Search", MessageBoxButtons.OK, MessageBoxType.Information);
 				if (search == SearchOptions.Name)
-					_items = ModelsList.items.Where((item) => item.Name.Contains(searchtext)).ToList();
+					_items = ModelsList.items.Where((item) => item.Name.ToLower().Contains(searchtext.ToLower())).ToList();
 				if (search == SearchOptions.Category)
-					_items = ModelsList.items.Where(item => (item.Category != null) ? item.Category.Name.Contains(searchtext) : item.Name.Contains(string.Empty)).ToList();
+					_items = ModelsList.items.Where(item => (item.Category != null) ? item.Category.Name.ToLower().Contains(searchtext.ToLower()) : item.Name.Contains(string.Empty)).ToList();
 				if (search == SearchOptions.Floor)
-					_items = ModelsList.items.Where(item => (item.Locations != null) ? item.Locations.Floor.Contains(searchtext) : item.Name.Contains(string.Empty)).ToList();
+					_items = ModelsList.items.Where(item => (item.Locations != null) ? item.Locations.Floor.ToLower().Contains(searchtext.ToLower()) : item.Name.Contains(string.Empty)).ToList();
 				if (search == SearchOptions.Room)
-					_items = ModelsList.items.Where(item => (item.Locations != null) ? item.Locations.Room.Contains(searchtext) : item.Name.Contains(string.Empty)).ToList();
+					_items = ModelsList.items.Where(item => (item.Locations != null) ? item.Locations.Room.ToLower().Contains(searchtext.ToLower()) : item.Name.Contains(string.Empty)).ToList();
 			}
 			RefreshData();
 		} 
@@ -325,7 +339,11 @@ namespace InventBox.Desktop.Components.ItemsForm
 				},
 				Directory = homeDir
 			};
-			saveDialog.ShowDialog(this);
+			var result = saveDialog.ShowDialog(this);
+			if (result == DialogResult.Cancel) {
+				saveDialog.Dispose();
+				return;
+			}
 			if (saveDialog.FileName != string.Empty && ModelsList.items.Count > 0) {
 				if (!saveDialog.FileName.Contains(".csv"))
 					saveDialog.FileName = saveDialog.FileName + ".csv";
@@ -347,7 +365,7 @@ namespace InventBox.Desktop.Components.ItemsForm
 				return;
 			}
 			else {
-				_logger.Error("Saving failed. Item list is empty.");
+				_logger.Error("Saving failed. Item list is empty.", _loggerpath);
 				MessageBox.Show("Items list is empty. Please add one or load from file.", "Save failed.", MessageBoxButtons.OK, MessageBoxType.Information);
 			}
 			saveDialog.Dispose();
@@ -367,8 +385,8 @@ namespace InventBox.Desktop.Components.ItemsForm
 				},
 				Directory = path
 			};
-			loadDialog.ShowDialog(this);
-			if (!File.Exists(loadDialog.FileName)) {
+			var result = loadDialog.ShowDialog(this);
+			if (result == DialogResult.Cancel) {
 				_logger.Logs("Loading data cancelled.", _loggerpath);
 				loadDialog.Dispose();
 				return;
@@ -386,9 +404,9 @@ namespace InventBox.Desktop.Components.ItemsForm
 				_items = ModelsList.items;
 				foreach (var item in _items)
 				{
-					if (!ModelsList.categories.Contains(ModelsList.categories.Find(i => i.Id == item.Category.Id)) && item.Category.Id > 0 || item.Category != null)
+					if ((!ModelsList.categories.Contains(ModelsList.categories.Find(i => i.Id == item.Category.Id)) && item.Category.Id > 0) && item.Category != null)
 						ModelsList.categories.Add(item.Category);
-					if (!ModelsList.locations.Contains(ModelsList.locations.Find(i => i.Id == item.Locations.Id)) && item.Locations.Id > 0 || item.Locations != null)
+					if ((!ModelsList.locations.Contains(ModelsList.locations.Find(i => i.Id == item.Locations.Id)) && item.Locations.Id > 0) && item.Locations != null)
 						ModelsList.locations.Add(item.Locations);
 				}
 				_logger.Logs("Loading data successfully.", _loggerpath);

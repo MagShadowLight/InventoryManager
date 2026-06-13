@@ -62,6 +62,20 @@ namespace InventBox.Desktop.Components.LocationForm
 				ShowTutorial();
 		}
 		/// <summary>
+		/// Copy the locations into the clipboard.
+		/// </summary>
+		public void OnCopy()
+		{
+			_logger.Logs("Copying data to clipboard.", _path);
+			if (_grid.SelectedItem == null)
+				return;
+			Locations SelectedValues = (Locations)_grid.SelectedItem;
+			var jsonItem = _jsonParser.ParseJson(SelectedValues);
+			Clipboard.Instance.Clear();		
+			Clipboard.Instance.Text = jsonItem;
+			_logger.Logs("Data copied successfully", _path);
+		}
+		/// <summary>
 		/// Show the tutorial dialog (Wall of text)
 		/// </summary>
 		async void ShowTutorial() {
@@ -80,7 +94,7 @@ namespace InventBox.Desktop.Components.LocationForm
 				_locations = ModelsList.locations;
 			}
 			else
-				_locations = ModelsList.locations.Where(location => location.Room.Contains(searchText)).ToList();
+				_locations = ModelsList.locations.Where(location => location.Room.ToLower().Contains(searchText.ToLower())).ToList();
 			RefreshData();
         }
 		/// <summary>
@@ -296,8 +310,8 @@ namespace InventBox.Desktop.Components.LocationForm
 				},
 				Directory = homeDir
 			};
-			loadDialog.ShowDialog(this);
-			if (!File.Exists(loadDialog.FileName)) {
+			var result = loadDialog.ShowDialog(this);
+			if (result == DialogResult.Cancel) {
 				_logger.Logs("Loading file cancelled.", _path);
 				loadDialog.Dispose();
 				return;
@@ -334,7 +348,11 @@ namespace InventBox.Desktop.Components.LocationForm
 				},
 				Directory = homeDir
 			};
-			saveDialog.ShowDialog(this);
+			var result = saveDialog.ShowDialog(this);
+			if (result == DialogResult.Cancel) {
+				saveDialog.Dispose();
+				return;
+			}
 			if (saveDialog.FileName != string.Empty && ModelsList.locations.Count > 0)
 			{
 				_dataManagement.Save(ModelsList.locations, saveDialog.FileName);
@@ -367,7 +385,7 @@ namespace InventBox.Desktop.Components.LocationForm
         public ContextMenu CreateContextMenu()
         {
 			_logger.Logs("Creating context menu.", _path);
-			var CopyLocationCommand = _utils.CreateMenuItem("Copy location", _utils.OnCopy);
+			var CopyLocationCommand = _utils.CreateMenuItem("Copy location", OnCopy);
 			var CreateLocationCommand = _utils.CreateMenuItem("Create new location", OnCreate);
 			var UpdateLocationCommand = _utils.CreateMenuItem("Edit location", OnEdit);			
 			var DeleteLocationCommand = _utils.CreateMenuItem("Delete location", OnDelete);			

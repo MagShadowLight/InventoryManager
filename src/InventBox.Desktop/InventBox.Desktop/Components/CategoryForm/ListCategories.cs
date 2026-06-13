@@ -61,6 +61,20 @@ namespace InventBox.Desktop.Components.CategoryForm
 				ShowTutorial();
 		}
 		/// <summary>
+		/// Copy the items into the clipboard.
+		/// </summary>
+		public void OnCopy()
+		{
+			_logger.Logs("Copying data to clipboard.", _path);
+			if (_grid.SelectedItem == null)
+				return;
+			Category SelectedValues = (Category)_grid.SelectedItem;
+			var jsonItem = jsonParser.ParseJson(SelectedValues);
+			Clipboard.Instance.Clear();		
+			Clipboard.Instance.Text = jsonItem;
+			_logger.Logs("Data copied successfully", _path);
+		}
+		/// <summary>
 		/// Show the tutorial dialog (Wall of text)
 		/// </summary>
 		async void ShowTutorial() {
@@ -74,7 +88,7 @@ namespace InventBox.Desktop.Components.CategoryForm
 		public ContextMenu CreateContextMenu()
 		{
 			_logger.Logs("Creating context menu", _path);
-			var CopyCategoryCommand = _utils.CreateMenuItem("Copy category", _utils.OnCopy);
+			var CopyCategoryCommand = _utils.CreateMenuItem("Copy category", OnCopy);
 			var CreateCategoryCommand = _utils.CreateMenuItem("Create new category", OnCreate);
 			var UpdateCategoryCommand = _utils.CreateMenuItem("Edit category", OnEdit);			
 			var DeleteCategoryCommand = _utils.CreateMenuItem("Delete category", OnDelete);			
@@ -113,7 +127,7 @@ namespace InventBox.Desktop.Components.CategoryForm
 				_categories = ModelsList.categories;
 			}
 			else
-				_categories = ModelsList.categories.Where(category => category.Name.Contains(searchText)).ToList();
+				_categories = ModelsList.categories.Where(category => category.Name.ToLower().Contains(searchText.ToLower())).ToList();
 			RefreshData();
         }
 		/// <summary>
@@ -332,8 +346,8 @@ namespace InventBox.Desktop.Components.CategoryForm
 				},
 				Directory = path
 			};
-			loadDialog.ShowDialog(this);
-			if (!File.Exists(loadDialog.FileName)) {
+			var result = loadDialog.ShowDialog(this);
+			if (result == DialogResult.Cancel) {
 				_logger.Logs("Loading data cancelled.", _path);
 				loadDialog.Dispose();
 				return;
@@ -371,7 +385,11 @@ namespace InventBox.Desktop.Components.CategoryForm
 				},
 				Directory = homeDir
 			};
-			saveDialog.ShowDialog(this);
+			var result = saveDialog.ShowDialog(this);
+			if (result == DialogResult.Cancel) {
+				saveDialog.Dispose();
+				return;
+			}
 			if (saveDialog.FileName != string.Empty  && ModelsList.categories.Count > 0) {
 				_logger.Logs("Category saved successfully.", _path);
 				_datamanagement.Save(ModelsList.categories, saveDialog.FileName);
@@ -382,7 +400,7 @@ namespace InventBox.Desktop.Components.CategoryForm
 				saveDialog.Dispose();
 				return;
 			} else {
-				_logger.Error("Saving category failed. Category List is empty.");
+				_logger.Error("Saving category failed. Category List is empty.", _path);
 				MessageBox.Show("categories list is empty. Please add one or load from file.", "Save failed.", MessageBoxButtons.OK, MessageBoxType.Information);
 			}
 			saveDialog.Dispose();

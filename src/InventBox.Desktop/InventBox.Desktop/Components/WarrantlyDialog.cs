@@ -119,6 +119,8 @@ namespace InventBox.Desktop.Components
 				if (DateTime.TryParse(endDatePicker.Text, out var end))
 					model.EndDate = end;
 				DateTime expiredate = GetExpireDate(end);
+				if (expiredate == DateTime.MinValue)
+					return;
 				if (DateTime.Now >= expiredate && DateTime.Now < end)
 					model.Status = Status.Expiring;
 				if (DateTime.Now > end)
@@ -135,20 +137,27 @@ namespace InventBox.Desktop.Components
 		/// <returns>Date and time for date before expire date.</returns>
         private DateTime GetExpireDate(DateTime end)
 		{
-			var day = end.Day - 30;
-			int month = end.Month;
-			int year = end.Year;
-			if (day <= 0)
+			try {
+				var day = end.Day - 30;
+				int month = end.Month;
+				int year = end.Year;
+				if (day <= 0)
+				{
+					month = end.Month - 1;
+					day = (day % 31) * -1;
+				}
+				if (month <= 0) {
+					year = end.Year - 1;
+					month = (month % 12) * -1;
+				}
+				var date = $"{year}/{month}/{day}";
+				return DateTime.Parse(date);
+			} catch (Exception ex)
 			{
-				month = end.Month - 1;
-				day = (day % 31) * -1;
+				MessageBox.Show("Failed to create Warrantly. Please select valid date", MessageBoxButtons.OK, MessageBoxType.Error);
+				_logger.Error($"Failed to parse date: {ex.Message}", _path);
+				return new DateTime();
 			}
-			if (month <= 0) {
-				year = end.Year - 1;
-				month = (month % 12) * -1;
-			}
-			var date = $"{year}/{month}/{day}";
-			return DateTime.Parse(date);
 		}
     }
 }

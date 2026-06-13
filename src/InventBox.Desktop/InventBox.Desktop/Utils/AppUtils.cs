@@ -10,7 +10,7 @@ namespace InventBox.Desktop.Utils;
 /// <typeparam name="T"></typeparam>
 public class AppUtils<T>
 {
-    private GridView? _grid;
+    private GridView _grid;
     private JsonParser<T> jsonParser;
     private FileLogger _logger;
     private string _path;
@@ -20,18 +20,6 @@ public class AppUtils<T>
         _path = path;
         _grid = grid;
         jsonParser = parser;
-    }
-    /// <summary>
-    /// Copy the category into the clipboard.
-    /// </summary>
-    public void OnCopy()
-    {
-        _logger.Logs("Copying data to clipboard.", _path);
-        T SelectedValues = (T)_grid.SelectedItem;
-        var jsonItem = jsonParser.ParseJson(SelectedValues);
-        Clipboard.Instance.Clear();		
-        Clipboard.Instance.Text = jsonItem;
-        _logger.Logs("Data copied successfully", _path);
     }
     /// <summary>
     /// Create a button for the panel.
