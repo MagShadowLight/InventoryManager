@@ -368,7 +368,7 @@ namespace InventBox.Desktop.Components.ItemsForm
 				Directory = path
 			};
 			loadDialog.ShowDialog(this);
-			if (!loadDialog.CheckFileExists) {
+			if (!File.Exists(loadDialog.FileName)) {
 				_logger.Logs("Loading data cancelled.", _loggerpath);
 				loadDialog.Dispose();
 				return;

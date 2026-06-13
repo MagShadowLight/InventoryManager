@@ -297,7 +297,7 @@ namespace InventBox.Desktop.Components.LocationForm
 				Directory = homeDir
 			};
 			loadDialog.ShowDialog(this);
-			if (!loadDialog.CheckFileExists) {
+			if (!File.Exists(loadDialog.FileName)) {
 				_logger.Logs("Loading file cancelled.", _path);
 				loadDialog.Dispose();
 				return;
