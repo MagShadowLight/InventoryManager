@@ -5,6 +5,7 @@
     <TargetFramework>net10.0</TargetFramework>
     <SelfContained>true</SelfContained>
     <RuntimeIdentifiers>osx-x64;osx-arm64</RuntimeIdentifiers>
+    <AssemblyName>HomeInventBox</AssemblyName>
   </PropertyGroup>
 	
   <ItemGroup>
