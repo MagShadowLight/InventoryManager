@@ -398,8 +398,10 @@ namespace InventBox.Desktop
 		{
 			_logger.Logs("Creating about application.", _path);
 			var link = new Uri("https://github.com/MagShadowLight/InventoryManager");
+			var image = new Bitmap(Path.Combine("Assets", "HomeInventBox.png"));
 			return new AboutDialog()
 			{
+				Logo = image,
 				Developers = new [] {"MagShadowLight"},
 				Documenters = new [] {"MagShadowLight"},
 				ProgramName = "HomeInventBox",
@@ -407,7 +409,7 @@ namespace InventBox.Desktop
 				Title = "HomeInventBox about",
 				Version = "Version 1.0",
 				WebsiteLabel = "Github",
-				Website = link
+				Website = link				
 			};
 		}
 		/// <summary>

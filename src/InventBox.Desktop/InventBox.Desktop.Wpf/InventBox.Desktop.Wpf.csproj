@@ -16,4 +16,8 @@
   <ItemGroup>
     <PackageReference Include="Eto.Platform.Wpf" Version="2.11.0" />
   </ItemGroup>
+  
+  <Target Name="CopyCustomContent" AfterTargets="AfterBuild">
+    <Copy SourceFiles="../InventBox.Desktop/Assets/HomeInventBox.png" DestinationFolder="$(OutDir)/Assets/" />
+  </Target>
 </Project>
