@@ -289,6 +289,11 @@ namespace InventBox.Desktop.Components.ItemsForm
 		private async Task OnScanBarCode()
 		{
 			await _logger.LogsAsync("Scanning item name by bar code.", _loggerpath);
+			if (_items.Count <= 0)
+			{
+				MessageBox.Show("The item list is empty. Please add one to scan.");
+				return;
+			}
 			Items items = new Items();
 			await _capture.OpenCapture(new System.Threading.CancellationTokenSource());
 			if (!_capture.IsCaptureOpen)

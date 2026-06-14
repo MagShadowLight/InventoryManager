@@ -29,6 +29,8 @@ public class BarCodeScannerTest
     public void Given_There_Is_String_Message_When_It_Encode_Into_The_Barcode_Then_It_Should_Return_The_Value_From_The_Barcode(string message)
     {
         // Arrange
+        if (!Directory.Exists("Logs"))
+            Directory.CreateDirectory("Logs");
         string path = "BarCodeExport.png";
         _scanner = new BarCodeScanner(Path.Combine("Logs", "InventBox.log"));
         // Act
@@ -45,6 +47,8 @@ public class BarCodeScannerTest
     public void Given_There_Is_Invalid_File_When_It_Tried_To_Decode_It_Then_It_Should_Return_Null_Or_Empty()
     {
         // Arrange
+        if (!Directory.Exists("Logs"))
+            Directory.CreateDirectory("Logs");
         _scanner = new BarCodeScanner(Path.Combine("Logs", "InventBox.log"));
         byte[] bytes = new byte[] {1,2,3,4,5,6,7};
         byte[] emptyBytes = new byte[]{};
