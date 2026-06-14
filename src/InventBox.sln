@@ -1,0 +1,60 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InventBox.Core", "InventBox.Core\InventBox.Core.csproj", "{F4822EF8-EEF4-4A10-94C8-117D8296C916}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "InventBox.Desktop", "InventBox.Desktop", "{92A709EF-E3DC-4289-AFF7-D5A2669C1E2E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InventBox.Desktop", "InventBox.Desktop\InventBox.Desktop\InventBox.Desktop.csproj", "{1C508244-D3C5-4D5D-BF46-CCC05C78C5F1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InventBox.Desktop.Gtk", "InventBox.Desktop\InventBox.Desktop.Gtk\InventBox.Desktop.Gtk.csproj", "{2C6FADD8-26DE-48B0-923C-15D34A9850BE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InventBox.Desktop.Mac", "InventBox.Desktop\InventBox.Desktop.Mac\InventBox.Desktop.Mac.csproj", "{1BA6906F-FB6C-44A7-B335-AE92B3ECCA17}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InventBox.Desktop.Wpf", "InventBox.Desktop\InventBox.Desktop.Wpf\InventBox.Desktop.Wpf.csproj", "{64694169-CCA9-481E-96D7-6F8D7217D6F7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InventBox.Test", "InventBox.Test\InventBox.Test.csproj", "{AAB076AB-25D0-4921-B81B-B37F2BC18BC2}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F4822EF8-EEF4-4A10-94C8-117D8296C916}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F4822EF8-EEF4-4A10-94C8-117D8296C916}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F4822EF8-EEF4-4A10-94C8-117D8296C916}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F4822EF8-EEF4-4A10-94C8-117D8296C916}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1C508244-D3C5-4D5D-BF46-CCC05C78C5F1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1C508244-D3C5-4D5D-BF46-CCC05C78C5F1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1C508244-D3C5-4D5D-BF46-CCC05C78C5F1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1C508244-D3C5-4D5D-BF46-CCC05C78C5F1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2C6FADD8-26DE-48B0-923C-15D34A9850BE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2C6FADD8-26DE-48B0-923C-15D34A9850BE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2C6FADD8-26DE-48B0-923C-15D34A9850BE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2C6FADD8-26DE-48B0-923C-15D34A9850BE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1BA6906F-FB6C-44A7-B335-AE92B3ECCA17}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1BA6906F-FB6C-44A7-B335-AE92B3ECCA17}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1BA6906F-FB6C-44A7-B335-AE92B3ECCA17}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1BA6906F-FB6C-44A7-B335-AE92B3ECCA17}.Release|Any CPU.Build.0 = Release|Any CPU
+		{64694169-CCA9-481E-96D7-6F8D7217D6F7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{64694169-CCA9-481E-96D7-6F8D7217D6F7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{64694169-CCA9-481E-96D7-6F8D7217D6F7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{64694169-CCA9-481E-96D7-6F8D7217D6F7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AAB076AB-25D0-4921-B81B-B37F2BC18BC2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AAB076AB-25D0-4921-B81B-B37F2BC18BC2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AAB076AB-25D0-4921-B81B-B37F2BC18BC2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AAB076AB-25D0-4921-B81B-B37F2BC18BC2}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{1C508244-D3C5-4D5D-BF46-CCC05C78C5F1} = {92A709EF-E3DC-4289-AFF7-D5A2669C1E2E}
+		{2C6FADD8-26DE-48B0-923C-15D34A9850BE} = {92A709EF-E3DC-4289-AFF7-D5A2669C1E2E}
+		{1BA6906F-FB6C-44A7-B335-AE92B3ECCA17} = {92A709EF-E3DC-4289-AFF7-D5A2669C1E2E}
+		{64694169-CCA9-481E-96D7-6F8D7217D6F7} = {92A709EF-E3DC-4289-AFF7-D5A2669C1E2E}
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <SelfContained>true</SelfContained>
+    <ApplicationIcon>HomeInventBox.ico</ApplicationIcon>
+    <RuntimeIdentifiers>win-x64;win-arm64;win-x86</RuntimeIdentifiers>
+    <AssemblyName>HomeInventBox</AssemblyName>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="..\InventBox.Desktop\InventBox.Desktop.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Eto.Platform.Wpf" Version="2.11.0" />
+  </ItemGroup>
+  
+  <Target Name="CopyCustomContent" AfterTargets="AfterBuild">
+    <Copy SourceFiles="../InventBox.Desktop/Assets/HomeInventBox.png" DestinationFolder="$(OutDir)/Assets/" />
+  </Target>
+</Project>

@@ -1,0 +1,38 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" Version="6.0.2" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
+    <PackageReference Include="Moq" Version="4.20.72" />
+    <PackageReference Include="NUnit" Version="4.6.1" />
+    <PackageReference Include="xunit" Version="2.9.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\InventBox.Core\InventBox.Core.csproj" />
+    <ProjectReference Include="..\InventBox.Desktop\InventBox.Desktop\InventBox.Desktop.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="InventBox.Core/Utils/" />
+    <Folder Include="Utils/" />
+  </ItemGroup>
+
+  <Target Name="CopyCustomContent" AfterTargets="AfterBuild">
+    <Copy SourceFiles="InventBox.Core/Data/ItemTest.csv" DestinationFolder="$(OutDir)/Data/" />
+    <Copy SourceFiles="InventBox.Core/Data/barcodeTest" DestinationFolder="$(OutDir)/Data/" />
+  </Target>
+
+</Project>
