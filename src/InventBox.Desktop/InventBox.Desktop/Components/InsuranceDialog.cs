@@ -121,10 +121,12 @@ namespace InventBox.Desktop.Components
 				if (DateTime.TryParse(endDatePicker.Text, out var end))
 					model.EndDate = end;
 				DateTime expiredate = GetExpireDate(end);
-				if (DateTime.Now >= expiredate && DateTime.Now < end)
-					model.Insured = Status.Expiring;
 				if (DateTime.Now >= end)
 					model.Insured = Status.Expired;
+				else if (DateTime.Now >= expiredate && DateTime.Now < end)
+					model.Insured = Status.Expiring;
+				else
+					model.Insured = Status.Covered;
 				_onSubmit?.Invoke(model);
 				Close();
 			};

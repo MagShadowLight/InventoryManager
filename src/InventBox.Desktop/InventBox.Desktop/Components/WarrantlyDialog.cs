@@ -121,10 +121,12 @@ namespace InventBox.Desktop.Components
 				DateTime expiredate = GetExpireDate(end);
 				if (expiredate == DateTime.MinValue)
 					return;
-				if (DateTime.Now >= expiredate && DateTime.Now < end)
-					model.Status = Status.Expiring;
 				if (DateTime.Now > end)
 					model.Status = Status.Expired;
+				else if (DateTime.Now >= expiredate && DateTime.Now < end)
+					model.Status = Status.Expiring;
+				else
+					model.Status = Status.Covered;
 				_onSubmit?.Invoke(model);
 				Close();
 			};
