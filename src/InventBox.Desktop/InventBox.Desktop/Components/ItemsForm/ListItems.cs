@@ -288,22 +288,35 @@ namespace InventBox.Desktop.Components.ItemsForm
 		/// <returns></returns>
 		private async Task OnScanBarCode()
 		{
-			_logger.Logs("Scanning item name by bar code.", _loggerpath);
+			await _logger.LogsAsync("Scanning item name by bar code.", _loggerpath);
 			Items items = new Items();
 			await _capture.OpenCapture(new System.Threading.CancellationTokenSource());
 			if (!_capture.IsCaptureOpen)
 				return;
 			var dialog = new BarCodeScannerDialog(_capture, _loggerpath, _logger);
-			dialog.ShowModal();
+		    await dialog.ShowModalAsync();
+			dialog.Closing += async (sender, e) =>
+			{
+				if (!dialog.IsSuspended)
+				{
+					await _capture.CloseCapture();
+					return;
+				}
+			};
 			string name = _scanner.DecodeBarCode(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),".tmp", "InventBox", "Images", "Barcode.png"));
 			if (string.IsNullOrEmpty(name)) {
-				_logger.Logs("Failed to scan barcode.", _loggerpath);
+				await _logger.LogsAsync("Failed to scan barcode.", _loggerpath);
 				var faileddialog = MessageBox.Show("Failed to scan barcode", MessageBoxButtons.OK, MessageBoxType.Error);
-				return;
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+                GC.Collect();
+                dialog.Dispose();
+                return;
 			}
 			_items = ModelsList.items.Where(item => item.Name == name).ToList();
 			RefreshData();
-			_logger.Logs("Bar code scanned", _loggerpath);
+			await _logger.LogsAsync("Bar code scanned", _loggerpath);
+			dialog.Dispose();
 		}
 		/// <summary>
 		/// Create the items from the user input.

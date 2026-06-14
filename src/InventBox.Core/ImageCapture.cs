@@ -105,6 +105,7 @@ public class ImageCapture
                 return;
 
             await device.StopAsync(token);
+            await device.DisposeAsync();
             _logger.Logs("Capture stopped. Saving image to file.", _path);
             using var fileStream = new FileStream(
                 imagePath,
@@ -112,11 +113,14 @@ public class ImageCapture
             );
             await fileStream.WriteAsync(_frame, 0, _frame.Length, token);
             await fileStream.FlushAsync(token);
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+            GC.Collect();
             _logger.Logs("Image saved to file.", _path);
         } catch (Exception ex)
         {
             _logger.Error($"Failed to stop capture or save file. {ex.Message}", _path);
-            MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxType.Error);
+            //MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxType.Error);
         }
     }
     /// <summary>
@@ -131,6 +135,9 @@ public class ImageCapture
             if (device == null)
                 return;
             await device.StopAsync(token);
+            await device.DisposeAsync();
+            devices = null;
+            _frame = null;
             _logger.Logs("Capture closed.", _path);
         } catch (Exception ex)
         {

@@ -4,6 +4,8 @@ using Eto.Drawing;
 using System.Threading.Tasks;
 using InventBox.Core;
 using System.IO;
+using System.Threading;
+using System.ComponentModel;
 
 namespace InventBox.Desktop.Component.BarCodeComponents
 {
@@ -18,6 +20,7 @@ namespace InventBox.Desktop.Component.BarCodeComponents
 		private FileLogger _logger;
 		private ImageView _preview;
 		private string _path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),".tmp", "InventBox", "Images", "Barcode.png");
+		private readonly CancellationTokenSource _cancellation = new CancellationTokenSource();
 
 		/// <summary>
 		/// Initialize a new instance for bar code scanner dialog.
@@ -32,19 +35,20 @@ namespace InventBox.Desktop.Component.BarCodeComponents
 			_scanner = new BarCodeScanner(_loggerPath);
 			_capture = capture;
 			_preview = CreatePreview();
-			Task task = new Task(async () => await StartCapture());
-			task.RunSynchronously();
+			Task.Run(async () => await StartCapture());
 			Content = CreateLayout();
 		}
-		/// <summary>
-		/// Occurs when the dialog is closed.
-		/// </summary>
-		/// <param name="e">The argument for event.</param>
-        protected override void OnClosed(EventArgs e)
+        /// <summary>
+        /// Occurs when the dialog is closed.
+        /// </summary>
+        /// <param name="e">The argument for event.</param>\
+        protected override void OnClosing(CancelEventArgs e)
         {
-            base.OnClosed(e);
-			_logger.Logs("Closing bar code scanner", _loggerPath);
-			Task.Run(async () => await _capture.CloseCapture());
+            _logger.Logs("Closing bar code scanner", _loggerPath);
+            _cancellation.Cancel();
+            Application.Instance.Invoke(async () => await _capture.CloseCapture());
+            _cancellation.Dispose();
+            base.OnClosing(e);
         }
 		/// <summary>
 		/// Create an Image preview.
@@ -98,15 +102,25 @@ namespace InventBox.Desktop.Component.BarCodeComponents
 		/// <param name="frame"></param>
 		private void onFrameCaptured(byte[] frame)
 		{
+			if (_cancellation.IsCancellationRequested)
+				return;
 			var barcode = _scanner.TryScanBarCode(frame);
-			Application.Instance.AsyncInvoke(async () =>
+			try {
+			Application.Instance.Invoke(async () =>
 			{
 				var old = _preview.Image;
 				_preview.Image = new Bitmap(frame);
 				old?.Dispose();
-				if (!string.IsNullOrEmpty(barcode))
+				if (!string.IsNullOrEmpty(barcode)) {
 					await OnCapture();
+					//Dispose();
+				}
 			});
+			} catch(Exception ex)
+			{
+				Task.Run(async () => await _capture.CloseCapture());
+				//Dispose();
+			}
 		}
 	}
 }
