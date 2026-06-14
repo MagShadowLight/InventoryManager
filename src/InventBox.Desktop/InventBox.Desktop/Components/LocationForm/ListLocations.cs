@@ -88,6 +88,10 @@ namespace InventBox.Desktop.Components.LocationForm
         public void Search()
         {
 			_logger.Logs($"Searching the room by {searchText}", _path);
+			if (ModelsList.locations.Count <= 0) {
+				MessageBox.Show("The location list is empty. Please add one to search.", "Search", MessageBoxButtons.OK, MessageBoxType.Information);
+				return;
+			}
 			if (string.IsNullOrEmpty(searchText)) {
 			if (_locations.Count == ModelsList.locations.Count)
 					MessageBox.Show("Search bar is empty. Please type in the search bar", "Search", MessageBoxButtons.OK, MessageBoxType.Information);
@@ -339,6 +343,11 @@ namespace InventBox.Desktop.Components.LocationForm
         public void OnSave()
         {
 			_logger.Logs("Saving location into file.", _path);
+			if (ModelsList.locations.Count == 0) {
+				_logger.Error("Saving location failed. List is empty.", _path);
+				MessageBox.Show("locations list is empty. Please add one or load from file.", "Save failed.", MessageBoxButtons.OK, MessageBoxType.Information);
+				return;
+			}
 			Uri homeDir = new Uri(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile));
 			var saveDialog = new SaveFileDialog
 			{
@@ -355,7 +364,8 @@ namespace InventBox.Desktop.Components.LocationForm
 			}
 			if (saveDialog.FileName != string.Empty && ModelsList.locations.Count > 0)
 			{
-				_dataManagement.Save(ModelsList.locations, saveDialog.FileName);
+				var fileName = saveDialog.FileName + saveDialog.Filters[0].Extensions[0];
+				_dataManagement.Save(ModelsList.locations, fileName);
 				File.Delete(TmpPath);
 				_logger.Logs("Location saved successfully.", _path);
 			}
@@ -363,10 +373,6 @@ namespace InventBox.Desktop.Components.LocationForm
 				_logger.Logs("Saving location cancelled.", _path);
 				saveDialog.Dispose();
 				return;
-			}
-			else {
-				_logger.Error("Saving location failed. List is empty.", _path);
-				MessageBox.Show("locations list is empty. Please add one or load from file.", "Save failed.", MessageBoxButtons.OK, MessageBoxType.Information);
 			}
 			saveDialog.Dispose();
         }

@@ -260,17 +260,17 @@ namespace InventBox.Desktop.Components.ItemsForm
 		public void Search()
 		{
 			_logger.Logs($"Searching the item by {searchBar.Text}", _loggerpath);
+			if (ModelsList.items.Count <= 0) {
+				MessageBox.Show("The item list is empty. Please add one to search.", "Search", MessageBoxButtons.OK, MessageBoxType.Information);
+				return;
+			}
 			if (string.IsNullOrEmpty(searchtext)) 
 			{
-				if (ModelsList.items.Count <= 0)
-					MessageBox.Show("The item list is empty. Please add one to search.", "Search", MessageBoxButtons.OK, MessageBoxType.Information);
-				else if (_items.Count == ModelsList.items.Count)
+				if (_items.Count == ModelsList.items.Count)
 					MessageBox.Show("Search bar is empty. Please type in the search bar", "Search", MessageBoxButtons.OK, MessageBoxType.Information);
 				_items = ModelsList.items;
 			}
 			else {
-				if (ModelsList.items.Count <= 0)
-					MessageBox.Show("The item list is empty. Please add one to search.", "Search", MessageBoxButtons.OK, MessageBoxType.Information);
 				if (search == SearchOptions.Name)
 					_items = ModelsList.items.Where((item) => item.Name.ToLower().Contains(searchtext.ToLower())).ToList();
 				if (search == SearchOptions.Category)
@@ -345,7 +345,12 @@ namespace InventBox.Desktop.Components.ItemsForm
 		/// </summary>
 		public void OnSave()
 		{
-			_logger.Logs("Saving items into file.", _loggerpath);
+			_logger.Logs("Saving items into file.", _loggerpath);			
+			if (_items.Count <= 0) {
+				_logger.Error("Saving failed. Item list is empty.", _loggerpath);
+				MessageBox.Show("Items list is empty. Please add one or load from file.", "Save failed.", MessageBoxButtons.OK, MessageBoxType.Information);
+				return;
+			}
 			_categoryManagement = new DataManagement<Category>(_loggerpath);
 			_locationManagement = new DataManagement<Locations>(_loggerpath);
 			Uri homeDir = new Uri(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile));	
@@ -381,10 +386,6 @@ namespace InventBox.Desktop.Components.ItemsForm
 				_logger.Logs("Saving data cancelled.", _loggerpath);
 				saveDialog.Dispose();
 				return;
-			}
-			else {
-				_logger.Error("Saving failed. Item list is empty.", _loggerpath);
-				MessageBox.Show("Items list is empty. Please add one or load from file.", "Save failed.", MessageBoxButtons.OK, MessageBoxType.Information);
 			}
 			saveDialog.Dispose();
 		}

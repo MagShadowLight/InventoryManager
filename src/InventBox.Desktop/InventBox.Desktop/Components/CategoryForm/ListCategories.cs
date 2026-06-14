@@ -121,13 +121,18 @@ namespace InventBox.Desktop.Components.CategoryForm
         public void Search()
         {
 			_logger.Logs($"Searching category by {searchText}", _path);
-			if (string.IsNullOrEmpty(searchText)) {
+			if (ModelsList.categories.Count <= 0) {
+				MessageBox.Show("The category list is empty. Please add one to search.", "Search", MessageBoxButtons.OK, MessageBoxType.Information);
+				return;
+			}
+			if (string.IsNullOrEmpty(searchText)) {				
 				if (_categories.Count == ModelsList.categories.Count)
 					MessageBox.Show("Search bar is empty. Please type in the search bar", "Search", MessageBoxButtons.OK, MessageBoxType.Information);
 				_categories = ModelsList.categories;
 			}
-			else
+			else {
 				_categories = ModelsList.categories.Where(category => category.Name.ToLower().Contains(searchText.ToLower())).ToList();
+			}
 			RefreshData();
         }
 		/// <summary>
@@ -376,6 +381,11 @@ namespace InventBox.Desktop.Components.CategoryForm
         public void OnSave()
         {
 			_logger.Logs("Saving the category to file", _path);
+			if (ModelsList.categories.Count <= 0) {
+				_logger.Error("Saving category failed. Category List is empty.", _path);
+				MessageBox.Show("categories list is empty. Please add one or load from file.", "Save failed.", MessageBoxButtons.OK, MessageBoxType.Information);
+				return;
+			}
 			Uri homeDir = new Uri(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile));
 			var saveDialog = new SaveFileDialog
 			{
@@ -391,17 +401,15 @@ namespace InventBox.Desktop.Components.CategoryForm
 				return;
 			}
 			if (saveDialog.FileName != string.Empty  && ModelsList.categories.Count > 0) {
-				_logger.Logs("Category saved successfully.", _path);
-				_datamanagement.Save(ModelsList.categories, saveDialog.FileName);
+				var fileName = saveDialog.FileName + saveDialog.Filters[0].Extensions[0];
+				_datamanagement.Save(ModelsList.categories, fileName);
 				File.Delete(TmpPath);
+				_logger.Logs("Category saved successfully.", _path);
 			}
 			else if (string.IsNullOrEmpty(saveDialog.FileName)){
-				_logger.Logs("Saving category cancelled.", _path);
 				saveDialog.Dispose();
+				_logger.Logs("Saving category cancelled.", _path);
 				return;
-			} else {
-				_logger.Error("Saving category failed. Category List is empty.", _path);
-				MessageBox.Show("categories list is empty. Please add one or load from file.", "Save failed.", MessageBoxButtons.OK, MessageBoxType.Information);
 			}
 			saveDialog.Dispose();
         }
