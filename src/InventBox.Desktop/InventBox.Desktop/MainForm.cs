@@ -112,7 +112,8 @@ namespace InventBox.Desktop
         protected override void OnSizeChanged(EventArgs e)
         {
             base.OnSizeChanged(e);
-			currentSize = ClientSize; 
+			if (WindowState != WindowState.Maximized)
+				currentSize = ClientSize; 
         }
 		/// <summary>
 		/// Recover the data if the application have crashed or close without saving.
