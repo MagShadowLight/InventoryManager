@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using InventBox.Core;
 using InventBox.Desktop.Interfaces;
 using InventBox.Desktop.ModelViews;
+using InventBox.Core.Enums;
 
 namespace InventBox.Desktop.Components.ItemsForm
 {

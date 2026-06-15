@@ -1,4 +1,4 @@
-namespace InventBox.Core.Models;
+namespace InventBox.Core.Enums;
 
 /// <summary>
 /// Represents a groups of status.

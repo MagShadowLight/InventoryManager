@@ -6,6 +6,7 @@ using InventBox.Desktop.Interfaces;
 using InventBox.Core;
 using InventBox.Desktop.Components.ItemsForm;
 using InventBox.Core.Models;
+using InventBox.Core.Enums;
 
 namespace InventBox.Desktop.Components
 {

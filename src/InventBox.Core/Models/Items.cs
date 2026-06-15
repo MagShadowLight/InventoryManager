@@ -1,3 +1,5 @@
+using InventBox.Core.Enums;
+
 namespace InventBox.Core.Models;
 
 /// <summary>

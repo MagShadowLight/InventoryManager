@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using InventBox.Desktop.Enum;
 using InventBox.Desktop.Component.BarCodeComponents;
 using InventBox.Desktop.Utils;
+using InventBox.Core.Enums;
 
 namespace InventBox.Desktop.Components.ItemsForm
 {

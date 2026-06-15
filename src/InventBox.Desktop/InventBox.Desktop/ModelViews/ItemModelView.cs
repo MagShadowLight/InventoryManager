@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using InventBox.Core.Enums;
 using InventBox.Core.Models;
 
 namespace InventBox.Desktop.ModelView;

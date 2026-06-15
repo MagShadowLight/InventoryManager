@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using InventBox.Core.Enums;
 
 namespace InventBox.Core.Models;
 
